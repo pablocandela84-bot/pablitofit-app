@@ -403,6 +403,30 @@
   </div>
 </div>
 
+
+<!-- ══════════════════════════════════════
+     PANTALLA SET PASSWORD (desde email invitación)
+══════════════════════════════════════ -->
+<div id="setPasswordScreen" class="screen">
+  <div style="background:var(--navy);min-height:100vh;display:flex;align-items:center;justify-content:center">
+    <div style="background:var(--white);padding:3rem;width:100%;max-width:420px">
+      <div style="font-family:var(--display);font-size:1.5rem;font-weight:900;letter-spacing:-1px;color:var(--navy);margin-bottom:0.3rem">PABLO<span style="color:var(--blue)">FIT</span></div>
+      <div style="font-size:0.72rem;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:2rem">Crea tu contraseña</div>
+      <div id="setPwdMsg" style="font-size:0.82rem;color:var(--gray);line-height:1.7;margin-bottom:1.5rem">Elige una contraseña para acceder a tu área de cliente.</div>
+      <div style="margin-bottom:1rem">
+        <label style="display:block;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Nueva contraseña</label>
+        <input type="password" id="newPassword" placeholder="Mínimo 8 caracteres" style="width:100%;border:1px solid var(--border);padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--navy);outline:none">
+      </div>
+      <div style="margin-bottom:1.5rem">
+        <label style="display:block;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Confirmar contraseña</label>
+        <input type="password" id="newPassword2" placeholder="Repite la contraseña" style="width:100%;border:1px solid var(--border);padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--navy);outline:none">
+      </div>
+      <button id="btnSetPassword" onclick="confirmarPassword()" style="width:100%;background:var(--blue);color:#fff;border:none;padding:1rem;font-family:var(--display);font-size:0.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer">Guardar contraseña →</button>
+      <div id="setPwdErr" style="font-size:0.75rem;color:var(--red);margin-top:0.8rem;display:none"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════
      MODALES
 ══════════════════════════════════════ -->
@@ -616,14 +640,76 @@ async function logout() {
   document.getElementById('loginPass').value = '';
 }
 
-// Restaurar sesión al cargar
+// Restaurar sesión al cargar — detectar token de invitación/recovery
 window.addEventListener('load', async () => {
+  // Detectar si viene desde un email de invitación o reset
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.replace('#', '?'));
+  const accessToken = params.get('access_token');
+  const type = params.get('type');
+
+  if (accessToken && (type === 'invite' || type === 'recovery' || type === 'signup')) {
+    // Establecer sesión con el token del email
+    const { data, error } = await sb.auth.setSession({
+      access_token: accessToken,
+      refresh_token: params.get('refresh_token') || ''
+    });
+    if (!error && data.session) {
+      currentUser = data.session.user;
+      // Mostrar pantalla de crear contraseña
+      showScreen('setPasswordScreen');
+      // Limpiar hash de la URL
+      history.replaceState(null, '', window.location.pathname);
+      return;
+    }
+  }
+
+  // Sesión normal
   const { data } = await sb.auth.getSession();
   if (data.session) {
     currentUser = data.session.user;
     await iniciarSesion();
   }
 });
+
+// Confirmar nueva contraseña
+async function confirmarPassword() {
+  const pwd1 = document.getElementById('newPassword').value;
+  const pwd2 = document.getElementById('newPassword2').value;
+  const err = document.getElementById('setPwdErr');
+  err.style.display = 'none';
+
+  if (pwd1.length < 8) {
+    err.textContent = 'La contraseña debe tener al menos 8 caracteres';
+    err.style.display = 'block'; return;
+  }
+  if (pwd1 !== pwd2) {
+    err.textContent = 'Las contraseñas no coinciden';
+    err.style.display = 'block'; return;
+  }
+
+  document.getElementById('btnSetPassword').textContent = 'Guardando...';
+
+  const { error } = await sb.auth.updateUser({ password: pwd1 });
+
+  if (error) {
+    err.textContent = 'Error: ' + error.message;
+    err.style.display = 'block';
+    document.getElementById('btnSetPassword').textContent = 'Guardar contraseña →';
+    return;
+  }
+
+  toast('¡Contraseña creada! Entrando a tu área...', 'success');
+
+  // Redirigir al portal
+  setTimeout(async () => {
+    const { data } = await sb.auth.getSession();
+    if (data.session) {
+      currentUser = data.session.user;
+      await iniciarSesion();
+    }
+  }, 1500);
+}
 
 // ══════════════════════════════════════
 //  COACH: NAVEGACIÓN
