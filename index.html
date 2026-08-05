@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PablitoFit — Plataforma</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f0f4ff;--navy:#0d1b3e;--blue:#1a3fa0;--blue2:#4f8eff;
+      --gray:#7a8aaa;--border:#d0d8f0;--white:#ffffff;
+      --green:#10b981;--red:#ef4444;--amber:#f59e0b;
+      --display:'Unbounded',sans-serif;--body:'Inter',sans-serif;
+    }
+    body{font-family:var(--body);background:var(--bg);color:var(--navy);min-height:100vh}
+
+    /* ── PANTALLAS ── */
+    .screen{display:none;min-height:100vh}
+    .screen.active{display:flex}
+
+    /* ── LOGIN ── */
+    #loginScreen{align-items:center;justify-content:center;background:var(--navy)}
+    .login-box{background:var(--white);padding:3rem;width:100%;max-width:420px;position:relative}
+    .login-brand{font-family:var(--display);font-size:1.5rem;font-weight:900;letter-spacing:-1px;color:var(--navy);margin-bottom:0.3rem}
+    .login-brand span{color:var(--blue)}
+    .login-sub{font-size:0.72rem;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:2rem}
+    .login-field{margin-bottom:1rem}
+    .login-field label{display:block;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem}
+    .login-field input{width:100%;border:1px solid var(--border);padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--navy);outline:none;transition:border-color 0.2s}
+    .login-field input:focus{border-color:var(--blue)}
+    .btn-login{width:100%;background:var(--blue);color:#fff;border:none;padding:1rem;font-family:var(--display);font-size:0.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.2s;margin-top:0.5rem}
+    .btn-login:hover{background:#0d2d8a}
+    .login-err{font-size:0.75rem;color:var(--red);margin-top:0.8rem;display:none}
+
+    /* ── LAYOUT COACH ── */
+    #coachScreen{flex-direction:row}
+    .sidebar{width:240px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .sidebar-brand{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .sidebar-brand-name{font-family:var(--display);font-size:1rem;font-weight:900;letter-spacing:-0.5px;color:#fff}
+    .sidebar-brand-name span{color:var(--blue2)}
+    .sidebar-brand-sub{font-size:0.58rem;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;margin-top:3px}
+    .sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto}
+    .nav-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.5rem;font-size:0.78rem;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s;border-left:3px solid transparent}
+    .nav-item:hover{color:#fff;background:rgba(255,255,255,0.04)}
+    .nav-item.active{color:#fff;border-left-color:var(--blue2);background:rgba(79,142,255,0.08)}
+    .nav-item .nav-icon{font-size:1rem;flex-shrink:0}
+    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08)}
+    .sidebar-user{font-size:0.7rem;color:rgba(255,255,255,0.4)}
+    .sidebar-user strong{color:rgba(255,255,255,0.8);display:block;margin-bottom:2px}
+    .btn-logout{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:0.4rem 0.8rem;font-size:0.65rem;cursor:pointer;margin-top:0.6rem;transition:all 0.2s;width:100%;letter-spacing:1px;text-transform:uppercase;font-family:var(--body)}
+    .btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+    .main-content{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+    .topbar-title{font-family:var(--display);font-size:1rem;font-weight:900;letter-spacing:-0.5px}
+    .topbar-actions{display:flex;gap:0.8rem}
+    .page-body{padding:2rem;flex:1}
+
+    /* ── TABS ── */
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+
+    /* ── CARDS ── */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+    .stat-card{background:var(--white);border:1px solid var(--border);padding:1.5rem}
+    .stat-n{font-family:var(--display);font-size:2rem;font-weight:900;letter-spacing:-1px;color:var(--navy);display:block}
+    .stat-l{font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-top:4px}
+
+    /* ── TABLA CLIENTES ── */
+    .card{background:var(--white);border:1px solid var(--border)}
+    .card-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .card-title{font-family:var(--display);font-size:0.85rem;font-weight:900;letter-spacing:-0.3px}
+    table{width:100%;border-collapse:collapse}
+    th{font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;text-align:left;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);background:#f8faff}
+    td{padding:0.9rem 1.2rem;font-size:0.82rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#f8faff}
+    .badge{display:inline-block;padding:0.2rem 0.6rem;font-size:0.65rem;font-weight:600;letter-spacing:0.5px;border-radius:2px}
+    .badge-green{background:#d1fae5;color:#065f46}
+    .badge-amber{background:#fef3c7;color:#92400e}
+    .badge-red{background:#fee2e2;color:#991b1b}
+    .badge-blue{background:#dbeafe;color:#1e40af}
+
+    /* ── BOTONES ── */
+    .btn{padding:0.65rem 1.2rem;font-family:var(--display);font-size:0.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;transition:all 0.2s}
+    .btn-primary{background:var(--blue);color:#fff}
+    .btn-primary:hover{background:#0d2d8a}
+    .btn-secondary{background:none;border:1px solid var(--border);color:var(--navy)}
+    .btn-secondary:hover{border-color:var(--blue);color:var(--blue)}
+    .btn-danger{background:none;border:1px solid var(--border);color:var(--red)}
+    .btn-danger:hover{background:var(--red);color:#fff;border-color:var(--red)}
+    .btn-sm{padding:0.4rem 0.8rem;font-size:0.58rem}
+    .btn-icon{background:none;border:none;cursor:pointer;padding:0.3rem;color:var(--gray);font-size:1rem;transition:color 0.2s}
+    .btn-icon:hover{color:var(--navy)}
+
+    /* ── MODAL ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(13,27,62,0.7);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+    .modal-overlay.open{display:flex}
+    .modal{background:var(--white);width:100%;max-width:600px;max-height:90vh;overflow-y:auto;position:relative;animation:modalIn 0.3s ease}
+    .modal-lg{max-width:900px}
+    @keyframes modalIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .modal-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1}
+    .modal-title{font-family:var(--display);font-size:1rem;font-weight:900;letter-spacing:-0.5px}
+    .modal-body{padding:1.5rem}
+    .modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:0.8rem;justify-content:flex-end}
+
+    /* ── FORM ── */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+    .form-full{grid-column:1/-1}
+    .form-field{display:flex;flex-direction:column;gap:0.4rem}
+    .form-field label{font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600}
+    .form-field input,.form-field select,.form-field textarea{border:1px solid var(--border);padding:0.75rem 0.9rem;font-family:var(--body);font-size:0.85rem;color:var(--navy);outline:none;transition:border-color 0.2s;background:var(--white);width:100%}
+    .form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--blue)}
+    .form-field textarea{resize:vertical;min-height:80px}
+    .form-section{margin-bottom:1.5rem}
+    .form-section-title{font-family:var(--display);font-size:0.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)}
+
+    /* ── PERFIL CLIENTE ── */
+    .client-header{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start;background:var(--navy);padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+    .client-header::before{content:'CLIENTE';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-family:var(--display);font-size:6rem;font-weight:900;color:rgba(255,255,255,0.03);pointer-events:none}
+    .client-name{font-family:var(--display);font-size:1.6rem;font-weight:900;letter-spacing:-1px;color:#fff;margin-bottom:0.5rem}
+    .client-meta{display:flex;gap:1.5rem;flex-wrap:wrap}
+    .client-meta-item{font-size:0.72rem;color:rgba(255,255,255,0.4)}
+    .client-meta-item strong{color:rgba(255,255,255,0.8);display:block;font-size:0.82rem}
+    .client-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+    .client-tab{padding:0.8rem 1.5rem;font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+    .client-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+    .client-tab-content{display:none}
+    .client-tab-content.active{display:block}
+
+    /* ── RUTINA EDITOR ── */
+    .week-editor{border:1px solid var(--border);margin-bottom:1rem;overflow:hidden}
+    .week-header{background:var(--navy);padding:0.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+    .week-title{font-family:var(--display);font-size:0.75rem;font-weight:700;letter-spacing:1px;color:#fff}
+    .week-body{padding:1rem;display:none}
+    .week-body.open{display:block}
+    .day-editor{margin-bottom:1rem;border:1px solid var(--border)}
+    .day-editor-header{padding:0.6rem 1rem;background:#f8faff;display:flex;align-items:center;gap:1rem;border-bottom:1px solid var(--border)}
+    .day-editor-name{font-family:var(--display);font-size:0.72rem;font-weight:700;letter-spacing:1px;color:var(--navy)}
+    .day-rest-toggle{font-size:0.62rem;cursor:pointer;color:var(--gray);border:1px solid var(--border);padding:0.2rem 0.6rem;background:none;transition:all 0.2s}
+    .day-rest-toggle.active{background:var(--amber);color:#fff;border-color:var(--amber)}
+    .exercises-editor{padding:0.8rem}
+    .exercise-row{display:grid;grid-template-columns:2fr 0.5fr 0.8fr 0.8fr 1fr auto;gap:0.5rem;margin-bottom:0.5rem;align-items:center}
+    .exercise-input{border:1px solid var(--border);padding:0.4rem 0.6rem;font-size:0.78rem;font-family:var(--body);color:var(--navy);outline:none;width:100%}
+    .exercise-input:focus{border-color:var(--blue)}
+    .exercise-input::placeholder{color:var(--gray)}
+    .ex-header-row{display:grid;grid-template-columns:2fr 0.5fr 0.8fr 0.8fr 1fr auto;gap:0.5rem;margin-bottom:0.3rem}
+    .ex-col-label{font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray)}
+    .add-exercise-btn{font-size:0.65rem;color:var(--blue);cursor:pointer;border:none;background:none;padding:0.3rem 0;letter-spacing:1px;text-transform:uppercase;font-family:var(--display);font-weight:700}
+    .add-exercise-btn:hover{color:#0d2d8a}
+
+    /* ── NUTRI EDITOR ── */
+    .meal-editor{border:1px solid var(--border);margin-bottom:0.8rem}
+    .meal-editor-header{padding:0.7rem 1rem;background:#f8faff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem}
+    .meal-editor-name{font-family:var(--display);font-size:0.72rem;font-weight:700;letter-spacing:1px;color:var(--navy);flex:1}
+    .meal-editor-body{padding:0.8rem}
+    .food-row{display:grid;grid-template-columns:2fr 1fr 0.6fr 0.6fr 0.6fr auto;gap:0.5rem;margin-bottom:0.5rem;align-items:center}
+
+    /* ── PROGRESO ── */
+    .progreso-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+    .progreso-card{background:var(--white);border:1px solid var(--border);padding:1.2rem;text-align:center}
+    .progreso-val{font-family:var(--display);font-size:1.8rem;font-weight:900;letter-spacing:-1px;color:var(--navy)}
+    .progreso-label{font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-top:4px}
+    .progreso-delta{font-size:0.72rem;margin-top:4px}
+    .delta-up{color:var(--green)}
+    .delta-down{color:var(--red)}
+
+    /* ── PORTAL CLIENTE ── */
+    #clienteScreen{flex-direction:column;background:var(--bg)}
+    .cliente-topbar{background:var(--navy);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+    .cliente-brand{font-family:var(--display);font-size:0.9rem;font-weight:900;color:#fff;letter-spacing:-0.5px}
+    .cliente-brand span{color:var(--blue2)}
+    .cliente-welcome{font-size:0.68rem;color:rgba(255,255,255,0.4)}
+    .cliente-nav{display:flex;gap:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;overflow-x:auto}
+    .cliente-nav-item{padding:1rem 1.2rem;font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s}
+    .cliente-nav-item.active{color:var(--blue);border-bottom-color:var(--blue)}
+    .cliente-body{padding:2rem;max-width:900px;margin:0 auto;width:100%}
+    .cliente-tab-content{display:none}
+    .cliente-tab-content.active{display:block}
+
+    /* ── CHECKLIST CLIENTE ── */
+    .rutina-dia{background:var(--white);border:1px solid var(--border);margin-bottom:0.8rem;overflow:hidden}
+    .rutina-dia-header{padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+    .rutina-dia-name{font-family:var(--display);font-size:0.85rem;font-weight:900;letter-spacing:-0.3px}
+    .rutina-dia-body{display:none;padding:0 1.5rem 1rem}
+    .rutina-dia.open .rutina-dia-body{display:block}
+    .rutina-dia.descanso{background:#f8f0ff;border-color:#c4a8e8}
+    .rutina-dia.descanso .rutina-dia-name{color:#6b3fa0}
+    .ex-check-row{display:flex;align-items:center;gap:1rem;padding:0.6rem 0;border-bottom:1px dashed var(--border);cursor:pointer}
+    .ex-check-row:last-child{border-bottom:none}
+    .ex-check-row.done{opacity:0.4}
+    .ex-check-row.done .ex-check-name{text-decoration:line-through}
+    .ex-checkbox{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+    .ex-check-row.done .ex-checkbox{background:var(--blue);border-color:var(--blue);color:#fff;font-size:0.7rem}
+    .ex-check-name{font-size:0.82rem;font-weight:500;flex:1}
+    .ex-check-info{font-size:0.72rem;color:var(--gray);white-space:nowrap}
+
+    /* ── NOTIFICACIONES ── */
+    .toast{position:fixed;bottom:2rem;right:2rem;background:var(--navy);color:#fff;padding:0.9rem 1.5rem;font-size:0.8rem;z-index:9999;transform:translateY(100px);opacity:0;transition:all 0.3s;max-width:320px}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.success{background:var(--green)}
+    .toast.error{background:var(--red)}
+
+    /* ── EMPTY STATE ── */
+    .empty-state{text-align:center;padding:4rem 2rem;color:var(--gray)}
+    .empty-state-icon{font-size:3rem;margin-bottom:1rem;opacity:0.4}
+    .empty-state-text{font-size:0.85rem;line-height:1.7}
+
+    /* ── LOADING ── */
+    .loading{display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--gray);font-size:0.82rem;gap:0.5rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
+
+    /* ── SEARCH ── */
+    .search-box{border:1px solid var(--border);padding:0.65rem 1rem;font-family:var(--body);font-size:0.85rem;outline:none;width:240px}
+    .search-box:focus{border-color:var(--blue)}
+
+    /* ── MOBILE ── */
+    @media(max-width:768px){
+      .sidebar{width:100%;height:60px;flex-direction:row;position:fixed;top:0;bottom:auto;overflow-x:auto}
+      .sidebar-brand{display:none}
+      .sidebar-nav{display:flex;flex-direction:row;padding:0;overflow-x:auto}
+      .nav-item{flex-direction:column;gap:2px;padding:0.6rem 1rem;font-size:0.6rem;border-left:none;border-bottom:3px solid transparent;white-space:nowrap}
+      .nav-item.active{border-bottom-color:var(--blue2);border-left:none}
+      .sidebar-footer{display:none}
+      .main-content{margin-left:0;padding-top:60px}
+      .stats-row{grid-template-columns:repeat(2,1fr)}
+      .form-grid,.form-grid-3{grid-template-columns:1fr}
+      .exercise-row{grid-template-columns:1fr 1fr;gap:0.4rem}
+      .food-row{grid-template-columns:1fr 1fr}
+      .progreso-grid{grid-template-columns:1fr 1fr}
+      .cliente-body{padding:1rem}
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════
+     PANTALLA LOGIN
+══════════════════════════════════════ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-box">
+    <div class="login-brand">PABLO<span>FIT</span></div>
+    <div class="login-sub">Plataforma de entrenamiento</div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-login" id="btnLogin">Entrar →</button>
+    <div class="login-err" id="loginErr">Email o contraseña incorrectos</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PANEL COACH
+══════════════════════════════════════ -->
+<div id="coachScreen" class="screen">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-name">PABLO<span>FIT</span></div>
+      <div class="sidebar-brand-sub">Panel Coach</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
+      <div class="nav-item" onclick="showTab('clientes')"><span class="nav-icon">👥</span>Clientes</div>
+      <div class="nav-item" onclick="showTab('rutinas')"><span class="nav-icon">💪</span>Rutinas</div>
+      <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">🥗</span>Nutrición</div>
+      <div class="nav-item" onclick="showTab('progreso')"><span class="nav-icon">📈</span>Progreso</div>
+      <div class="nav-item" onclick="showTab('pagos')"><span class="nav-icon">💳</span>Pagos</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><strong id="sidebarEmail">—</strong>Coach</div>
+      <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+    <div class="page-body">
+
+      <!-- TAB: DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="stats-row" id="statsRow">
+          <div class="stat-card"><span class="stat-n" id="statTotal">—</span><div class="stat-l">Clientes activos</div></div>
+          <div class="stat-card"><span class="stat-n" id="statPlan6">—</span><div class="stat-l">Plan 6 meses</div></div>
+          <div class="stat-card"><span class="stat-n" id="statPlan12">—</span><div class="stat-l">Plan 12 meses</div></div>
+          <div class="stat-card"><span class="stat-n" id="statVence">—</span><div class="stat-l">Vencen este mes</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Clientes recientes</div></div>
+          <div id="dashboardList"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+        </div>
+      </div>
+
+      <!-- TAB: CLIENTES -->
+      <div id="tab-clientes" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Todos los clientes</div>
+            <input class="search-box" id="searchClientes" placeholder="Buscar cliente..." oninput="filtrarClientes()">
+          </div>
+          <div id="clientesTable"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+        </div>
+      </div>
+
+      <!-- TAB: RUTINAS -->
+      <div id="tab-rutinas" class="tab-content">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Gestión de rutinas</div>
+            <select id="rutinasClienteSelect" class="search-box" style="width:220px" onchange="cargarRutinasCliente()">
+              <option value="">Selecciona cliente...</option>
+            </select>
+          </div>
+          <div id="rutinasContent"><div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Selecciona un cliente para ver y editar sus rutinas.</div></div></div>
+        </div>
+      </div>
+
+      <!-- TAB: NUTRICIÓN -->
+      <div id="tab-nutricion" class="tab-content">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Planes nutricionales</div>
+            <select id="nutriClienteSelect" class="search-box" style="width:220px" onchange="cargarNutriCliente()">
+              <option value="">Selecciona cliente...</option>
+            </select>
+          </div>
+          <div id="nutriContent"><div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">Selecciona un cliente para ver y editar su plan nutricional.</div></div></div>
+        </div>
+      </div>
+
+      <!-- TAB: PROGRESO -->
+      <div id="tab-progreso" class="tab-content">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Seguimiento de progreso</div>
+            <select id="progresoClienteSelect" class="search-box" style="width:220px" onchange="cargarProgresoCliente()">
+              <option value="">Selecciona cliente...</option>
+            </select>
+          </div>
+          <div id="progresoContent"><div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Selecciona un cliente para ver su progreso.</div></div></div>
+        </div>
+      </div>
+
+      <!-- TAB: PAGOS -->
+      <div id="tab-pagos" class="tab-content">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Estado de pagos</div></div>
+          <div id="pagosContent"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PORTAL CLIENTE
+══════════════════════════════════════ -->
+<div id="clienteScreen" class="screen">
+  <div class="cliente-topbar">
+    <div>
+      <div class="cliente-brand">PABLO<span>FIT</span></div>
+      <div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div>
+    </div>
+    <button class="btn" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)" onclick="logout()">Salir</button>
+  </div>
+  <div class="cliente-nav">
+    <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina')">💪 Mi Rutina</div>
+    <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta')">🥗 Mi Dieta</div>
+    <div class="cliente-nav-item" onclick="showClienteTab('mi-progreso')">📈 Mi Progreso</div>
+    <div class="cliente-nav-item" onclick="showClienteTab('mi-plan')">📋 Mi Plan</div>
+    <div class="cliente-nav-item" onclick="showClienteTab('mensajes')">💬 Mensajes</div>
+  </div>
+  <div class="cliente-body">
+    <div id="cliente-mi-rutina" class="cliente-tab-content active">
+      <div class="loading"><div class="spinner"></div>Cargando tu rutina...</div>
+    </div>
+    <div id="cliente-mi-dieta" class="cliente-tab-content">
+      <div class="loading"><div class="spinner"></div>Cargando tu plan nutricional...</div>
+    </div>
+    <div id="cliente-mi-progreso" class="cliente-tab-content">
+      <div class="loading"><div class="spinner"></div>Cargando tu progreso...</div>
+    </div>
+    <div id="cliente-mi-plan" class="cliente-tab-content">
+      <div class="loading"><div class="spinner"></div>Cargando tu plan...</div>
+    </div>
+    <div id="cliente-mensajes" class="cliente-tab-content">
+      <div class="loading"><div class="spinner"></div>Cargando mensajes...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODALES
+══════════════════════════════════════ -->
+
+<!-- Modal: Crear/editar cliente -->
+<div class="modal-overlay" id="modalCliente">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalClienteTitulo">Nuevo cliente</div>
+      <button class="btn-icon" onclick="closeModal('modalCliente')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <div class="form-section-title">Datos personales</div>
+        <div class="form-grid">
+          <div class="form-field"><label>Nombre completo *</label><input id="cNombre" placeholder="Nombre Apellido"></div>
+          <div class="form-field"><label>Email *</label><input id="cEmail" type="email" placeholder="email@ejemplo.com"></div>
+          <div class="form-field"><label>Teléfono</label><input id="cTelefono" placeholder="+34 600 000 000"></div>
+          <div class="form-field"><label>Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 8 caracteres"></div>
+          <div class="form-field"><label>Peso inicial (kg)</label><input id="cPeso" type="number" placeholder="75"></div>
+          <div class="form-field"><label>Altura (cm)</label><input id="cAltura" type="number" placeholder="175"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Plan y objetivos</div>
+        <div class="form-grid">
+          <div class="form-field"><label>Plan contratado</label>
+            <select id="cPlan">
+              <option value="6meses">6 meses</option>
+              <option value="12meses">12 meses</option>
+              <option value="valoracion">Solo valoración</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Estado</label>
+            <select id="cEstado">
+              <option value="activo">Activo</option>
+              <option value="pausado">Pausado</option>
+              <option value="finalizado">Finalizado</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Fecha de inicio</label><input id="cFechaInicio" type="date"></div>
+          <div class="form-field"><label>Objetivo principal</label>
+            <select id="cObjetivo">
+              <option value="hipertrofia">Hipertrofia / Masa muscular</option>
+              <option value="definicion">Definición / Perder grasa</option>
+              <option value="rendimiento">Rendimiento deportivo</option>
+              <option value="salud">Salud general</option>
+            </select>
+          </div>
+          <div class="form-field form-full"><label>Notas internas (solo las ves tú)</label><textarea id="cNotas" placeholder="Lesiones, preferencias, historial..."></textarea></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalCliente')">Cancelar</button>
+      <button class="btn btn-primary" id="btnGuardarCliente" onclick="guardarCliente()">Crear cliente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Progreso entrada -->
+<div class="modal-overlay" id="modalProgreso">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Registrar progreso</div>
+      <button class="btn-icon" onclick="closeModal('modalProgreso')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field"><label>Fecha</label><input id="pFecha" type="date"></div>
+        <div class="form-field"><label>Peso (kg)</label><input id="pPeso" type="number" step="0.1" placeholder="75.5"></div>
+        <div class="form-field form-full"><label>Notas del check-in</label><textarea id="pNotas" placeholder="Cómo se ha sentido, cambios observados..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalProgreso')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarProgreso()">Guardar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Mensaje al cliente -->
+<div class="modal-overlay" id="modalMensaje">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Enviar nota al cliente</div>
+      <button class="btn-icon" onclick="closeModal('modalMensaje')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Mensaje</label>
+        <textarea id="mTexto" style="min-height:120px" placeholder="Escribe aquí tu nota o indicación para el cliente..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalMensaje')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarMensaje()">Enviar →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  SUPABASE INIT
+// ══════════════════════════════════════
+const { createClient } = supabase;
+const sb = createClient(
+  'https://uvibbibougxumltqgtsf.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2aWJiaWJvdWd4dW1sdHFndHNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDk3NzQsImV4cCI6MjA5NjQ4NTc3NH0.0IdwL7nNP0moSOL226g3lzBhwgbKPsk-QrFpmRfVme4'
+);
+
+// ══════════════════════════════════════
+//  ESTADO GLOBAL
+// ══════════════════════════════════════
+const COACH_EMAIL = 'pablocandela84@gmail.com'; // ← cambia por tu email real
+let currentUser = null;
+let currentClienteId = null;
+let clientes = [];
+let editingClienteId = null;
+let progresoClienteId = null;
+let mensajeClienteId = null;
+
+// ══════════════════════════════════════
+//  UTILIDADES
+// ══════════════════════════════════════
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function fmtFecha(str) {
+  if (!str) return '—';
+  const d = new Date(str);
+  return d.toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'numeric'});
+}
+
+function badgeEstado(e) {
+  const map = {activo:'badge-green', pausado:'badge-amber', finalizado:'badge-red', valoracion:'badge-blue'};
+  const labels = {activo:'Activo', pausado:'Pausado', finalizado:'Finalizado', valoracion:'Valoración'};
+  return `<span class="badge ${map[e]||'badge-blue'}">${labels[e]||e}</span>`;
+}
+
+function badgePlan(p) {
+  const map = {'6meses':'6 Meses', '12meses':'12 Meses', 'valoracion':'Valoración'};
+  return `<span class="badge badge-blue">${map[p]||p}</span>`;
+}
+
+function fechaVencimiento(fechaInicio, plan) {
+  if (!fechaInicio) return null;
+  const d = new Date(fechaInicio);
+  const meses = plan === '12meses' ? 12 : plan === '6meses' ? 6 : 1;
+  d.setMonth(d.getMonth() + meses);
+  return d;
+}
+
+// ══════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+
+document.getElementById('btnLogin').addEventListener('click', login);
+
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  err.style.display = 'none';
+  document.getElementById('btnLogin').textContent = 'Entrando...';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  document.getElementById('btnLogin').textContent = 'Entrar →';
+
+  if (error) { err.style.display = 'block'; return; }
+
+  currentUser = data.user;
+  await iniciarSesion();
+}
+
+async function iniciarSesion() {
+  const email = currentUser.email;
+  if (email === COACH_EMAIL) {
+    // Es coach
+    document.getElementById('sidebarEmail').textContent = email;
+    showScreen('coachScreen');
+    await cargarDashboard();
+    await poblarSelectores();
+  } else {
+    // Es cliente
+    showScreen('clienteScreen');
+    await cargarPortalCliente();
+  }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  showScreen('loginScreen');
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// Restaurar sesión al cargar
+window.addEventListener('load', async () => {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    currentUser = data.session.user;
+    await iniciarSesion();
+  }
+});
+
+// ══════════════════════════════════════
+//  COACH: NAVEGACIÓN
+// ══════════════════════════════════════
+const tabTitles = {
+  dashboard:'Dashboard', clientes:'Clientes',
+  rutinas:'Rutinas', nutricion:'Nutrición',
+  progreso:'Progreso', pagos:'Pagos'
+};
+const tabActions = {
+  clientes: () => `<button class="btn btn-primary" onclick="abrirNuevoCliente()">+ Nuevo cliente</button>`
+};
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.toLowerCase().includes(tab.substring(0,4))) n.classList.add('active');
+  });
+  document.getElementById('topbarTitle').textContent = tabTitles[tab] || tab;
+  document.getElementById('topbarActions').innerHTML = tabActions[tab] ? tabActions[tab]() : '';
+  if (tab === 'clientes') cargarClientes();
+  if (tab === 'pagos') cargarPagos();
+}
+
+// ══════════════════════════════════════
+//  COACH: DASHBOARD
+// ══════════════════════════════════════
+async function cargarDashboard() {
+  const { data } = await sb.from('clientes').select('*').order('created_at', {ascending:false});
+  clientes = data || [];
+
+  const activos = clientes.filter(c => c.estado === 'activo');
+  const plan6 = clientes.filter(c => c.plan === '6meses');
+  const plan12 = clientes.filter(c => c.plan === '12meses');
+  const hoy = new Date();
+  const finMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
+  const vencen = clientes.filter(c => {
+    const v = fechaVencimiento(c.fecha_inicio, c.plan);
+    return v && v >= hoy && v <= finMes;
+  });
+
+  document.getElementById('statTotal').textContent = activos.length;
+  document.getElementById('statPlan6').textContent = plan6.length;
+  document.getElementById('statPlan12').textContent = plan12.length;
+  document.getElementById('statVence').textContent = vencen.length;
+
+  const list = document.getElementById('dashboardList');
+  if (!clientes.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Aún no tienes clientes. Crea el primero desde la sección Clientes.</div></div>`;
+    return;
+  }
+  list.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
+    <tbody>${clientes.slice(0,8).map(c => {
+      const v = fechaVencimiento(c.fecha_inicio, c.plan);
+      return `<tr>
+        <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
+        <td>${badgePlan(c.plan)}</td>
+        <td>${badgeEstado(c.estado)}</td>
+        <td>${fmtFecha(c.fecha_inicio)}</td>
+        <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
+        <td><button class="btn btn-sm btn-secondary" onclick="verCliente('${c.id}')">Ver perfil</button></td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+// ══════════════════════════════════════
+//  COACH: CLIENTES
+// ══════════════════════════════════════
+async function cargarClientes() {
+  const { data } = await sb.from('clientes').select('*').order('nombre');
+  clientes = data || [];
+  renderTablaClientes(clientes);
+}
+
+function filtrarClientes() {
+  const q = document.getElementById('searchClientes').value.toLowerCase();
+  const filtrados = clientes.filter(c =>
+    c.nombre.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
+  );
+  renderTablaClientes(filtrados);
+}
+
+function renderTablaClientes(data) {
+  const container = document.getElementById('clientesTable');
+  if (!data.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No se encontraron clientes.</div></div>`;
+    return;
+  }
+  container.innerHTML = `<table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Estado</th><th>Objetivo</th><th>Inicio</th><th>Acciones</th></tr></thead>
+    <tbody>${data.map(c => `<tr>
+      <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
+      <td style="color:var(--gray)">${c.telefono||'—'}</td>
+      <td>${badgePlan(c.plan)}</td>
+      <td>${badgeEstado(c.estado)}</td>
+      <td style="font-size:0.75rem;color:var(--gray)">${c.objetivo||'—'}</td>
+      <td>${fmtFecha(c.fecha_inicio)}</td>
+      <td style="display:flex;gap:0.4rem;flex-wrap:wrap">
+        <button class="btn btn-sm btn-primary" onclick="verCliente('${c.id}')">Ver</button>
+        <button class="btn btn-sm btn-secondary" onclick="editarCliente('${c.id}')">Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarCliente('${c.id}','${c.nombre}')">Borrar</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function abrirNuevoCliente() {
+  editingClienteId = null;
+  document.getElementById('modalClienteTitulo').textContent = 'Nuevo cliente';
+  document.getElementById('btnGuardarCliente').textContent = 'Crear cliente →';
+  ['cNombre','cEmail','cTelefono','cPassword','cPeso','cAltura','cNotas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cPlan').value = '6meses';
+  document.getElementById('cEstado').value = 'activo';
+  document.getElementById('cFechaInicio').value = new Date().toISOString().split('T')[0];
+  document.getElementById('cObjetivo').value = 'hipertrofia';
+  openModal('modalCliente');
+}
+
+function editarCliente(id) {
+  editingClienteId = id;
+  const c = clientes.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('modalClienteTitulo').textContent = 'Editar cliente';
+  document.getElementById('btnGuardarCliente').textContent = 'Guardar cambios →';
+  document.getElementById('cNombre').value = c.nombre || '';
+  document.getElementById('cEmail').value = c.email || '';
+  document.getElementById('cTelefono').value = c.telefono || '';
+  document.getElementById('cPassword').value = '';
+  document.getElementById('cPeso').value = c.peso_inicial || '';
+  document.getElementById('cAltura').value = c.altura || '';
+  document.getElementById('cPlan').value = c.plan || '6meses';
+  document.getElementById('cEstado').value = c.estado || 'activo';
+  document.getElementById('cFechaInicio').value = c.fecha_inicio || '';
+  document.getElementById('cObjetivo').value = c.objetivo || 'hipertrofia';
+  document.getElementById('cNotas').value = c.notas || '';
+  openModal('modalCliente');
+}
+
+async function guardarCliente() {
+  const nombre = document.getElementById('cNombre').value.trim();
+  const email = document.getElementById('cEmail').value.trim();
+  const password = document.getElementById('cPassword').value;
+
+  if (!nombre || !email) { toast('Nombre y email son obligatorios','error'); return; }
+
+  const datos = {
+    nombre, email,
+    telefono: document.getElementById('cTelefono').value.trim(),
+    peso_inicial: parseFloat(document.getElementById('cPeso').value)||null,
+    altura: parseFloat(document.getElementById('cAltura').value)||null,
+    plan: document.getElementById('cPlan').value,
+    estado: document.getElementById('cEstado').value,
+    fecha_inicio: document.getElementById('cFechaInicio').value||null,
+    objetivo: document.getElementById('cObjetivo').value,
+    notas: document.getElementById('cNotas').value.trim(),
+  };
+
+  document.getElementById('btnGuardarCliente').textContent = 'Guardando...';
+
+  if (editingClienteId) {
+    const { error } = await sb.from('clientes').update(datos).eq('id', editingClienteId);
+    if (error) { toast('Error al guardar: '+error.message,'error'); }
+    else { toast('Cliente actualizado ✓','success'); closeModal('modalCliente'); await cargarClientes(); }
+  } else {
+    if (!password || password.length < 8) { toast('La contraseña debe tener al menos 8 caracteres','error'); document.getElementById('btnGuardarCliente').textContent = 'Crear cliente →'; return; }
+    // Crear usuario en auth
+    const { data: authData, error: authErr } = await sb.auth.admin ? 
+      { data: null, error: { message: 'admin no disponible desde cliente' } } :
+      { data: null, error: null };
+    
+    // Insertar en tabla clientes (el user_id lo enlazaremos manualmente o via trigger)
+    const { error } = await sb.from('clientes').insert([datos]);
+    if (error) { toast('Error: '+error.message,'error'); }
+    else {
+      toast('Cliente creado. Recuerda crear su acceso en Supabase Auth.','success');
+      closeModal('modalCliente');
+      await cargarClientes();
+      await poblarSelectores();
+      await cargarDashboard();
+    }
+  }
+  document.getElementById('btnGuardarCliente').textContent = editingClienteId ? 'Guardar cambios →' : 'Crear cliente →';
+}
+
+async function eliminarCliente(id, nombre) {
+  if (!confirm(`¿Eliminar a ${nombre}? Esta acción no se puede deshacer.`)) return;
+  const { error } = await sb.from('clientes').delete().eq('id', id);
+  if (error) toast('Error: '+error.message,'error');
+  else { toast(`${nombre} eliminado`,'success'); await cargarClientes(); await cargarDashboard(); }
+}
+
+// ══════════════════════════════════════
+//  COACH: VER PERFIL CLIENTE
+// ══════════════════════════════════════
+async function verCliente(id) {
+  currentClienteId = id;
+  const c = clientes.find(x => x.id === id) || (await sb.from('clientes').select('*').eq('id',id).single()).data;
+  if (!c) return;
+
+  const v = fechaVencimiento(c.fecha_inicio, c.plan);
+
+  // Crear vista de perfil
+  const container = document.getElementById('tab-clientes');
+  container.innerHTML = `
+    <button class="btn btn-secondary" style="margin-bottom:1rem" onclick="cargarClientes()">← Volver a clientes</button>
+    <div class="client-header">
+      <div>
+        <div class="client-name">${c.nombre}</div>
+        <div class="client-meta">
+          <div class="client-meta-item"><strong>${c.email}</strong>Email</div>
+          <div class="client-meta-item"><strong>${c.telefono||'—'}</strong>Teléfono</div>
+          <div class="client-meta-item"><strong>${badgePlan(c.plan)}</strong>Plan</div>
+          <div class="client-meta-item"><strong>${fmtFecha(c.fecha_inicio)}</strong>Inicio</div>
+          <div class="client-meta-item"><strong>${v?fmtFecha(v.toISOString()):'—'}</strong>Vencimiento</div>
+          <div class="client-meta-item"><strong>${c.peso_inicial||'—'} kg</strong>Peso inicial</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;position:relative;z-index:1">
+        <button class="btn btn-primary btn-sm" onclick="editarCliente('${c.id}')">Editar</button>
+        <button class="btn btn-secondary btn-sm" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)" onclick="abrirMensaje('${c.id}')">+ Nota</button>
+        <button class="btn btn-secondary btn-sm" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)" onclick="abrirProgreso('${c.id}')">+ Progreso</button>
+      </div>
+    </div>
+    ${c.notas ? `<div style="background:var(--white);border:1px solid var(--border);padding:1rem 1.5rem;margin-bottom:1.5rem;border-left:3px solid var(--blue)"><div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Notas internas</div><div style="font-size:0.82rem;color:var(--navy);line-height:1.7">${c.notas}</div></div>` : ''}
+    <div class="client-tabs">
+      <div class="client-tab active" onclick="showClientePerfilTab('rutina','${c.id}')">💪 Rutina</div>
+      <div class="client-tab" onclick="showClientePerfilTab('nutricion','${c.id}')">🥗 Nutrición</div>
+      <div class="client-tab" onclick="showClientePerfilTab('progreso-c','${c.id}')">📈 Progreso</div>
+      <div class="client-tab" onclick="showClientePerfilTab('mensajes-c','${c.id}')">💬 Mensajes</div>
+    </div>
+    <div id="clientePerfilContent"></div>
+  `;
+  showClientePerfilTab('rutina', c.id);
+}
+
+function showClientePerfilTab(tab, clienteId) {
+  document.querySelectorAll('.client-tab').forEach(t => t.classList.remove('active'));
+  event.currentTarget && event.currentTarget.classList.add('active');
+  document.querySelectorAll('.client-tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(tab.substring(0,4))) t.classList.add('active');
+  });
+  if (tab === 'rutina') renderRutinaEditor(clienteId);
+  if (tab === 'nutricion') renderNutriEditor(clienteId);
+  if (tab === 'progreso-c') renderProgresoPanel(clienteId);
+  if (tab === 'mensajes-c') renderMensajesPanel(clienteId);
+}
+
+// ══════════════════════════════════════
+//  COACH: EDITOR DE RUTINA
+// ══════════════════════════════════════
+const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+async function renderRutinaEditor(clienteId) {
+  const cont = document.getElementById('clientePerfilContent');
+  cont.innerHTML = `<div class="loading"><div class="spinner"></div>Cargando rutina...</div>`;
+
+  const { data } = await sb.from('rutinas').select('*').eq('cliente_id', clienteId).order('semana');
+  const rutinas = data || [];
+
+  let html = `<div style="display:flex;gap:0.8rem;margin-bottom:1.5rem;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="crearSemana('${clienteId}')">+ Añadir semana</button>
+    <button class="btn btn-secondary" onclick="guardarTodasRutinas('${clienteId}')">💾 Guardar todo</button>
+  </div>`;
+
+  if (!rutinas.length) {
+    html += `<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">No hay rutinas aún. Pulsa "+ Añadir semana" para crear la primera.</div></div>`;
+  } else {
+    html += rutinas.map(r => buildSemanaEditor(r)).join('');
+  }
+
+  cont.innerHTML = html;
+}
+
+function buildSemanaEditor(r) {
+  const datos = r.datos || { dias: DIAS.map(d => ({nombre:d, descanso:false, calentamiento:[], ejercicios:[]})) };
+  const diasHtml = datos.dias.map((dia, i) => buildDiaEditor(dia, i, r.id)).join('');
+  return `
+    <div class="week-editor" id="week-${r.id}">
+      <div class="week-header" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div class="week-title">Semana ${r.semana} — ${r.mes||''} <span style="opacity:0.5;font-size:0.7rem">${r.fase||''}</span></div>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:#fff;border:none;font-size:0.6rem" onclick="event.stopPropagation();editarMetaSemana('${r.id}')">Editar meta</button>
+          <button class="btn btn-sm" style="background:rgba(239,68,68,0.3);color:#fca5a5;border:none;font-size:0.6rem" onclick="event.stopPropagation();eliminarSemana('${r.id}')">Borrar</button>
+        </div>
+      </div>
+      <div class="week-body open" id="week-body-${r.id}">
+        ${diasHtml}
+      </div>
+    </div>`;
+}
+
+function buildDiaEditor(dia, idx, semanaId) {
+  const isRest = dia.descanso;
+  const ejerciciosHtml = (dia.ejercicios||[]).map((e,ei) => buildEjercicioRow(e, ei, semanaId, idx)).join('');
+  const calorHtml = (dia.calentamiento||[]).map((e,ei) => buildCalorRow(e, ei, semanaId, idx)).join('');
+
+  return `
+    <div class="day-editor" id="dia-${semanaId}-${idx}">
+      <div class="day-editor-header">
+        <div class="day-editor-name">Día ${idx+1} — ${dia.nombre}</div>
+        <button class="day-rest-toggle ${isRest?'active':''}" onclick="toggleDiaDescanso('${semanaId}',${idx})">
+          ${isRest ? '✓ Descanso' : '🛌 Marcar descanso'}
+        </button>
+      </div>
+      ${isRest ? '' : `
+      <div class="exercises-editor">
+        <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:0.5rem">🔥 Calentamiento</div>
+        <div class="ex-header-row"><span class="ex-col-label">Ejercicio</span><span class="ex-col-label">Series</span><span class="ex-col-label">Reps/Tiempo</span><span class="ex-col-label">Descanso</span><span class="ex-col-label">Notas</span><span></span></div>
+        <div id="calor-${semanaId}-${idx}">${calorHtml}</div>
+        <button class="add-exercise-btn" onclick="addEjercicio('${semanaId}',${idx},'calor')">+ Añadir ejercicio calentamiento</button>
+        <div style="height:1px;background:var(--border);margin:0.8rem 0"></div>
+        <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:0.5rem">💪 Sesión principal</div>
+        <div class="ex-header-row"><span class="ex-col-label">Ejercicio</span><span class="ex-col-label">Series</span><span class="ex-col-label">Reps</span><span class="ex-col-label">Descanso</span><span class="ex-col-label">RIR/Notas</span><span></span></div>
+        <div id="ejercicios-${semanaId}-${idx}">${ejerciciosHtml}</div>
+        <button class="add-exercise-btn" onclick="addEjercicio('${semanaId}',${idx},'ejercicios')">+ Añadir ejercicio</button>
+      </div>`}
+    </div>`;
+}
+
+function buildEjercicioRow(e, ei, semanaId, diaIdx) {
+  return `<div class="exercise-row" id="ex-${semanaId}-${diaIdx}-${ei}">
+    <input class="exercise-input" placeholder="Nombre ejercicio" value="${e.nombre||''}" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'nombre',this.value,'ejercicios')">
+    <input class="exercise-input" placeholder="4" value="${e.series||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'series',this.value,'ejercicios')">
+    <input class="exercise-input" placeholder="8-10" value="${e.reps||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'reps',this.value,'ejercicios')">
+    <input class="exercise-input" placeholder="2min" value="${e.descanso||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'descanso',this.value,'ejercicios')">
+    <input class="exercise-input" placeholder="RIR 2 / nota" value="${e.notas||''}" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'notas',this.value,'ejercicios')">
+    <button class="btn-icon" onclick="removeEjercicio('${semanaId}',${diaIdx},${ei},'ejercicios')" title="Eliminar">✕</button>
+  </div>`;
+}
+
+function buildCalorRow(e, ei, semanaId, diaIdx) {
+  return `<div class="exercise-row" id="calor-row-${semanaId}-${diaIdx}-${ei}">
+    <input class="exercise-input" placeholder="Ejercicio calentamiento" value="${e.nombre||''}" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'nombre',this.value,'calor')">
+    <input class="exercise-input" placeholder="2" value="${e.series||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'series',this.value,'calor')">
+    <input class="exercise-input" placeholder="15" value="${e.reps||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'reps',this.value,'calor')">
+    <input class="exercise-input" placeholder="30s" value="${e.descanso||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'descanso',this.value,'calor')">
+    <input class="exercise-input" placeholder="Notas" value="${e.notas||''}" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'notas',this.value,'calor')">
+    <button class="btn-icon" onclick="removeEjercicio('${semanaId}',${diaIdx},${ei},'calor')" title="Eliminar">✕</button>
+  </div>`;
+}
+
+// Cache local de rutinas en edición
+let rutinaCache = {};
+
+function getRutinaDatos(semanaId) {
+  if (!rutinaCache[semanaId]) {
+    const el = document.getElementById('week-'+semanaId);
+    rutinaCache[semanaId] = { dias: DIAS.map(d => ({nombre:d, descanso:false, calentamiento:[], ejercicios:[]})) };
+  }
+  return rutinaCache[semanaId];
+}
+
+function updateEjercicio(semanaId, diaIdx, exIdx, campo, valor, tipo) {
+  // Guardar en cache local — se persiste al pulsar "Guardar todo"
+  if (!rutinaCache[semanaId]) return;
+  const dias = rutinaCache[semanaId].dias;
+  if (!dias[diaIdx][tipo]) dias[diaIdx][tipo] = [];
+  if (!dias[diaIdx][tipo][exIdx]) dias[diaIdx][tipo][exIdx] = {};
+  dias[diaIdx][tipo][exIdx][campo] = valor;
+}
+
+function addEjercicio(semanaId, diaIdx, tipo) {
+  if (!rutinaCache[semanaId]) rutinaCache[semanaId] = { dias: DIAS.map(d => ({nombre:d, descanso:false, calentamiento:[], ejercicios:[]})) };
+  const dias = rutinaCache[semanaId].dias;
+  if (!dias[diaIdx][tipo]) dias[diaIdx][tipo] = [];
+  const newEx = { nombre:'', series:'', reps:'', descanso:'', notas:'' };
+  dias[diaIdx][tipo].push(newEx);
+  const ei = dias[diaIdx][tipo].length - 1;
+  const container = document.getElementById(`${tipo === 'calor' ? 'calor' : 'ejercicios'}-${semanaId}-${diaIdx}`);
+  if (container) {
+    const div = document.createElement('div');
+    div.innerHTML = tipo === 'calor' ? buildCalorRow(newEx, ei, semanaId, diaIdx) : buildEjercicioRow(newEx, ei, semanaId, diaIdx);
+    container.appendChild(div.firstElementChild);
+  }
+}
+
+function removeEjercicio(semanaId, diaIdx, ei, tipo) {
+  if (rutinaCache[semanaId]) rutinaCache[semanaId].dias[diaIdx][tipo].splice(ei, 1);
+  const prefix = tipo === 'calor' ? 'calor-row' : 'ex';
+  const el = document.getElementById(`${prefix}-${semanaId}-${diaIdx}-${ei}`);
+  if (el) el.remove();
+}
+
+function toggleDiaDescanso(semanaId, diaIdx) {
+  if (!rutinaCache[semanaId]) return;
+  const dia = rutinaCache[semanaId].dias[diaIdx];
+  dia.descanso = !dia.descanso;
+  const btn = event.currentTarget;
+  btn.classList.toggle('active', dia.descanso);
+  btn.textContent = dia.descanso ? '✓ Descanso' : '🛌 Marcar descanso';
+  const body = btn.closest('.day-editor').querySelector('.exercises-editor');
+  if (body) body.style.display = dia.descanso ? 'none' : 'block';
+}
+
+async function crearSemana(clienteId) {
+  const { data: existing } = await sb.from('rutinas').select('semana').eq('cliente_id', clienteId).order('semana', {ascending:false}).limit(1);
+  const nextSemana = existing && existing.length ? existing[0].semana + 1 : 1;
+  const mes = new Date().toLocaleDateString('es-ES', {month:'long', year:'numeric'});
+  const diasIniciales = DIAS.map(d => ({nombre:d, descanso:false, calentamiento:[], ejercicios:[]}));
+  const { data, error } = await sb.from('rutinas').insert([{
+    cliente_id: clienteId, semana: nextSemana, mes, fase: 'Acumulación',
+    datos: { dias: diasIniciales }
+  }]).select().single();
+  if (error) { toast('Error: '+error.message,'error'); return; }
+  rutinaCache[data.id] = { dias: diasIniciales };
+  renderRutinaEditor(clienteId);
+  toast(`Semana ${nextSemana} creada`,'success');
+}
+
+async function guardarTodasRutinas(clienteId) {
+  const { data } = await sb.from('rutinas').select('id').eq('cliente_id', clienteId);
+  if (!data) return;
+  let ok = 0;
+  for (const r of data) {
+    if (rutinaCache[r.id]) {
+      // Recoger datos del DOM antes de guardar
+      const semanaEl = document.getElementById('week-'+r.id);
+      if (semanaEl) {
+        DIAS.forEach((d, dIdx) => {
+          const tipos = ['ejercicios', 'calor'];
+          tipos.forEach(tipo => {
+            const cont = document.getElementById(`${tipo === 'calor' ? 'calor' : 'ejercicios'}-${r.id}-${dIdx}`);
+            if (!cont) return;
+            const rows = cont.querySelectorAll('.exercise-row');
+            rutinaCache[r.id].dias[dIdx][tipo === 'calor' ? 'calentamiento' : 'ejercicios'] = [];
+            rows.forEach(row => {
+              const inputs = row.querySelectorAll('input');
+              rutinaCache[r.id].dias[dIdx][tipo === 'calor' ? 'calentamiento' : 'ejercicios'].push({
+                nombre: inputs[0]?.value||'', series: inputs[1]?.value||'',
+                reps: inputs[2]?.value||'', descanso: inputs[3]?.value||'', notas: inputs[4]?.value||''
+              });
+            });
+          });
+        });
+      }
+      await sb.from('rutinas').update({ datos: rutinaCache[r.id] }).eq('id', r.id);
+      ok++;
+    }
+  }
+  toast(`${ok} semanas guardadas ✓`, 'success');
+}
+
+async function eliminarSemana(id) {
+  if (!confirm('¿Eliminar esta semana?')) return;
+  await sb.from('rutinas').delete().eq('id', id);
+  delete rutinaCache[id];
+  const el = document.getElementById('week-'+id);
+  if (el) el.remove();
+  toast('Semana eliminada');
+}
+
+// ══════════════════════════════════════
+//  COACH: EDITOR NUTRICIÓN
+// ══════════════════════════════════════
+async function renderNutriEditor(clienteId) {
+  const cont = document.getElementById('clientePerfilContent');
+  cont.innerHTML = `<div class="loading"><div class="spinner"></div>Cargando plan nutricional...</div>`;
+
+  const { data } = await sb.from('planes_nutricionales').select('*').eq('cliente_id', clienteId).order('semana');
+  const planes = data || [];
+
+  let html = `<div style="display:flex;gap:0.8rem;margin-bottom:1.5rem">
+    <button class="btn btn-primary" onclick="crearPlanNutri('${clienteId}')">+ Añadir plan</button>
+  </div>`;
+
+  if (!planes.length) {
+    html += `<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">No hay planes nutricionales. Pulsa "+ Añadir plan" para crear el primero.</div></div>`;
+  } else {
+    html += planes.map(p => buildNutriPlanEditor(p)).join('');
+  }
+  cont.innerHTML = html;
+}
+
+function buildNutriPlanEditor(p) {
+  const comidas = p.datos?.comidas || [
+    {nombre:'Desayuno', hora:'07:30', items:[]},
+    {nombre:'Media mañana', hora:'10:30', items:[]},
+    {nombre:'Comida', hora:'14:00', items:[]},
+    {nombre:'Merienda / Pre-entreno', hora:'17:30', items:[]},
+    {nombre:'Cena', hora:'21:00', items:[]},
+  ];
+  return `<div class="week-editor" id="nutri-${p.id}">
+    <div class="week-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div class="week-title">Semana ${p.semana} — ${p.calorias||'—'} kcal · P:${p.proteinas||'—'}g C:${p.carbohidratos||'—'}g G:${p.grasas||'—'}g</div>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:#fff;border:none;font-size:0.6rem" onclick="event.stopPropagation();editarMacros('${p.id}',${p.calorias||0},${p.proteinas||0},${p.carbohidratos||0},${p.grasas||0})">Editar macros</button>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:#fff;border:none;font-size:0.6rem" onclick="event.stopPropagation();guardarNutri('${p.id}')">💾 Guardar</button>
+        <button class="btn btn-sm" style="background:rgba(239,68,68,0.3);color:#fca5a5;border:none;font-size:0.6rem" onclick="event.stopPropagation();eliminarNutri('${p.id}')">Borrar</button>
+      </div>
+    </div>
+    <div class="week-body open">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.8rem;margin-bottom:1rem">
+        <div style="background:#f8faff;padding:0.8rem;text-align:center;border:1px solid var(--border)"><div style="font-family:var(--display);font-size:1.2rem;font-weight:900;color:#ef4444">${p.proteinas||'—'}</div><div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Proteínas g</div></div>
+        <div style="background:#f8faff;padding:0.8rem;text-align:center;border:1px solid var(--border)"><div style="font-family:var(--display);font-size:1.2rem;font-weight:900;color:#f59e0b">${p.carbohidratos||'—'}</div><div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Carbos g</div></div>
+        <div style="background:#f8faff;padding:0.8rem;text-align:center;border:1px solid var(--border)"><div style="font-family:var(--display);font-size:1.2rem;font-weight:900;color:#10b981">${p.grasas||'—'}</div><div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Grasas g</div></div>
+        <div style="background:var(--navy);padding:0.8rem;text-align:center;border:1px solid var(--border)"><div style="font-family:var(--display);font-size:1.2rem;font-weight:900;color:#fff">${p.calorias||'—'}</div><div style="font-size:0.58rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Kcal</div></div>
+      </div>
+      ${comidas.map((c,ci) => buildComidaEditor(c, ci, p.id)).join('')}
+      <button class="add-exercise-btn" onclick="addComida('${p.id}')">+ Añadir comida</button>
+    </div>
+  </div>`;
+}
+
+function buildComidaEditor(comida, ci, planId) {
+  const items = comida.items || [];
+  return `<div class="meal-editor">
+    <div class="meal-editor-header">
+      <input class="exercise-input" style="width:120px" value="${comida.hora||''}" placeholder="08:00" onchange="updateComida('${planId}',${ci},'hora',this.value)">
+      <input class="exercise-input" style="flex:1" value="${comida.nombre||''}" placeholder="Nombre de la comida" onchange="updateComida('${planId}',${ci},'nombre',this.value)">
+      <button class="btn-icon" onclick="removeComida('${planId}',${ci})">✕</button>
+    </div>
+    <div class="meal-editor-body">
+      <div style="display:grid;grid-template-columns:2fr 1fr 0.6fr 0.6fr 0.6fr auto;gap:0.4rem;margin-bottom:0.3rem">
+        <span style="font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray)">Alimento</span>
+        <span style="font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray)">Cantidad</span>
+        <span style="font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray)">Prot g</span>
+        <span style="font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray)">Carb g</span>
+        <span style="font-size:0.55rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray)">Gras g</span>
+        <span></span>
+      </div>
+      <div id="items-${planId}-${ci}">
+        ${items.map((item,ii) => buildFoodRow(item, ii, planId, ci)).join('')}
+      </div>
+      <button class="add-exercise-btn" onclick="addFoodItem('${planId}',${ci})">+ Añadir alimento</button>
+      <input class="exercise-input" style="margin-top:0.5rem;width:100%;font-size:0.75rem" placeholder="Nota de la comida (opcional)" value="${comida.nota||''}" onchange="updateComida('${planId}',${ci},'nota',this.value)">
+    </div>
+  </div>`;
+}
+
+function buildFoodRow(item, ii, planId, ci) {
+  return `<div class="food-row" id="food-${planId}-${ci}-${ii}">
+    <input class="exercise-input" placeholder="Pollo a la plancha" value="${item.nombre||''}" onchange="updateFood('${planId}',${ci},${ii},'nombre',this.value)">
+    <input class="exercise-input" placeholder="200g" value="${item.cantidad||''}" onchange="updateFood('${planId}',${ci},${ii},'cantidad',this.value)">
+    <input class="exercise-input" placeholder="44" value="${item.proteinas||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'proteinas',this.value)">
+    <input class="exercise-input" placeholder="0" value="${item.carbos||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'carbos',this.value)">
+    <input class="exercise-input" placeholder="6" value="${item.grasas||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'grasas',this.value)">
+    <button class="btn-icon" onclick="removeFoodItem('${planId}',${ci},${ii})">✕</button>
+  </div>`;
+}
+
+let nutriCache = {};
+
+async function crearPlanNutri(clienteId) {
+  const { data: existing } = await sb.from('planes_nutricionales').select('semana').eq('cliente_id', clienteId).order('semana', {ascending:false}).limit(1);
+  const next = existing && existing.length ? existing[0].semana + 1 : 1;
+  const { data, error } = await sb.from('planes_nutricionales').insert([{
+    cliente_id: clienteId, semana: next,
+    calorias: 2400, proteinas: 180, carbohidratos: 280, grasas: 70,
+    datos: { comidas: [] }
+  }]).select().single();
+  if (error) { toast('Error: '+error.message,'error'); return; }
+  renderNutriEditor(clienteId);
+  toast(`Plan semana ${next} creado`,'success');
+}
+
+function updateComida(planId, ci, campo, valor) {
+  if (!nutriCache[planId]) return;
+  if (!nutriCache[planId].comidas[ci]) return;
+  nutriCache[planId].comidas[ci][campo] = valor;
+}
+
+function updateFood(planId, ci, ii, campo, valor) {
+  if (!nutriCache[planId]) return;
+  if (!nutriCache[planId].comidas[ci]) return;
+  if (!nutriCache[planId].comidas[ci].items[ii]) return;
+  nutriCache[planId].comidas[ci].items[ii][campo] = valor;
+}
+
+function addFoodItem(planId, ci) {
+  if (!nutriCache[planId]) return;
+  const items = nutriCache[planId].comidas[ci].items = nutriCache[planId].comidas[ci].items || [];
+  const newItem = { nombre:'', cantidad:'', proteinas:'', carbos:'', grasas:'' };
+  items.push(newItem);
+  const ii = items.length - 1;
+  const cont = document.getElementById(`items-${planId}-${ci}`);
+  if (cont) { const d = document.createElement('div'); d.innerHTML = buildFoodRow(newItem, ii, planId, ci); cont.appendChild(d.firstElementChild); }
+}
+
+function removeFoodItem(planId, ci, ii) {
+  if (nutriCache[planId]?.comidas[ci]?.items) nutriCache[planId].comidas[ci].items.splice(ii, 1);
+  document.getElementById(`food-${planId}-${ci}-${ii}`)?.remove();
+}
+
+function addComida(planId) {
+  if (!nutriCache[planId]) return;
+  const newComida = { nombre: 'Nueva comida', hora:'', items:[], nota:'' };
+  nutriCache[planId].comidas.push(newComida);
+  renderNutriEditorDesdeCache(planId);
+}
+
+function removeComida(planId, ci) {
+  if (!nutriCache[planId]) return;
+  nutriCache[planId].comidas.splice(ci, 1);
+  renderNutriEditorDesdeCache(planId);
+}
+
+function editarMacros(planId, cal, prot, carb, gras) {
+  const newCal = prompt('Calorías totales:', cal);
+  const newProt = prompt('Proteínas (g):', prot);
+  const newCarb = prompt('Carbohidratos (g):', carb);
+  const newGras = prompt('Grasas (g):', gras);
+  if (newCal !== null) {
+    sb.from('planes_nutricionales').update({
+      calorias: parseInt(newCal), proteinas: parseInt(newProt),
+      carbohidratos: parseInt(newCarb), grasas: parseInt(newGras)
+    }).eq('id', planId).then(() => toast('Macros actualizados ✓','success'));
+  }
+}
+
+async function guardarNutri(planId) {
+  if (!nutriCache[planId]) return;
+  const { error } = await sb.from('planes_nutricionales').update({ datos: nutriCache[planId] }).eq('id', planId);
+  if (error) toast('Error: '+error.message,'error');
+  else toast('Plan nutricional guardado ✓','success');
+}
+
+async function eliminarNutri(id) {
+  if (!confirm('¿Eliminar este plan?')) return;
+  await sb.from('planes_nutricionales').delete().eq('id', id);
+  delete nutriCache[id];
+  document.getElementById('nutri-'+id)?.remove();
+  toast('Plan eliminado');
+}
+
+// ══════════════════════════════════════
+//  COACH: PROGRESO
+// ══════════════════════════════════════
+async function renderProgresoPanel(clienteId) {
+  const cont = document.getElementById('clientePerfilContent');
+  cont.innerHTML = `<div class="loading"><div class="spinner"></div>Cargando...</div>`;
+  const { data } = await sb.from('progreso').select('*').eq('cliente_id', clienteId).order('fecha', {ascending:false});
+  const entradas = data || [];
+
+  let primer = entradas.length ? entradas[entradas.length-1] : null;
+  let ultimo = entradas.length ? entradas[0] : null;
+  let delta = (primer && ultimo && primer.id !== ultimo.id && ultimo.peso && primer.peso) ? (ultimo.peso - primer.peso).toFixed(1) : null;
+
+  cont.innerHTML = `
+    <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem">
+      <button class="btn btn-primary" onclick="abrirProgreso('${clienteId}')">+ Registrar check-in</button>
+    </div>
+    <div class="progreso-grid">
+      <div class="progreso-card"><div class="progreso-val">${entradas.length}</div><div class="progreso-label">Check-ins totales</div></div>
+      <div class="progreso-card"><div class="progreso-val">${ultimo?.peso||'—'} <span style="font-size:1rem">kg</span></div><div class="progreso-label">Último peso</div>${delta !== null ? `<div class="progreso-delta ${delta>0?'delta-up':'delta-down'}">${delta>0?'+':''}${delta} kg total</div>` : ''}</div>
+      <div class="progreso-card"><div class="progreso-val">${primer?.peso||'—'} <span style="font-size:1rem">kg</span></div><div class="progreso-label">Peso inicial registrado</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Historial de check-ins</div></div>
+      ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
+        ${entradas.map(e => `<tr>
+          <td>${fmtFecha(e.fecha)}</td>
+          <td><strong>${e.peso||'—'} kg</strong></td>
+          <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso('${e.id}','${clienteId}')">Borrar</button></td>
+        </tr>`).join('')}
+      </tbody></table>` : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros de progreso.</div></div>`}
+    </div>`;
+}
+
+async function eliminarProgreso(id, clienteId) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  await sb.from('progreso').delete().eq('id', id);
+  renderProgresoPanel(clienteId);
+}
+
+// ══════════════════════════════════════
+//  COACH: MENSAJES
+// ══════════════════════════════════════
+async function renderMensajesPanel(clienteId) {
+  const cont = document.getElementById('clientePerfilContent');
+  cont.innerHTML = `<div class="loading"><div class="spinner"></div>Cargando...</div>`;
+  const { data } = await sb.from('mensajes').select('*').eq('cliente_id', clienteId).order('created_at', {ascending:false});
+  const msgs = data || [];
+
+  cont.innerHTML = `
+    <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem">
+      <button class="btn btn-primary" onclick="abrirMensaje('${clienteId}')">+ Nueva nota</button>
+    </div>
+    ${msgs.length ? msgs.map(m => `
+      <div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem">
+        <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.4rem">${fmtFecha(m.created_at)}</div>
+        <div style="font-size:0.85rem;line-height:1.7;color:var(--navy)">${m.texto}</div>
+        <button class="btn btn-sm btn-danger" style="margin-top:0.6rem" onclick="eliminarMensaje('${m.id}','${clienteId}')">Borrar</button>
+      </div>`).join('') : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No hay notas aún.</div></div>`}`;
+}
+
+async function eliminarMensaje(id, clienteId) {
+  await sb.from('mensajes').delete().eq('id', id);
+  renderMensajesPanel(clienteId);
+}
+
+// ══════════════════════════════════════
+//  MODAL PROGRESO & MENSAJES
+// ══════════════════════════════════════
+function abrirProgreso(clienteId) {
+  progresoClienteId = clienteId;
+  document.getElementById('pFecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('pPeso').value = '';
+  document.getElementById('pNotas').value = '';
+  openModal('modalProgreso');
+}
+
+async function guardarProgreso() {
+  const { error } = await sb.from('progreso').insert([{
+    cliente_id: progresoClienteId,
+    fecha: document.getElementById('pFecha').value,
+    peso: parseFloat(document.getElementById('pPeso').value)||null,
+    notas: document.getElementById('pNotas').value.trim()
+  }]);
+  if (error) toast('Error: '+error.message,'error');
+  else { toast('Progreso registrado ✓','success'); closeModal('modalProgreso'); renderProgresoPanel(progresoClienteId); }
+}
+
+function abrirMensaje(clienteId) {
+  mensajeClienteId = clienteId;
+  document.getElementById('mTexto').value = '';
+  openModal('modalMensaje');
+}
+
+async function guardarMensaje() {
+  const texto = document.getElementById('mTexto').value.trim();
+  if (!texto) { toast('Escribe un mensaje','error'); return; }
+  const { error } = await sb.from('mensajes').insert([{ cliente_id: mensajeClienteId, texto }]);
+  if (error) toast('Error: '+error.message,'error');
+  else { toast('Nota enviada ✓','success'); closeModal('modalMensaje'); renderMensajesPanel(mensajeClienteId); }
+}
+
+// ══════════════════════════════════════
+//  COACH: PAGOS
+// ══════════════════════════════════════
+async function cargarPagos() {
+  const { data } = await sb.from('clientes').select('*').order('fecha_inicio');
+  const cont = document.getElementById('pagosContent');
+  if (!data || !data.length) { cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💳</div><div class="empty-state-text">No hay clientes aún.</div></div>`; return; }
+  const hoy = new Date();
+  cont.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
+    <tbody>${data.map(c => {
+      const v = fechaVencimiento(c.fecha_inicio, c.plan);
+      const diasRestantes = v ? Math.ceil((v - hoy) / 86400000) : null;
+      let situacion = '';
+      if (diasRestantes === null) situacion = '<span class="badge badge-blue">Sin fecha</span>';
+      else if (diasRestantes < 0) situacion = '<span class="badge badge-red">Vencido</span>';
+      else if (diasRestantes <= 30) situacion = `<span class="badge badge-amber">Vence en ${diasRestantes}d</span>`;
+      else situacion = `<span class="badge badge-green">${diasRestantes}d restantes</span>`;
+      return `<tr>
+        <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
+        <td>${badgePlan(c.plan)}</td>
+        <td>${fmtFecha(c.fecha_inicio)}</td>
+        <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
+        <td>${badgeEstado(c.estado)}</td>
+        <td>${situacion}</td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+// ══════════════════════════════════════
+//  SELECTORES (Rutinas / Nutri / Progreso tabs)
+// ══════════════════════════════════════
+async function poblarSelectores() {
+  const { data } = await sb.from('clientes').select('id,nombre').order('nombre');
+  ['rutinasClienteSelect','nutriClienteSelect','progresoClienteSelect'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">Selecciona cliente...</option>' +
+      (data||[]).map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+  });
+}
+
+async function cargarRutinasCliente() {
+  const id = document.getElementById('rutinasClienteSelect').value;
+  if (!id) return;
+  const { data } = await sb.from('clientes').select('id,nombre').eq('id', id).single();
+  if (!data) return;
+  // Reutilizar render de perfil en tab rutinas
+  const cont = document.getElementById('rutinasContent');
+  cont.innerHTML = '';
+  currentClienteId = id;
+  const { data: rutinas } = await sb.from('rutinas').select('*').eq('cliente_id', id).order('semana');
+  const ruts = rutinas || [];
+  ruts.forEach(r => { if (!rutinaCache[r.id]) rutinaCache[r.id] = r.datos || { dias: DIAS.map(d => ({nombre:d, descanso:false, calentamiento:[], ejercicios:[]})) }; });
+  cont.innerHTML = `
+    <div style="padding:1rem;display:flex;gap:0.8rem">
+      <button class="btn btn-primary" onclick="crearSemana('${id}')">+ Añadir semana</button>
+      <button class="btn btn-secondary" onclick="guardarTodasRutinas('${id}')">💾 Guardar todo</button>
+    </div>
+    ${ruts.length ? ruts.map(r => buildSemanaEditor(r)).join('') : '<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Sin rutinas aún.</div></div>'}
+  `;
+}
+
+async function cargarNutriCliente() {
+  const id = document.getElementById('nutriClienteSelect').value;
+  if (!id) return;
+  currentClienteId = id;
+  const cont = document.getElementById('nutriContent');
+  const { data } = await sb.from('planes_nutricionales').select('*').eq('cliente_id', id).order('semana');
+  const planes = data || [];
+  planes.forEach(p => { if (!nutriCache[p.id]) nutriCache[p.id] = p.datos || { comidas: [] }; });
+  cont.innerHTML = `
+    <div style="padding:1rem;display:flex;gap:0.8rem">
+      <button class="btn btn-primary" onclick="crearPlanNutri('${id}')">+ Añadir plan</button>
+    </div>
+    ${planes.length ? planes.map(p => buildNutriPlanEditor(p)).join('') : '<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">Sin planes nutricionales aún.</div></div>'}`;
+}
+
+async function cargarProgresoCliente() {
+  const id = document.getElementById('progresoClienteSelect').value;
+  if (!id) return;
+  progresoClienteId = id;
+  // Usar mock para tab separado
+  const { data } = await sb.from('progreso').select('*').eq('cliente_id', id).order('fecha', {ascending:false});
+  const entradas = data || [];
+  const cont = document.getElementById('progresoContent');
+  cont.innerHTML = `
+    <div style="padding:1rem;display:flex;gap:0.8rem">
+      <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
+    </div>
+    ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
+      ${entradas.map(e => `<tr>
+        <td>${fmtFecha(e.fecha)}</td>
+        <td><strong>${e.peso||'—'} kg</strong></td>
+        <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="eliminarProgresoTab('${e.id}')">Borrar</button></td>
+      </tr>`).join('')}
+    </tbody></table>` : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>'}`;
+}
+
+async function eliminarProgresoTab(id) {
+  await sb.from('progreso').delete().eq('id', id);
+  cargarProgresoCliente();
+}
+
+// ══════════════════════════════════════
+//  PORTAL CLIENTE
+// ══════════════════════════════════════
+async function cargarPortalCliente() {
+  // Buscar cliente por email del usuario logueado
+  const { data: clienteData } = await sb.from('clientes').select('*').eq('email', currentUser.email).single();
+
+  if (!clienteData) {
+    document.getElementById('clienteNombreTop').textContent = currentUser.email;
+    document.getElementById('cliente-mi-rutina').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔗</div><div class="empty-state-text">Tu perfil aún no está configurado. Espera a que tu coach lo active.</div></div>`;
+    return;
+  }
+
+  const cliente = clienteData;
+  document.getElementById('clienteNombreTop').textContent = cliente.nombre.split(' ')[0];
+
+  // Cargar rutina
+  await cargarMiRutina(cliente.id);
+  await cargarMiDieta(cliente.id);
+  await cargarMiProgreso(cliente.id);
+  await cargarMiPlan(cliente);
+  await cargarMisMensajes(cliente.id);
+}
+
+function showClienteTab(tab) {
+  document.querySelectorAll('.cliente-nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.cliente-tab-content').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('cliente-'+tab).classList.add('active');
+}
+
+async function cargarMiRutina(clienteId) {
+  const cont = document.getElementById('cliente-mi-rutina');
+  const { data } = await sb.from('rutinas').select('*').eq('cliente_id', clienteId).order('semana', {ascending:false}).limit(1);
+  const rutina = data && data[0];
+
+  if (!rutina || !rutina.datos) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Tu coach aún no ha publicado tu rutina. ¡Pronto estará aquí!</div></div>`;
+    return;
+  }
+
+  const dias = rutina.datos.dias || [];
+  cont.innerHTML = `
+    <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:4px">SEMANA ${rutina.semana}</div>
+        <div style="font-family:var(--display);font-size:1.2rem;font-weight:900;color:#fff">${rutina.mes||''}</div>
+      </div>
+      <div style="font-size:0.72rem;color:rgba(255,255,255,0.4)">${rutina.fase||''}</div>
+    </div>
+    ${dias.map((dia, i) => {
+      if (dia.descanso) return `<div class="rutina-dia descanso"><div class="rutina-dia-header" style="cursor:default"><div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div><span style="font-size:0.72rem;color:#6b3fa0">🛌 Descanso</span></div></div>`;
+      const allEx = [...(dia.calentamiento||[]), ...(dia.ejercicios||[])];
+      return `<div class="rutina-dia" id="rdía-${i}" onclick="toggleRutinaDia(this)">
+        <div class="rutina-dia-header">
+          <div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div>
+          <span style="font-size:0.72rem;color:var(--gray)">${allEx.length} ejercicios</span>
+        </div>
+        <div class="rutina-dia-body">
+          ${dia.calentamiento && dia.calentamiento.length ? `
+            <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:0.8rem 0 0.5rem">🔥 Calentamiento</div>
+            ${dia.calentamiento.map((e,ei) => buildClienteExRow(e, `c-${i}-${ei}`)).join('')}
+          ` : ''}
+          ${dia.ejercicios && dia.ejercicios.length ? `
+            <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:0.8rem 0 0.5rem">💪 Sesión principal</div>
+            ${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`)).join('')}
+          ` : ''}
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+function buildClienteExRow(e, key) {
+  if (!e.nombre) return '';
+  return `<div class="ex-check-row" id="exrow-${key}" onclick="toggleClienteEx(this)">
+    <div class="ex-checkbox"></div>
+    <span class="ex-check-name">${e.nombre}</span>
+    <span class="ex-check-info">${e.series||''}${e.series&&e.reps?' × ':''}${e.reps||''} ${e.descanso?'· '+e.descanso:''}</span>
+  </div>`;
+}
+
+function toggleRutinaDia(el) {
+  el.classList.toggle('open');
+}
+
+function toggleClienteEx(el) {
+  el.classList.toggle('done');
+  const ch = el.querySelector('.ex-checkbox');
+  ch.textContent = el.classList.contains('done') ? '✓' : '';
+}
+
+async function cargarMiDieta(clienteId) {
+  const cont = document.getElementById('cliente-mi-dieta');
+  const { data } = await sb.from('planes_nutricionales').select('*').eq('cliente_id', clienteId).order('semana', {ascending:false}).limit(1);
+  const plan = data && data[0];
+
+  if (!plan) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">Tu coach aún no ha publicado tu plan nutricional.</div></div>`;
+    return;
+  }
+
+  const comidas = plan.datos?.comidas || [];
+  cont.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.8rem;margin-bottom:1.5rem">
+      <div style="background:var(--white);border:1px solid var(--border);padding:1rem;text-align:center"><div style="font-family:var(--display);font-size:1.4rem;font-weight:900;color:#ef4444">${plan.proteinas||'—'}</div><div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Proteínas g</div></div>
+      <div style="background:var(--white);border:1px solid var(--border);padding:1rem;text-align:center"><div style="font-family:var(--display);font-size:1.4rem;font-weight:900;color:#f59e0b">${plan.carbohidratos||'—'}</div><div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Carbos g</div></div>
+      <div style="background:var(--white);border:1px solid var(--border);padding:1rem;text-align:center"><div style="font-family:var(--display);font-size:1.4rem;font-weight:900;color:#10b981">${plan.grasas||'—'}</div><div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Grasas g</div></div>
+      <div style="background:var(--navy);border:1px solid var(--border);padding:1rem;text-align:center"><div style="font-family:var(--display);font-size:1.4rem;font-weight:900;color:#fff">${plan.calorias||'—'}</div><div style="font-size:0.58rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Kcal</div></div>
+    </div>
+    ${comidas.map((c,ci) => `
+      <div style="background:var(--white);border:1px solid var(--border);margin-bottom:0.8rem;overflow:hidden">
+        <div style="background:#f8faff;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="this.parentElement.querySelector('.meal-items').style.display = this.parentElement.querySelector('.meal-items').style.display==='none'?'block':'none'">
+          <span style="font-family:var(--display);font-size:0.65rem;font-weight:700;letter-spacing:2px;color:var(--blue)">${c.hora||''}</span>
+          <span style="font-family:var(--display);font-size:0.85rem;font-weight:900;flex:1">${c.nombre||'Comida'}</span>
+          <div style="width:20px;height:20px;border:2px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem" onclick="event.stopPropagation();toggleComidaCheck(this)"></div>
+        </div>
+        <div class="meal-items" style="padding:0.8rem 1.2rem">
+          ${(c.items||[]).map((item,ii) => item.nombre ? `
+            <div class="ex-check-row" onclick="toggleClienteEx(this)">
+              <div class="ex-checkbox"></div>
+              <span class="ex-check-name">${item.nombre}</span>
+              <span class="ex-check-info">${item.cantidad||''} ${item.proteinas?'P:'+item.proteinas+'g':''} ${item.carbos?'C:'+item.carbos+'g':''}</span>
+            </div>` : '').join('')}
+          ${c.nota ? `<div style="background:var(--bg);border-left:3px solid var(--blue);padding:0.5rem 0.8rem;margin-top:0.5rem;font-size:0.75rem;color:var(--gray)">${c.nota}</div>` : ''}
+        </div>
+      </div>`).join('')}`;
+}
+
+function toggleComidaCheck(btn) {
+  const done = btn.classList.toggle('done');
+  btn.textContent = done ? '✓' : '';
+  btn.style.background = done ? 'var(--green)' : '';
+  btn.style.borderColor = done ? 'var(--green)' : '';
+  btn.style.color = done ? '#fff' : '';
+}
+
+async function cargarMiProgreso(clienteId) {
+  const cont = document.getElementById('cliente-mi-progreso');
+  const { data } = await sb.from('progreso').select('*').eq('cliente_id', clienteId).order('fecha');
+  const entradas = data || [];
+
+  cont.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+      <div style="background:var(--white);border:1px solid var(--border);padding:1.2rem;text-align:center">
+        <div style="font-family:var(--display);font-size:2rem;font-weight:900">${entradas[0]?.peso||'—'} <span style="font-size:1rem">kg</span></div>
+        <div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Peso inicial</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);padding:1.2rem;text-align:center">
+        <div style="font-family:var(--display);font-size:2rem;font-weight:900">${entradas[entradas.length-1]?.peso||'—'} <span style="font-size:1rem">kg</span></div>
+        <div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Peso actual</div>
+      </div>
+    </div>
+    ${entradas.length ? `<div class="card"><div class="card-header"><div class="card-title">Historial</div></div>
+      <table><thead><tr><th>Fecha</th><th>Peso</th><th>Nota del coach</th></tr></thead>
+      <tbody>${entradas.reverse().map(e => `<tr><td>${fmtFecha(e.fecha)}</td><td><strong>${e.peso||'—'} kg</strong></td><td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td></tr>`).join('')}</tbody></table></div>`
+    : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Tu coach irá registrando tu progreso aquí.</div></div>`}`;
+}
+
+async function cargarMiPlan(cliente) {
+  const cont = document.getElementById('cliente-mi-plan');
+  const v = fechaVencimiento(cliente.fecha_inicio, cliente.plan);
+  const hoy = new Date();
+  const diasRestantes = v ? Math.ceil((v - hoy) / 86400000) : null;
+  const diasTotales = cliente.plan === '12meses' ? 365 : 180;
+  const diasTranscurridos = cliente.fecha_inicio ? Math.ceil((hoy - new Date(cliente.fecha_inicio)) / 86400000) : 0;
+  const pct = Math.min(100, Math.max(0, Math.round((diasTranscurridos / diasTotales) * 100)));
+
+  cont.innerHTML = `
+    <div style="background:var(--navy);padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden">
+      <div style="position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-family:var(--display);font-size:8rem;font-weight:900;color:rgba(255,255,255,0.03);pointer-events:none">PLAN</div>
+      <div style="position:relative;z-index:1">
+        <div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:0.5rem">MI PLAN ACTIVO</div>
+        <div style="font-family:var(--display);font-size:2rem;font-weight:900;color:#fff;margin-bottom:1.5rem">${cliente.plan === '12meses' ? '12 MESES' : cliente.plan === '6meses' ? '6 MESES' : 'VALORACIÓN'}</div>
+        <div style="background:rgba(255,255,255,0.08);height:6px;border-radius:3px;margin-bottom:0.8rem">
+          <div style="height:100%;width:${pct}%;background:var(--blue2);border-radius:3px;transition:width 1s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:rgba(255,255,255,0.4)">
+          <span>${pct}% completado</span>
+          <span>${diasRestantes !== null ? diasRestantes + ' días restantes' : '—'}</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div style="background:var(--white);border:1px solid var(--border);padding:1.2rem">
+        <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Inicio del plan</div>
+        <div style="font-family:var(--display);font-size:1rem;font-weight:900">${fmtFecha(cliente.fecha_inicio)}</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);padding:1.2rem">
+        <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Finalización</div>
+        <div style="font-family:var(--display);font-size:1rem;font-weight:900">${v ? fmtFecha(v.toISOString()) : '—'}</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);padding:1.2rem">
+        <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Objetivo</div>
+        <div style="font-family:var(--display);font-size:0.9rem;font-weight:900;text-transform:capitalize">${cliente.objetivo||'—'}</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);padding:1.2rem">
+        <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Estado</div>
+        <div>${badgeEstado(cliente.estado)}</div>
+      </div>
+    </div>`;
+}
+
+async function cargarMisMensajes(clienteId) {
+  const cont = document.getElementById('cliente-mensajes');
+  const { data } = await sb.from('mensajes').select('*').eq('cliente_id', clienteId).order('created_at', {ascending:false});
+  const msgs = data || [];
+  cont.innerHTML = msgs.length
+    ? msgs.map(m => `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem">
+        <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.5rem">📌 ${fmtFecha(m.created_at)} · De tu coach</div>
+        <div style="font-size:0.88rem;line-height:1.8;color:var(--navy)">${m.texto}</div>
+      </div>`).join('')
+    : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No hay mensajes de tu coach aún.</div></div>`;
+}
+</script>
+</body>
+</html>
