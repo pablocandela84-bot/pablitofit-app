@@ -674,6 +674,28 @@
             <button class="banco-filter" onclick="filtrarBanco('Calentamiento')">Calentamiento</button>
           </div>
           <div id="bancoLista"><div class="loading-inline"><div class="spinner"></div>Cargando...</div></div>
+          <!-- Formulario añadir nuevo ejercicio -->
+          <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:0.8rem;flex-wrap:wrap;align-items:flex-end;background:#f8faff">
+            <div style="flex:1;min-width:200px">
+              <label style="display:block;font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Nombre del ejercicio</label>
+              <input id="bancoNuevoNombreTab" class="exercise-input" style="width:100%" placeholder="Ej: Press banca, Sentadilla...">
+            </div>
+            <div>
+              <label style="display:block;font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Grupo muscular</label>
+              <select id="bancoNuevoGrupoTab" class="exercise-input" style="background:white">
+                <option value="Pecho">Pecho</option>
+                <option value="Espalda">Espalda</option>
+                <option value="Hombros">Hombros</option>
+                <option value="Pierna">Pierna</option>
+                <option value="Glúteo">Glúteo</option>
+                <option value="Bíceps">Bíceps</option>
+                <option value="Tríceps">Tríceps</option>
+                <option value="Core">Core</option>
+                <option value="Calentamiento">Calentamiento</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="guardarNuevoAlBancoTab()">+ Añadir al banco</button>
+          </div>
         </div>
       </div>
 
@@ -2149,55 +2171,55 @@ async function cargarRutinasCliente() {
   const id = document.getElementById('rutinasClienteSelect').value;
   if (!id) return;
   currentClienteId = id;
+  window._rutinaTabClienteId = id;
   const cont = document.getElementById('rutinasContent');
   cont.innerHTML = '<div class="loading-inline"><div class="spinner"></div>Cargando rutinas...</div>';
 
   const { data: rutinas } = await sb.from('rutinas').select('*').eq('cliente_id', id).order('semana', {ascending:false});
   const ruts = rutinas || [];
 
-  // Inicializar cache
   ruts.forEach(r => {
     rutinaCache[r.id] = r.datos || { dias: DIAS.map(d => ({nombre:d, titulo:'', descanso:false, calentamiento:[], ejercicios:[]})) };
-    // Asegurar que cada día tiene titulo
     rutinaCache[r.id].dias.forEach(d => { if (!d.titulo) d.titulo = ''; });
   });
 
-  // Selector de meses si hay varios
+  window._rutinaTabPrimeroId = ruts.length ? ruts[0].id : null;
+
   const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const anio = new Date().getFullYear();
-  const opcionesMes = meses.map(m => `<option value="${m} ${anio}">${m} ${anio}</option>`).join('');
+  const opcionesMes = meses.map(m => '<option value="' + m + ' ' + anio + '">' + m + ' ' + anio + '</option>').join('');
 
-  let html = `
-    <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
-      <div>
-        <div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:4px">RUTINA MENSUAL</div>
-        <div style="font-family:var(--display);font-size:1rem;font-weight:900;color:#fff">Plan de entrenamiento · 7 días</div>
-      </div>
-      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
-        <select id="selectMesRutina" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:0.5rem 0.8rem;font-size:0.75rem;font-family:var(--body)">${opcionesMes}</select>
-        <select id="selectFaseRutina" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:0.5rem 0.8rem;font-size:0.75rem;font-family:var(--body)">
-          <option>Acumulación</option><option>Intensificación</option><option>Pico</option><option>Descarga</option>
-        </select>
-        <button class="btn btn-primary" onclick="crearRutinaMes('${id}')">+ Nueva rutina</button>
-        ${ruts.length ? `<button class="btn btn-secondary" onclick="guardarRutina('${ruts[0].id}')">💾 Guardar</button>` : ''}
-      </div>
-    </div>`;
+  const guardarBtn = ruts.length
+    ? '<button class="btn btn-secondary" onclick="guardarRutina(window._rutinaTabPrimeroId)">💾 Guardar</button>'
+    : '';
+
+  let out = '<div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">'
+    + '<div><div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:4px">RUTINA MENSUAL</div>'
+    + '<div style="font-family:var(--display);font-size:1rem;font-weight:900;color:#fff">Plan de entrenamiento · 7 días</div></div>'
+    + '<div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">'
+    + '<select id="selectMesRutina" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:0.5rem 0.8rem;font-size:0.75rem;font-family:var(--body)">' + opcionesMes + '</select>'
+    + '<select id="selectFaseRutina" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:0.5rem 0.8rem;font-size:0.75rem;font-family:var(--body)">'
+    + '<option>Acumulación</option><option>Intensificación</option><option>Pico</option><option>Descarga</option></select>'
+    + '<button class="btn btn-primary" onclick="crearRutinaMes(window._rutinaTabClienteId)">+ Nueva rutina</button>'
+    + guardarBtn
+    + '</div></div>';
 
   if (!ruts.length) {
-    html += `<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Sin rutinas aún. Pulsa "+ Nueva rutina" para crear la primera.</div></div>`;
+    out += '<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Sin rutinas aún. Pulsa "+ Nueva rutina" para crear la primera.</div></div>';
   } else {
-    // Selector si hay más de una
     if (ruts.length > 1) {
-      html += `<div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;padding:0 1rem">
-        ${ruts.map(r => `<button class="btn btn-sm btn-secondary" onclick="mostrarRutinaTab('${r.id}')">${r.mes||'Rutina'} · ${r.fase||''}</button>`).join('')}
-      </div>`;
+      out += '<div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;padding:0 1rem">'
+        + ruts.map(function(r) {
+            var btn = '<button class="btn btn-sm btn-secondary" data-rutinaid="' + r.id + '" onclick="mostrarRutinaTab(this.dataset.rutinaid)">' + (r.mes||'Rutina') + ' &middot; ' + (r.fase||'') + '</button>'; return btn;
+          }).join('')
+        + '</div>';
     }
-    // Mostrar la más reciente
-    html += `<div id="rutina-tab-container">${buildRutinaEditor(ruts[0])}</div>`;
+    out += '<div id="rutina-tab-container">' + buildRutinaEditor(ruts[0]) + '</div>';
   }
 
-  cont.innerHTML = html;
+  cont.innerHTML = out;
 }
+
 
 async function mostrarRutinaTab(rutinaId) {
   const { data } = await sb.from('rutinas').select('*').eq('id', rutinaId).single();
@@ -2770,31 +2792,37 @@ function filtrarBanco(grupo) {
   renderBancoTab();
 }
 
-async function abrirBancoNuevo() {
-  // En el tab banco, el footer ya tiene el formulario
-  const input = document.getElementById('bancoNuevoNombre');
-  if (input) input.focus();
+function abrirBancoNuevo() {
+  document.getElementById('bancoNuevoNombreTab')?.focus();
 }
 
-async function guardarNuevoAlBanco() {
-  const nombre = (document.getElementById('bancoNuevoNombre')?.value || '').trim();
-  const grupo = document.getElementById('bancoNuevoGrupo')?.value || '';
+async function _guardarAlBanco(nombre, grupo, inputEl) {
   if (!nombre) { toast('Escribe el nombre del ejercicio','error'); return; }
-
-  // Añadir al array local inmediatamente
   const tmpItem = { id: 'tmp-'+Date.now(), nombre, grupo_muscular: grupo };
   bancoDatos.push(tmpItem);
   renderBancoTab();
   if (document.getElementById('bancoModalLista')) renderBancoModal();
-  document.getElementById('bancoNuevoNombre').value = '';
-  toast(`"${nombre}" añadido ✓`, 'success');
-
-  // Guardar en DB
+  if (inputEl) inputEl.value = '';
+  toast(`"${nombre}" añadido al banco ✓`, 'success');
   const { data, error } = await sb.from('ejercicios_banco').insert([{ nombre, grupo_muscular: grupo }]).select().single();
   if (error) { toast('Error: '+error.message,'error'); return; }
-  // Reemplazar tmp por el real
   const idx = bancoDatos.findIndex(e => e.id === tmpItem.id);
   if (idx !== -1) bancoDatos[idx] = data;
+}
+
+async function guardarNuevoAlBancoTab() {
+  const input = document.getElementById('bancoNuevoNombreTab');
+  const nombre = (input?.value || '').trim();
+  const grupo = document.getElementById('bancoNuevoGrupoTab')?.value || 'Pecho';
+  await _guardarAlBanco(nombre, grupo, input);
+}
+
+async function guardarNuevoAlBanco() {
+  // Desde el modal
+  const input = document.getElementById('bancoNuevoNombre');
+  const nombre = (input?.value || '').trim();
+  const grupo = document.getElementById('bancoNuevoGrupo')?.value || 'Pecho';
+  await _guardarAlBanco(nombre, grupo, input);
 }
 
 async function eliminarDelBanco(id) {
