@@ -1570,7 +1570,7 @@ function buildDiaEditor(dia, idx, semanaId) {
 
 function buildEjercicioRow(e, ei, semanaId, diaIdx) {
   return `<div class="exercise-row" id="ex-${semanaId}-${diaIdx}-${ei}">
-    <input class="exercise-input" placeholder="Nombre ejercicio" value="${e.nombre||''}" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'nombre',this.value,'ejercicios')">
+    <input class="exercise-input" placeholder="Nombre ejercicio" value="${e.nombre||''}" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'nombre',this.value,'ejercicios');autoguardarRutina('${semanaId}')">
     <input class="exercise-input" placeholder="4" value="${e.series||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'series',this.value,'ejercicios')">
     <input class="exercise-input" placeholder="8-10" value="${e.reps||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'reps',this.value,'ejercicios')">
     <input class="exercise-input" placeholder="2min" value="${e.descanso||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'descanso',this.value,'ejercicios')">
@@ -1581,7 +1581,7 @@ function buildEjercicioRow(e, ei, semanaId, diaIdx) {
 
 function buildCalorRow(e, ei, semanaId, diaIdx) {
   return `<div class="exercise-row" id="calor-row-${semanaId}-${diaIdx}-${ei}">
-    <input class="exercise-input" placeholder="Ejercicio calentamiento" value="${e.nombre||''}" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'nombre',this.value,'calor')">
+    <input class="exercise-input" placeholder="Ejercicio calentamiento" value="${e.nombre||''}" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'nombre',this.value,'calor');autoguardarRutina('${semanaId}')">
     <input class="exercise-input" placeholder="2" value="${e.series||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'series',this.value,'calor')">
     <input class="exercise-input" placeholder="15" value="${e.reps||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'reps',this.value,'calor')">
     <input class="exercise-input" placeholder="30s" value="${e.descanso||''}" style="text-align:center" onchange="updateEjercicio('${semanaId}',${diaIdx},${ei},'descanso',this.value,'calor')">
@@ -1666,8 +1666,10 @@ async function crearRutinaMes(clienteId) {
   toast(`Rutina de ${mes} creada ✓`, 'success');
 
   // Guardar en DB en background
+  const { data: existing } = await sb.from('rutinas').select('id').eq('cliente_id', clienteId);
+  const nextNum = (existing?.length || 0) + 1;
   const { data, error } = await sb.from('rutinas').insert([{
-    cliente_id: clienteId, semana: Date.now(), mes, fase,
+    cliente_id: clienteId, semana: nextNum, mes, fase,
     datos: { dias: diasIniciales }
   }]).select().single();
 
@@ -1749,7 +1751,12 @@ async function renderNutriEditor(clienteId) {
 
   const mesesN = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const anioN = new Date().getFullYear();
-  const opcionesMesN = mesesN.map(m => `<option value="${m} ${anioN}">${m} ${anioN}</option>`).join('');
+  const mesActualN = mesesN[new Date().getMonth()];
+  const opcionesMesN = mesesN.map(m => {
+    const val = m + ' ' + anioN;
+    const sel = m === mesActualN ? ' selected' : '';
+    return `<option value="${val}"${sel}>${val}</option>`;
+  }).join('');
 
   let html = `
     <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
@@ -1817,8 +1824,8 @@ function buildComidaEditor(comida, ci, planId) {
   const items = comida.items || [];
   return `<div class="meal-editor">
     <div class="meal-editor-header">
-      <input class="exercise-input" style="width:120px" value="${comida.hora||''}" placeholder="08:00" onchange="updateComida('${planId}',${ci},'hora',this.value)">
-      <input class="exercise-input" style="flex:1" value="${comida.nombre||''}" placeholder="Nombre de la comida" onchange="updateComida('${planId}',${ci},'nombre',this.value)">
+      <input class="exercise-input" style="width:120px" value="${comida.hora||''}" placeholder="08:00" onchange="updateComida('${planId}',${ci},'hora',this.value);autoguardarNutri('${planId}')">
+      <input class="exercise-input" style="flex:1" value="${comida.nombre||''}" placeholder="Nombre de la comida" onchange="updateComida('${planId}',${ci},'nombre',this.value);autoguardarNutri('${planId}')">
       <button class="btn-icon" onclick="removeComida('${planId}',${ci})">✕</button>
     </div>
     <div class="meal-editor-body">
@@ -1841,11 +1848,11 @@ function buildComidaEditor(comida, ci, planId) {
 
 function buildFoodRow(item, ii, planId, ci) {
   return `<div class="food-row" id="food-${planId}-${ci}-${ii}">
-    <input class="exercise-input" placeholder="Pollo a la plancha" value="${item.nombre||''}" onchange="updateFood('${planId}',${ci},${ii},'nombre',this.value)">
-    <input class="exercise-input" placeholder="200g" value="${item.cantidad||''}" onchange="updateFood('${planId}',${ci},${ii},'cantidad',this.value)">
-    <input class="exercise-input" placeholder="44" value="${item.proteinas||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'proteinas',this.value)">
-    <input class="exercise-input" placeholder="0" value="${item.carbos||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'carbos',this.value)">
-    <input class="exercise-input" placeholder="6" value="${item.grasas||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'grasas',this.value)">
+    <input class="exercise-input" placeholder="Pollo a la plancha" value="${item.nombre||''}" onchange="updateFood('${planId}',${ci},${ii},'nombre',this.value);autoguardarNutri('${planId}')">
+    <input class="exercise-input" placeholder="200g" value="${item.cantidad||''}" onchange="updateFood('${planId}',${ci},${ii},'cantidad',this.value);autoguardarNutri('${planId}')">
+    <input class="exercise-input" placeholder="44" value="${item.proteinas||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'proteinas',this.value);autoguardarNutri('${planId}')">
+    <input class="exercise-input" placeholder="0" value="${item.carbos||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'carbos',this.value);autoguardarNutri('${planId}')">
+    <input class="exercise-input" placeholder="6" value="${item.grasas||''}" style="text-align:center" type="number" onchange="updateFood('${planId}',${ci},${ii},'grasas',this.value);autoguardarNutri('${planId}')">
     <button class="btn-icon" onclick="removeFoodItem('${planId}',${ci},${ii})">✕</button>
   </div>`;
 }
@@ -1856,8 +1863,10 @@ async function crearPlanNutri(clienteId) {
   const mesNRaw = document.getElementById('selectMesNutri')?.value || new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'}).replace(/^./, c => c.toUpperCase());
   const mes = mesNRaw.charAt(0).toUpperCase() + mesNRaw.slice(1);
 
+  const { data: existingN } = await sb.from('planes_nutricionales').select('id').eq('cliente_id', clienteId);
+  const nextNumN = (existingN?.length || 0) + 1;
   const { data, error } = await sb.from('planes_nutricionales').insert([{
-    cliente_id: clienteId, semana: Date.now(), mes,
+    cliente_id: clienteId, semana: nextNumN, mes,
     calorias: 2400, proteinas: 180, carbohidratos: 280, grasas: 70,
     datos: { comidas: [] }
   }]).select().single();
@@ -2000,12 +2009,12 @@ async function guardarNutri(planId) {
 
 async function eliminarNutri(id) {
   if (!confirm('¿Eliminar este plan?')) return;
-  // Eliminar del DOM inmediatamente
   delete nutriCache[id];
   document.getElementById('nutri-'+id)?.remove();
-  toast('Plan eliminado');
-  // Borrar en DB en background
-  sb.from('planes_nutricionales').delete().eq('id', id);
+  // Borrar en DB y confirmar
+  const { error } = await sb.from('planes_nutricionales').delete().eq('id', id);
+  if (error) toast('Error al borrar: '+error.message, 'error');
+  else toast('Plan eliminado ✓', 'success');
 }
 
 // ══════════════════════════════════════
@@ -2187,7 +2196,12 @@ async function cargarRutinasCliente() {
 
   const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const anio = new Date().getFullYear();
-  const opcionesMes = meses.map(m => '<option value="' + m + ' ' + anio + '">' + m + ' ' + anio + '</option>').join('');
+  const mesActual = meses[new Date().getMonth()];
+  const opcionesMes = meses.map(m => {
+    const val = m + ' ' + anio;
+    const sel = m === mesActual ? ' selected' : '';
+    return '<option value="' + val + '"' + sel + '>' + val + '</option>';
+  }).join('');
 
   const guardarBtn = ruts.length
     ? '<button class="btn btn-secondary" onclick="guardarRutina(window._rutinaTabPrimeroId)">💾 Guardar</button>'
@@ -2921,6 +2935,21 @@ function seleccionarDelBanco(nombre, grupo) {
 function updateTituloDia(semanaId, diaIdx, valor) {
   if (!rutinaCache[semanaId]) return;
   rutinaCache[semanaId].dias[diaIdx].titulo = valor;
+}
+
+
+// ── AUTOGUARDADO NUTRICIÓN (debounce 1.5s) ──
+const _nutriTimers = {};
+function autoguardarNutri(planId) {
+  clearTimeout(_nutriTimers[planId]);
+  _nutriTimers[planId] = setTimeout(() => guardarNutri(planId), 1500);
+}
+
+// ── AUTOGUARDADO RUTINA (debounce 2s) ──
+const _rutinaTimers = {};
+function autoguardarRutina(rutinaId) {
+  clearTimeout(_rutinaTimers[rutinaId]);
+  _rutinaTimers[rutinaId] = setTimeout(() => guardarRutina(rutinaId), 2000);
 }
 
 </script>
