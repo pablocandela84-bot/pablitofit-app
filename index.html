@@ -2148,21 +2148,64 @@ async function poblarSelectores() {
 async function cargarRutinasCliente() {
   const id = document.getElementById('rutinasClienteSelect').value;
   if (!id) return;
-  const { data } = await sb.from('clientes').select('id,nombre').eq('id', id).single();
-  if (!data) return;
-  // Reutilizar render de perfil en tab rutinas
-  const cont = document.getElementById('rutinasContent');
-  cont.innerHTML = '';
   currentClienteId = id;
-  const { data: rutinas } = await sb.from('rutinas').select('*').eq('cliente_id', id).order('semana');
+  const cont = document.getElementById('rutinasContent');
+  cont.innerHTML = '<div class="loading-inline"><div class="spinner"></div>Cargando rutinas...</div>';
+
+  const { data: rutinas } = await sb.from('rutinas').select('*').eq('cliente_id', id).order('semana', {ascending:false});
   const ruts = rutinas || [];
-  ruts.forEach(r => { if (!rutinaCache[r.id]) rutinaCache[r.id] = r.datos || { dias: DIAS.map(d => ({nombre:d, descanso:false, calentamiento:[], ejercicios:[]})) }; });
-  cont.innerHTML = `
-    <div style="padding:1rem;display:flex;gap:0.8rem">
-      <button class="btn btn-primary" onclick="crearRutinaMes('${id}')">+ Nueva rutina mensual</button>
-    </div>
-    ${ruts.length ? ruts.map(r => buildSemanaEditor(r)).join('') : '<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Sin rutinas aún.</div></div>'}
-  `;
+
+  // Inicializar cache
+  ruts.forEach(r => {
+    rutinaCache[r.id] = r.datos || { dias: DIAS.map(d => ({nombre:d, titulo:'', descanso:false, calentamiento:[], ejercicios:[]})) };
+    // Asegurar que cada día tiene titulo
+    rutinaCache[r.id].dias.forEach(d => { if (!d.titulo) d.titulo = ''; });
+  });
+
+  // Selector de meses si hay varios
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const anio = new Date().getFullYear();
+  const opcionesMes = meses.map(m => `<option value="${m} ${anio}">${m} ${anio}</option>`).join('');
+
+  let html = `
+    <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:4px">RUTINA MENSUAL</div>
+        <div style="font-family:var(--display);font-size:1rem;font-weight:900;color:#fff">Plan de entrenamiento · 7 días</div>
+      </div>
+      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+        <select id="selectMesRutina" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:0.5rem 0.8rem;font-size:0.75rem;font-family:var(--body)">${opcionesMes}</select>
+        <select id="selectFaseRutina" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:0.5rem 0.8rem;font-size:0.75rem;font-family:var(--body)">
+          <option>Acumulación</option><option>Intensificación</option><option>Pico</option><option>Descarga</option>
+        </select>
+        <button class="btn btn-primary" onclick="crearRutinaMes('${id}')">+ Nueva rutina</button>
+        ${ruts.length ? `<button class="btn btn-secondary" onclick="guardarRutina('${ruts[0].id}')">💾 Guardar</button>` : ''}
+      </div>
+    </div>`;
+
+  if (!ruts.length) {
+    html += `<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Sin rutinas aún. Pulsa "+ Nueva rutina" para crear la primera.</div></div>`;
+  } else {
+    // Selector si hay más de una
+    if (ruts.length > 1) {
+      html += `<div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;padding:0 1rem">
+        ${ruts.map(r => `<button class="btn btn-sm btn-secondary" onclick="mostrarRutinaTab('${r.id}')">${r.mes||'Rutina'} · ${r.fase||''}</button>`).join('')}
+      </div>`;
+    }
+    // Mostrar la más reciente
+    html += `<div id="rutina-tab-container">${buildRutinaEditor(ruts[0])}</div>`;
+  }
+
+  cont.innerHTML = html;
+}
+
+async function mostrarRutinaTab(rutinaId) {
+  const { data } = await sb.from('rutinas').select('*').eq('id', rutinaId).single();
+  if (!data) return;
+  rutinaCache[data.id] = data.datos || { dias: DIAS.map(d => ({nombre:d, titulo:'', descanso:false, calentamiento:[], ejercicios:[]})) };
+  rutinaCache[data.id].dias.forEach(d => { if (!d.titulo) d.titulo = ''; });
+  const cont = document.getElementById('rutina-tab-container');
+  if (cont) cont.innerHTML = buildRutinaEditor(data);
 }
 
 async function cargarNutriCliente() {
