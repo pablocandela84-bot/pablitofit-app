@@ -324,6 +324,91 @@
     }
     .btn-checkin-cancel:hover { border-color: var(--navy); color: var(--navy); }
 
+
+    /* ── TÍTULO DEL DÍA ── */
+    .day-titulo-input {
+      flex: 1; border: none; border-bottom: 1px solid rgba(255,255,255,0.15);
+      background: transparent; color: var(--blue2);
+      font-family: var(--display); font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      outline: none; padding: 0.2rem 0.4rem;
+    }
+    .day-titulo-input::placeholder { color: rgba(79,142,255,0.4); }
+
+    /* ── BANCO DE EJERCICIOS ── */
+    .banco-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(13,27,62,0.85); z-index: 2000;
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .banco-modal.open { display: flex; }
+    .banco-box {
+      background: var(--white); width: 100%; max-width: 560px;
+      max-height: 85vh; display: flex; flex-direction: column;
+      animation: modalIn 0.3s ease;
+    }
+    .banco-header {
+      padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .banco-title { font-family: var(--display); font-size: 0.85rem; font-weight: 900; }
+    .banco-search {
+      width: 100%; border: none; border-bottom: 1px solid var(--border);
+      padding: 0.9rem 1.5rem; font-family: var(--body); font-size: 0.88rem;
+      outline: none; flex-shrink: 0;
+    }
+    .banco-filters {
+      display: flex; gap: 0.4rem; padding: 0.8rem 1.5rem;
+      overflow-x: auto; flex-shrink: 0; border-bottom: 1px solid var(--border);
+    }
+    .banco-filter {
+      font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase;
+      border: 1px solid var(--border); padding: 0.3rem 0.8rem;
+      cursor: pointer; white-space: nowrap; transition: all 0.2s;
+      background: none; font-family: var(--body);
+    }
+    .banco-filter.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .banco-list {
+      overflow-y: auto; flex: 1; padding: 0.5rem 0;
+    }
+    .banco-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.7rem 1.5rem; cursor: pointer; transition: background 0.15s;
+      border-bottom: 1px solid var(--border);
+    }
+    .banco-item:last-child { border-bottom: none; }
+    .banco-item:hover { background: #f0f4ff; }
+    .banco-item:active { background: #dbeafe; }
+    .banco-item-name { font-size: 0.85rem; font-weight: 500; color: var(--navy); }
+    .banco-item-grupo {
+      font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--gray); margin-top: 2px;
+    }
+    .banco-item-add {
+      background: var(--blue); color: #fff; border: none;
+      padding: 0.35rem 0.8rem; font-size: 0.62rem; font-family: var(--display);
+      font-weight: 700; letter-spacing: 1px; cursor: pointer;
+      white-space: nowrap;
+    }
+    .banco-footer {
+      padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+      display: flex; gap: 0.8rem; flex-shrink: 0;
+    }
+    .banco-new-input {
+      flex: 1; border: 1px solid var(--border); padding: 0.6rem 0.9rem;
+      font-family: var(--body); font-size: 0.82rem; outline: none;
+    }
+    .banco-new-input:focus { border-color: var(--blue); }
+    .banco-grupo-select {
+      border: 1px solid var(--border); padding: 0.6rem 0.8rem;
+      font-family: var(--body); font-size: 0.82rem; outline: none;
+      background: white; color: var(--navy);
+    }
+
+    /* Tab banco en nav coach */
+    .nav-item-banco { cursor: pointer; }
+
     /* ── PREVENIR SCROLL LATERAL ── */
     html, body { overflow-x: hidden; max-width: 100vw; }
     * { -webkit-tap-highlight-color: transparent; }
@@ -487,6 +572,7 @@
       <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">🥗</span>Nutrición</div>
       <div class="nav-item" onclick="showTab('progreso')"><span class="nav-icon">📈</span>Progreso</div>
       <div class="nav-item" onclick="showTab('pagos')"><span class="nav-icon">💳</span>Pagos</div>
+      <div class="nav-item" onclick="showTab('banco')"><span class="nav-icon">📚</span>Banco</div>
     </div>
     <div class="sidebar-footer">
       <div class="sidebar-user"><strong id="sidebarEmail">—</strong>Coach</div>
@@ -565,6 +651,29 @@
             </select>
           </div>
           <div id="progresoContent"><div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Selecciona un cliente para ver su progreso.</div></div></div>
+        </div>
+      </div>
+
+      <!-- TAB: BANCO DE EJERCICIOS -->
+      <div id="tab-banco" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📚 Banco de ejercicios</div>
+            <button class="btn btn-primary" onclick="abrirBancoNuevo()">+ Nuevo ejercicio</button>
+          </div>
+          <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:0.5rem;flex-wrap:wrap" id="bancoFiltros">
+            <button class="banco-filter active" onclick="filtrarBanco('')">Todos</button>
+            <button class="banco-filter" onclick="filtrarBanco('Pecho')">Pecho</button>
+            <button class="banco-filter" onclick="filtrarBanco('Espalda')">Espalda</button>
+            <button class="banco-filter" onclick="filtrarBanco('Hombros')">Hombros</button>
+            <button class="banco-filter" onclick="filtrarBanco('Pierna')">Pierna</button>
+            <button class="banco-filter" onclick="filtrarBanco('Glúteo')">Glúteo</button>
+            <button class="banco-filter" onclick="filtrarBanco('Bíceps')">Bíceps</button>
+            <button class="banco-filter" onclick="filtrarBanco('Tríceps')">Tríceps</button>
+            <button class="banco-filter" onclick="filtrarBanco('Core')">Core</button>
+            <button class="banco-filter" onclick="filtrarBanco('Calentamiento')">Calentamiento</button>
+          </div>
+          <div id="bancoLista"><div class="loading-inline"><div class="spinner"></div>Cargando...</div></div>
         </div>
       </div>
 
@@ -737,6 +846,45 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modalMensaje')">Cancelar</button>
       <button class="btn btn-primary" onclick="guardarMensaje()">Enviar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BANCO MODAL -->
+<div class="banco-modal" id="bancoModal">
+  <div class="banco-box">
+    <div class="banco-header">
+      <div class="banco-title">Banco de ejercicios</div>
+      <button class="btn-icon" onclick="cerrarBanco()">✕</button>
+    </div>
+    <input class="banco-search" id="bancoSearchInput" placeholder="🔍 Buscar ejercicio..." oninput="filtrarBancoModal(this.value)">
+    <div class="banco-filters" id="bancoModalFiltros">
+      <button class="banco-filter active" onclick="filtrarBancoModalGrupo('')">Todos</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Pecho')">Pecho</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Espalda')">Espalda</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Hombros')">Hombros</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Pierna')">Pierna</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Glúteo')">Glúteo</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Bíceps')">Bíceps</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Tríceps')">Tríceps</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Core')">Core</button>
+      <button class="banco-filter" onclick="filtrarBancoModalGrupo('Calentamiento')">Calentamiento</button>
+    </div>
+    <div class="banco-list" id="bancoModalLista"></div>
+    <div class="banco-footer">
+      <input class="banco-new-input" id="bancoNuevoNombre" placeholder="Nombre del nuevo ejercicio...">
+      <select class="banco-grupo-select" id="bancoNuevoGrupo">
+        <option value="Pecho">Pecho</option>
+        <option value="Espalda">Espalda</option>
+        <option value="Hombros">Hombros</option>
+        <option value="Pierna">Pierna</option>
+        <option value="Glúteo">Glúteo</option>
+        <option value="Bíceps">Bíceps</option>
+        <option value="Tríceps">Tríceps</option>
+        <option value="Core">Core</option>
+        <option value="Calentamiento">Calentamiento</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="guardarNuevoAlBanco()">+ Guardar</button>
     </div>
   </div>
 </div>
@@ -975,7 +1123,7 @@ async function confirmarPassword() {
 const tabTitles = {
   dashboard:'Dashboard', clientes:'Clientes',
   rutinas:'Rutinas', nutricion:'Nutrición',
-  progreso:'Progreso', pagos:'Pagos'
+  progreso:'Progreso', pagos:'Pagos', banco:'Banco de Ejercicios'
 };
 const tabActions = {
   clientes: () => `<button class="btn btn-primary" onclick="abrirNuevoCliente()">+ Nuevo cliente</button>`
@@ -1012,6 +1160,7 @@ function showTab(tab) {
   document.getElementById('topbarActions').innerHTML = tabActions[tab] ? tabActions[tab]() : '';
   if (tab === 'clientes') cargarClientes();
   if (tab === 'pagos') cargarPagos();
+  if (tab === 'banco') cargarBanco();
 }
 
 // ══════════════════════════════════════
@@ -1363,6 +1512,7 @@ function buildRutinaEditor(r) {
 
 function buildDiaEditor(dia, idx, semanaId) {
   const isRest = dia.descanso;
+  const titulo = dia.titulo || '';
   const ejerciciosHtml = (dia.ejercicios||[]).map((e,ei) => buildEjercicioRow(e, ei, semanaId, idx)).join('');
   const calorHtml = (dia.calentamiento||[]).map((e,ei) => buildCalorRow(e, ei, semanaId, idx)).join('');
 
@@ -1370,18 +1520,25 @@ function buildDiaEditor(dia, idx, semanaId) {
     <div class="day-editor" id="dia-${semanaId}-${idx}">
       <div class="day-editor-header">
         <div class="day-editor-name">Día ${idx+1} — ${dia.nombre}</div>
+        ${!isRest ? `<input class="day-titulo-input" placeholder="Pecho / Espalda / Pierna..." value="${titulo}" title="Título del día" onchange="updateTituloDia('${semanaId}',${idx},this.value)">` : ''}
         <button class="day-rest-toggle ${isRest?'active':''}" onclick="toggleDiaDescanso('${semanaId}',${idx})">
           ${isRest ? '✓ Descanso' : '🛌 Marcar descanso'}
         </button>
       </div>
       ${isRest ? '' : `
       <div class="exercises-editor">
-        <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:0.5rem">🔥 Calentamiento</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+          <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber)">🔥 Calentamiento</div>
+          <button class="add-exercise-btn" style="margin:0" onclick="abrirBancoModal('${semanaId}',${idx},'calor')">📚 Banco</button>
+        </div>
         <div class="ex-header-row"><span class="ex-col-label">Ejercicio</span><span class="ex-col-label">Series</span><span class="ex-col-label">Reps/Tiempo</span><span class="ex-col-label">Descanso</span><span class="ex-col-label">Notas</span><span></span></div>
         <div id="calor-${semanaId}-${idx}">${calorHtml}</div>
-        <button class="add-exercise-btn" onclick="addEjercicio('${semanaId}',${idx},'calor')">+ Añadir ejercicio calentamiento</button>
+        <button class="add-exercise-btn" onclick="addEjercicio('${semanaId}',${idx},'calor')">+ Añadir calentamiento</button>
         <div style="height:1px;background:var(--border);margin:0.8rem 0"></div>
-        <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:0.5rem">💪 Sesión principal</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+          <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue)">💪 Sesión principal</div>
+          <button class="add-exercise-btn" style="margin:0" onclick="abrirBancoModal('${semanaId}',${idx},'ejercicios')">📚 Banco</button>
+        </div>
         <div class="ex-header-row"><span class="ex-col-label">Ejercicio</span><span class="ex-col-label">Series</span><span class="ex-col-label">Reps</span><span class="ex-col-label">Descanso</span><span class="ex-col-label">RIR/Notas</span><span></span></div>
         <div id="ejercicios-${semanaId}-${idx}">${ejerciciosHtml}</div>
         <button class="add-exercise-btn" onclick="addEjercicio('${semanaId}',${idx},'ejercicios')">+ Añadir ejercicio</button>
@@ -1468,7 +1625,7 @@ async function crearRutinaMes(clienteId) {
   const mesRaw = (document.getElementById('selectMesRutina')?.value || new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'}));
   const mes = mesRaw.charAt(0).toUpperCase() + mesRaw.slice(1);
   const fase = document.getElementById('selectFaseRutina')?.value || 'Acumulación';
-  const diasIniciales = DIAS.map(d => ({nombre:d, descanso:false, calentamiento:[], ejercicios:[]}));
+  const diasIniciales = DIAS.map(d => ({nombre:d, titulo:'', descanso:false, calentamiento:[], ejercicios:[]}));
 
   // ID temporal para mostrar inmediatamente
   const tempId = 'temp-' + Date.now();
@@ -1511,6 +1668,9 @@ async function guardarRutina(rutinaId) {
       const cont = document.getElementById(`${tipo === 'calor' ? 'calor' : 'ejercicios'}-${rutinaId}-${dIdx}`);
       if (!cont) return;
       rutinaCache[rutinaId].dias[dIdx][key] = [];
+      // Guardar título del día
+      const tituloInput = document.querySelector(`#dia-${rutinaId}-${dIdx} .day-titulo-input`);
+      if (tituloInput) rutinaCache[rutinaId].dias[dIdx].titulo = tituloInput.value;
       cont.querySelectorAll('.exercise-row').forEach(row => {
         const inputs = row.querySelectorAll('input');
         rutinaCache[rutinaId].dias[dIdx][key].push({
@@ -2111,7 +2271,10 @@ async function cargarMiRutina(clienteId) {
       const allEx = [...(dia.calentamiento||[]), ...(dia.ejercicios||[])];
       return `<div class="rutina-dia open" id="rdía-${i}">
         <div class="rutina-dia-header" onclick="toggleRutinaDia(this.parentElement)">
-          <div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div>
+          <div>
+            <div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div>
+            ${dia.titulo ? `<div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-top:2px">${dia.titulo}</div>` : ''}
+          </div>
           <span style="font-size:0.72rem;color:var(--gray)">${allEx.length} ejercicios</span>
         </div>
         <div class="rutina-dia-body">
@@ -2154,7 +2317,10 @@ function mostrarMiRutina(idx) {
       const allEx = [...(dia.calentamiento||[]), ...(dia.ejercicios||[])];
       return `<div class="rutina-dia open" id="rdía-${i}">
         <div class="rutina-dia-header" onclick="toggleRutinaDia(this.parentElement)">
-          <div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div>
+          <div>
+            <div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div>
+            ${dia.titulo ? `<div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-top:2px">${dia.titulo}</div>` : ''}
+          </div>
           <span style="font-size:0.72rem;color:var(--gray)">${allEx.length} ejercicios</span>
         </div>
         <div class="rutina-dia-body">
@@ -2517,6 +2683,173 @@ function toggleClienteEx(el) {
   const ch = el.querySelector('.ex-checkbox');
   ch.textContent = el.classList.contains('done') ? '✓' : '';
   actualizarCheckinBar();
+}
+
+
+// ══════════════════════════════════════
+//  BANCO DE EJERCICIOS
+// ══════════════════════════════════════
+let bancoDatos = [];
+let bancoFiltroActual = '';
+let bancoTarget = null; // { semanaId, diaIdx, tipo }
+
+async function cargarBanco() {
+  const lista = document.getElementById('bancoLista');
+  if (lista) lista.innerHTML = '<div class="loading-inline"><div class="spinner"></div>Cargando...</div>';
+  const { data } = await sb.from('ejercicios_banco').select('*').order('grupo_muscular').order('nombre');
+  bancoDatos = data || [];
+  renderBancoTab();
+}
+
+function renderBancoTab() {
+  const lista = document.getElementById('bancoLista');
+  if (!lista) return;
+  const filtrados = bancoFiltroActual
+    ? bancoDatos.filter(e => e.grupo_muscular === bancoFiltroActual)
+    : bancoDatos;
+  if (!filtrados.length) {
+    lista.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-text">No hay ejercicios aún. Añade el primero con el botón de arriba.</div></div>`;
+    return;
+  }
+  lista.innerHTML = `<table><thead><tr><th>Ejercicio</th><th>Grupo muscular</th><th>Acciones</th></tr></thead>
+    <tbody>${filtrados.map(e => `<tr>
+      <td><strong>${e.nombre}</strong></td>
+      <td><span class="badge badge-blue">${e.grupo_muscular||'—'}</span></td>
+      <td><button class="btn btn-sm btn-danger" onclick="eliminarDelBanco('${e.id}')">Borrar</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function filtrarBanco(grupo) {
+  bancoFiltroActual = grupo;
+  document.querySelectorAll('#bancoFiltros .banco-filter').forEach(b => {
+    b.classList.toggle('active', b.textContent === (grupo || 'Todos'));
+  });
+  renderBancoTab();
+}
+
+async function abrirBancoNuevo() {
+  // En el tab banco, el footer ya tiene el formulario
+  const input = document.getElementById('bancoNuevoNombre');
+  if (input) input.focus();
+}
+
+async function guardarNuevoAlBanco() {
+  const nombre = (document.getElementById('bancoNuevoNombre')?.value || '').trim();
+  const grupo = document.getElementById('bancoNuevoGrupo')?.value || '';
+  if (!nombre) { toast('Escribe el nombre del ejercicio','error'); return; }
+
+  // Añadir al array local inmediatamente
+  const tmpItem = { id: 'tmp-'+Date.now(), nombre, grupo_muscular: grupo };
+  bancoDatos.push(tmpItem);
+  renderBancoTab();
+  if (document.getElementById('bancoModalLista')) renderBancoModal();
+  document.getElementById('bancoNuevoNombre').value = '';
+  toast(`"${nombre}" añadido ✓`, 'success');
+
+  // Guardar en DB
+  const { data, error } = await sb.from('ejercicios_banco').insert([{ nombre, grupo_muscular: grupo }]).select().single();
+  if (error) { toast('Error: '+error.message,'error'); return; }
+  // Reemplazar tmp por el real
+  const idx = bancoDatos.findIndex(e => e.id === tmpItem.id);
+  if (idx !== -1) bancoDatos[idx] = data;
+}
+
+async function eliminarDelBanco(id) {
+  if (!confirm('¿Eliminar este ejercicio del banco?')) return;
+  bancoDatos = bancoDatos.filter(e => e.id !== id);
+  renderBancoTab();
+  sb.from('ejercicios_banco').delete().eq('id', id);
+}
+
+// ── MODAL banco para seleccionar al crear rutina ──
+let bancoModalFiltroGrupo = '';
+let bancoModalBusqueda = '';
+
+function abrirBancoModal(semanaId, diaIdx, tipo) {
+  bancoTarget = { semanaId, diaIdx, tipo };
+  bancoModalFiltroGrupo = '';
+  bancoModalBusqueda = '';
+  document.getElementById('bancoSearchInput').value = '';
+  document.querySelectorAll('#bancoModalFiltros .banco-filter').forEach(b => b.classList.remove('active'));
+  document.querySelector('#bancoModalFiltros .banco-filter').classList.add('active');
+  // Cargar banco si no está cargado
+  if (!bancoDatos.length) {
+    sb.from('ejercicios_banco').select('*').order('grupo_muscular').order('nombre').then(({ data }) => {
+      bancoDatos = data || [];
+      renderBancoModal();
+    });
+  } else {
+    renderBancoModal();
+  }
+  document.getElementById('bancoModal').classList.add('open');
+}
+
+function cerrarBanco() {
+  document.getElementById('bancoModal').classList.remove('open');
+  bancoTarget = null;
+}
+
+function renderBancoModal() {
+  const lista = document.getElementById('bancoModalLista');
+  if (!lista) return;
+  let filtrados = bancoDatos;
+  if (bancoModalFiltroGrupo) filtrados = filtrados.filter(e => e.grupo_muscular === bancoModalFiltroGrupo);
+  if (bancoModalBusqueda) filtrados = filtrados.filter(e => e.nombre.toLowerCase().includes(bancoModalBusqueda.toLowerCase()));
+
+  if (!filtrados.length) {
+    lista.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--gray);font-size:0.82rem">No hay ejercicios${bancoModalBusqueda ? ' con ese nombre' : ''}.</div>`;
+    return;
+  }
+  lista.innerHTML = filtrados.map(e => `
+    <div class="banco-item" onclick="seleccionarDelBanco('${e.nombre}','${e.grupo_muscular||''}')">
+      <div>
+        <div class="banco-item-name">${e.nombre}</div>
+        <div class="banco-item-grupo">${e.grupo_muscular||''}</div>
+      </div>
+      <button class="banco-item-add" onclick="event.stopPropagation();seleccionarDelBanco('${e.nombre}','${e.grupo_muscular||''}')">+ Añadir</button>
+    </div>`).join('');
+}
+
+function filtrarBancoModal(q) {
+  bancoModalBusqueda = q;
+  renderBancoModal();
+}
+
+function filtrarBancoModalGrupo(grupo) {
+  bancoModalFiltroGrupo = grupo;
+  document.querySelectorAll('#bancoModalFiltros .banco-filter').forEach(b => {
+    b.classList.toggle('active', b.textContent === (grupo || 'Todos'));
+  });
+  renderBancoModal();
+}
+
+function seleccionarDelBanco(nombre, grupo) {
+  if (!bancoTarget) return;
+  const { semanaId, diaIdx, tipo } = bancoTarget;
+  // Añadir a la rutina
+  if (!rutinaCache[semanaId]) return;
+  const dias = rutinaCache[semanaId].dias;
+  const key = tipo === 'calor' ? 'calentamiento' : 'ejercicios';
+  if (!dias[diaIdx][key]) dias[diaIdx][key] = [];
+  const newEx = { nombre, series:'', reps:'', descanso:'', notas:'' };
+  dias[diaIdx][key].push(newEx);
+  const ei = dias[diaIdx][key].length - 1;
+  const container = document.getElementById(`${tipo === 'calor' ? 'calor' : 'ejercicios'}-${semanaId}-${diaIdx}`);
+  if (container) {
+    const div = document.createElement('div');
+    div.innerHTML = tipo === 'calor'
+      ? buildCalorRow(newEx, ei, semanaId, diaIdx)
+      : buildEjercicioRow(newEx, ei, semanaId, diaIdx);
+    container.appendChild(div.firstElementChild);
+  }
+  cerrarBanco();
+  toast(`"${nombre}" añadido ✓`, 'success');
+}
+
+// ── Actualizar título del día en cache ──
+function updateTituloDia(semanaId, diaIdx, valor) {
+  if (!rutinaCache[semanaId]) return;
+  rutinaCache[semanaId].dias[diaIdx].titulo = valor;
 }
 
 </script>
