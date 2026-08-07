@@ -441,6 +441,96 @@
     }
     .ex-peso-badge.vacio { background: var(--border); color: var(--gray); }
 
+
+    /* ── CHECKLIST HÁBITOS DIARIOS ── */
+    .habitos-section {
+      background: var(--white); border: 1px solid var(--border);
+      margin-bottom: 1.2rem; overflow: hidden;
+    }
+    .habitos-header {
+      background: var(--navy); padding: 1rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .habitos-title {
+      font-family: var(--display); font-size: 0.85rem; font-weight: 900;
+      color: #fff; letter-spacing: -0.3px;
+    }
+    .habitos-fecha {
+      font-size: 0.62rem; color: rgba(255,255,255,0.4);
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .habitos-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0; padding: 0;
+    }
+    .habito-item {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      cursor: pointer; transition: background 0.15s; user-select: none;
+    }
+    .habito-item:nth-child(even) { border-right: none; }
+    .habito-item:nth-last-child(-n+2) { border-bottom: none; }
+    .habito-item:hover { background: #f0f4ff; }
+    .habito-item.done { background: #f0fdf4; }
+    .habito-check {
+      width: 22px; height: 22px; border: 2px solid var(--border);
+      border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; transition: all 0.2s;
+    }
+    .habito-item.done .habito-check {
+      background: var(--green); border-color: var(--green); color: #fff;
+    }
+    .habito-text {
+      font-size: 0.78rem; color: var(--navy); font-weight: 500; line-height: 1.3;
+    }
+    .habito-item.done .habito-text { color: var(--gray); text-decoration: line-through; }
+    .habito-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    .habitos-progress {
+      padding: 0.8rem 1.2rem; background: #f8faff;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .habitos-progress-bar {
+      flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+    }
+    .habitos-progress-fill {
+      height: 100%; background: var(--green); border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .habitos-progress-text {
+      font-size: 0.7rem; color: var(--gray); white-space: nowrap; font-weight: 600;
+    }
+    .habitos-reset {
+      font-size: 0.62rem; color: var(--gray); cursor: pointer;
+      text-decoration: underline; background: none; border: none;
+      font-family: var(--body);
+    }
+
+    /* Macros colapsables */
+    .macros-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.7rem 1.2rem; cursor: pointer; user-select: none;
+      border-bottom: 1px solid var(--border); background: #f8faff;
+    }
+    .macros-toggle-label {
+      font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gray); font-weight: 600;
+    }
+    .macros-toggle-icon { font-size: 0.75rem; color: var(--gray); transition: transform 0.3s; }
+    .macros-toggle.open .macros-toggle-icon { transform: rotate(180deg); }
+    .macros-content { display: none; }
+    .macros-content.open { display: block; }
+
+    @media(max-width:768px) {
+      .habitos-grid { grid-template-columns: 1fr; }
+      .habito-item { border-right: none; }
+      .habito-item:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); }
+      .habito-item:last-child { border-bottom: none; }
+    }
+
     /* ── PREVENIR SCROLL LATERAL ── */
     html, body { overflow-x: hidden; max-width: 100vw; }
     * { -webkit-tap-highlight-color: transparent; }
@@ -2498,98 +2588,103 @@ async function cargarMiDieta(clienteId) {
   const { data } = await sb.from('planes_nutricionales').select('*').eq('cliente_id', clienteId).order('semana', {ascending:true});
   const planes = data || [];
 
+  // ── Checklist de hábitos diarios ──
+  const hoy = new Date().toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+  const hoyKey = new Date().toISOString().split('T')[0];
+  const habitosGuardados = JSON.parse(localStorage.getItem('habitos_' + hoyKey) || '{}');
+
+  const HABITOS = [
+    { id:'comidas',    icon:'🍽️', texto:'He completado todas mis comidas' },
+    { id:'agua',       icon:'💧', texto:'He bebido 2L de agua' },
+    { id:'pasos',      icon:'🚶', texto:'He dado 8.000 pasos hoy' },
+    { id:'sueno',      icon:'😴', texto:'He dormido +7 horas' },
+    { id:'suplementos',icon:'💊', texto:'He tomado mis suplementos' },
+    { id:'entreno',    icon:'💪', texto:'He completado mi entrenamiento' },
+  ];
+
+  const totalHabitos = HABITOS.length;
+  const hechos = HABITOS.filter(h => habitosGuardados[h.id]).length;
+  const pct = Math.round((hechos / totalHabitos) * 100);
+
+  const habitosHtml = `
+    <div class="habitos-section">
+      <div class="habitos-header">
+        <div class="habitos-title">✅ Hábitos del día</div>
+        <div class="habitos-fecha">${hoy}</div>
+      </div>
+      <div class="habitos-grid">
+        ${HABITOS.map(h => `
+          <div class="habito-item${habitosGuardados[h.id] ? ' done' : ''}" onclick="toggleHabito('${h.id}', '${hoyKey}', this)">
+            <span class="habito-icon">${h.icon}</span>
+            <span class="habito-text">${h.texto}</span>
+            <div class="habito-check" style="margin-left:auto">${habitosGuardados[h.id] ? '✓' : ''}</div>
+          </div>`).join('')}
+      </div>
+      <div class="habitos-progress">
+        <div class="habitos-progress-bar">
+          <div class="habitos-progress-fill" id="habitosProgressFill" style="width:${pct}%"></div>
+        </div>
+        <span class="habitos-progress-text">${hechos}/${totalHabitos} hábitos</span>
+        <button class="habitos-reset" onclick="resetHabitos('${hoyKey}')">Reiniciar</button>
+      </div>
+    </div>`;
+
   if (!planes.length) {
-    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">Tu coach aún no ha publicado tu plan nutricional.</div></div>`;
+    cont.innerHTML = habitosHtml + `<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">Tu coach aún no ha publicado tu plan nutricional.</div></div>`;
     return;
   }
 
-  // Si hay varios planes, mostrar selector de mes
+  // Selector de meses
   let selectorHtml = '';
   if (planes.length > 1) {
-    selectorHtml = `
-      <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
-        ${planes.map((p,pi) => `
-          <button onclick="mostrarMiPlanNutri(${pi})" id="btn-plan-${pi}"
-            class="btn btn-sm ${pi===planes.length-1?'btn-primary':'btn-secondary'}">
-            ${p.mes||'Plan '+(pi+1)}
-          </button>`).join('')}
-      </div>`;
+    selectorHtml = `<div style="display:flex;gap:0.5rem;margin-bottom:1.2rem;flex-wrap:wrap">
+      ${planes.map((p,pi) => `<button onclick="mostrarMiPlanNutri(${pi})" id="btn-plan-${pi}"
+        class="btn btn-sm ${pi===planes.length-1?'btn-primary':'btn-secondary'}">${p.mes||'Plan '+(pi+1)}</button>`).join('')}
+    </div>`;
   }
 
-  cont.innerHTML = selectorHtml + `<div id="plan-nutri-cliente"></div>`;
-
-  // Guardar planes en variable global para cambiar entre ellos
+  cont.innerHTML = habitosHtml + selectorHtml + `<div id="plan-nutri-cliente"></div>`;
   window._misPlanesNutri = planes;
-
-  // Mostrar el más reciente por defecto
   mostrarMiPlanNutri(planes.length - 1);
 }
 
-function mostrarMiPlanNutri(idx) {
-  const planes = window._misPlanesNutri || [];
-  const plan = planes[idx];
-  if (!plan) return;
+function toggleHabito(id, fechaKey, el) {
+  const guardados = JSON.parse(localStorage.getItem('habitos_' + fechaKey) || '{}');
+  const ahora = !guardados[id];
+  guardados[id] = ahora;
+  localStorage.setItem('habitos_' + fechaKey, JSON.stringify(guardados));
 
-  // Actualizar botones activos
-  planes.forEach((_,i) => {
-    const btn = document.getElementById('btn-plan-'+i);
-    if (btn) {
-      btn.className = 'btn btn-sm ' + (i === idx ? 'btn-primary' : 'btn-secondary');
-    }
+  el.classList.toggle('done', ahora);
+  const check = el.querySelector('.habito-check');
+  if (check) check.textContent = ahora ? '✓' : '';
+
+  // Actualizar barra
+  const total = 6;
+  const hechos = Object.values(guardados).filter(Boolean).length;
+  const pct = Math.round((hechos / total) * 100);
+  const fill = document.getElementById('habitosProgressFill');
+  if (fill) fill.style.width = pct + '%';
+  const txt = document.querySelector('.habitos-progress-text');
+  if (txt) txt.textContent = hechos + '/' + total + ' hábitos';
+
+  // Confetti si completa todo
+  if (hechos === 6) toast('🎉 ¡Todos los hábitos completados! Brutal.', 'success');
+}
+
+function resetHabitos(fechaKey) {
+  if (!confirm('¿Reiniciar el checklist de hoy?')) return;
+  localStorage.removeItem('habitos_' + fechaKey);
+  document.querySelectorAll('.habito-item').forEach(el => {
+    el.classList.remove('done');
+    const check = el.querySelector('.habito-check');
+    if (check) check.textContent = '';
   });
-
-  const comidas = plan.datos?.comidas || [];
-  document.getElementById('plan-nutri-cliente').innerHTML = `
-    <div style="background:var(--navy);padding:1rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-family:var(--display);font-size:0.55rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:3px">PLAN NUTRICIONAL</div>
-        <div style="font-family:var(--display);font-size:1rem;font-weight:900;color:#fff">${plan.mes||'Plan '+(idx+1)}</div>
-      </div>
-      <div style="font-family:var(--display);font-size:1.2rem;font-weight:900;color:#fff">${plan.calorias||'—'} <span style="font-size:0.65rem;color:rgba(255,255,255,0.4);font-family:var(--body);font-weight:400">kcal</span></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:1.2rem">
-      <div style="background:var(--white);border:1px solid var(--border);padding:0.8rem;text-align:center">
-        <div style="font-family:var(--display);font-size:1.3rem;font-weight:900;color:#ef4444">${plan.proteinas||'—'}</div>
-        <div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Proteínas g</div>
-      </div>
-      <div style="background:var(--white);border:1px solid var(--border);padding:0.8rem;text-align:center">
-        <div style="font-family:var(--display);font-size:1.3rem;font-weight:900;color:#f59e0b">${plan.carbohidratos||'—'}</div>
-        <div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Carbos g</div>
-      </div>
-      <div style="background:var(--white);border:1px solid var(--border);padding:0.8rem;text-align:center">
-        <div style="font-family:var(--display);font-size:1.3rem;font-weight:900;color:#10b981">${plan.grasas||'—'}</div>
-        <div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Grasas g</div>
-      </div>
-    </div>
-    ${comidas.length ? comidas.map((c,ci) => `
-      <div style="background:var(--white);border:1px solid var(--border);margin-bottom:0.6rem;overflow:hidden">
-        <div style="background:#f8faff;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;cursor:pointer"
-          onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-          <span style="font-family:var(--display);font-size:0.62rem;font-weight:700;letter-spacing:2px;color:var(--blue)">${c.hora||''}</span>
-          <span style="font-family:var(--display);font-size:0.82rem;font-weight:900;flex:1">${c.nombre||'Comida'}</span>
-          <div style="width:20px;height:20px;border:2px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0" onclick="event.stopPropagation();toggleComidaCheck(this)"></div>
-        </div>
-        <div class="meal-items" style="padding:0.8rem 1.2rem">
-          ${(c.items||[]).filter(i=>i.nombre).map(item => `
-            <div class="ex-check-row">
-              <div class="ex-checkbox" onclick="event.stopPropagation();marcarEjercicio(this)"><span class="ex-check-tick" style="display:none;color:#fff;font-size:0.75rem;font-weight:700;pointer-events:none">✓</span></div>
-              <span class="ex-check-name">${item.nombre}</span>
-              <span class="ex-check-info">${item.cantidad||''} ${item.proteinas?'P:'+item.proteinas+'g':''} ${item.carbos?'C:'+item.carbos+'g':''}</span>
-            </div>`).join('')}
-          ${c.nota ? `<div style="background:var(--bg);border-left:3px solid var(--blue);padding:0.5rem 0.8rem;margin-top:0.5rem;font-size:0.75rem;color:var(--gray)">${c.nota}</div>` : ''}
-        </div>
-      </div>`).join('')
-    : `<div style="text-align:center;padding:2rem;color:var(--gray);font-size:0.82rem">Este plan aún no tiene comidas.</div>`}
-  `;
+  const fill = document.getElementById('habitosProgressFill');
+  if (fill) fill.style.width = '0%';
+  const txt = document.querySelector('.habitos-progress-text');
+  if (txt) txt.textContent = '0/6 hábitos';
 }
 
-function toggleComidaCheck(btn) {
-  const done = btn.classList.toggle('done');
-  btn.textContent = done ? '✓' : '';
-  btn.style.background = done ? 'var(--green)' : '';
-  btn.style.borderColor = done ? 'var(--green)' : '';
-  btn.style.color = done ? '#fff' : '';
-}
 
 async function cargarMiProgreso(clienteId) {
   const cont = document.getElementById('cliente-mi-progreso');
@@ -3081,4 +3176,85 @@ function mostrarPesoGuardado(nombre) {
 
 </script>
 </body>
-</html>
+</html>function mostrarMiPlanNutri(idx) {
+  const planes = window._misPlanesNutri || [];
+  const plan = planes[idx];
+  if (!plan) return;
+
+  document.querySelectorAll('[id^="btn-plan-"]').forEach((b,i) => {
+    b.className = 'btn btn-sm ' + (i === idx ? 'btn-primary' : 'btn-secondary');
+  });
+
+  const comidas = plan.datos?.comidas || [];
+  const cont = document.getElementById('plan-nutri-cliente');
+  if (!cont) return;
+
+  cont.innerHTML = `
+    <div style="background:var(--navy);padding:1rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--display);font-size:0.55rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:3px">PLAN NUTRICIONAL</div>
+        <div style="font-family:var(--display);font-size:1rem;font-weight:900;color:#fff">${plan.mes||'Plan '+(idx+1)}</div>
+      </div>
+      <div style="font-size:0.72rem;color:rgba(255,255,255,0.5)">Come bien · Rinde mejor</div>
+    </div>
+
+    ${plan.proteinas ? `
+    <!-- MACROS OPCIONALES COLAPSABLES -->
+    <div style="background:var(--white);border:1px solid var(--border);margin-bottom:1rem;">
+      <div class="macros-toggle" onclick="toggleMacros(this)">
+        <span class="macros-toggle-label">📊 Ver macros y calorías (avanzado)</span>
+        <span class="macros-toggle-icon">▼</span>
+      </div>
+      <div class="macros-content">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border)">
+          <div style="padding:0.8rem;text-align:center;border-right:1px solid var(--border)">
+            <div style="font-family:var(--display);font-size:1.3rem;font-weight:900;color:#ef4444">${plan.proteinas}</div>
+            <div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Proteínas g</div>
+          </div>
+          <div style="padding:0.8rem;text-align:center;border-right:1px solid var(--border)">
+            <div style="font-family:var(--display);font-size:1.3rem;font-weight:900;color:#f59e0b">${plan.carbohidratos}</div>
+            <div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Carbos g</div>
+          </div>
+          <div style="padding:0.8rem;text-align:center;border-right:1px solid var(--border)">
+            <div style="font-family:var(--display);font-size:1.3rem;font-weight:900;color:#10b981">${plan.grasas}</div>
+            <div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Grasas g</div>
+          </div>
+          <div style="padding:0.8rem;text-align:center;background:var(--navy)">
+            <div style="font-family:var(--display);font-size:1.3rem;font-weight:900;color:#fff">${plan.calorias}</div>
+            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Kcal</div>
+          </div>
+        </div>
+      </div>
+    </div>` : ''}
+
+    <!-- COMIDAS -->
+    ${comidas.length ? comidas.map((c,ci) => `
+      <div style="background:var(--white);border:1px solid var(--border);margin-bottom:0.6rem;overflow:hidden">
+        <div style="background:#f8faff;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;cursor:pointer"
+          onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+          <span style="font-family:var(--display);font-size:0.62rem;font-weight:700;letter-spacing:2px;color:var(--blue)">${c.hora||''}</span>
+          <span style="font-family:var(--display);font-size:0.85rem;font-weight:900;flex:1">${c.nombre||'Comida'}</span>
+          <div style="width:22px;height:22px;border:2px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;transition:all 0.2s" onclick="event.stopPropagation();toggleComidaCheck(this)" title="Marcar comida completada"></div>
+        </div>
+        <div class="meal-items" style="padding:0.8rem 1.2rem">
+          ${(c.items||[]).filter(i=>i.nombre).map(item => `
+            <div class="ex-check-row">
+              <div class="ex-checkbox" onclick="event.stopPropagation();marcarEjercicio(this.parentElement)">
+                <span class="ex-check-tick" style="display:none;color:#fff;font-size:0.75rem;font-weight:700;pointer-events:none">✓</span>
+              </div>
+              <span class="ex-check-name">${item.nombre}</span>
+              <span class="ex-check-info">${item.cantidad||''}</span>
+            </div>`).join('')}
+          ${c.nota ? `<div style="background:var(--bg);border-left:3px solid var(--blue);padding:0.5rem 0.8rem;margin-top:0.5rem;font-size:0.75rem;color:var(--gray);font-style:italic">${c.nota}</div>` : ''}
+        </div>
+      </div>`).join('')
+    : `<div style="text-align:center;padding:2rem;color:var(--gray);font-size:0.82rem">Tu coach añadirá las comidas pronto.</div>`}
+  `;
+}
+
+function toggleMacros(el) {
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('open');
+}
+
+
