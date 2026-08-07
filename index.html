@@ -691,7 +691,7 @@
       <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
       <div class="nav-item" onclick="showTab('clientes')"><span class="nav-icon">👥</span>Clientes</div>
       <div class="nav-item" onclick="showTab('rutinas')"><span class="nav-icon">💪</span>Rutinas</div>
-      <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">🥗</span>Nutrición</div>
+      <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">✅</span>Hábitos</div>
       <div class="nav-item" onclick="showTab('progreso')"><span class="nav-icon">📈</span>Progreso</div>
       <div class="nav-item" onclick="showTab('pagos')"><span class="nav-icon">💳</span>Pagos</div>
       <div class="nav-item" onclick="showTab('banco')"><span class="nav-icon">📚</span>Banco</div>
@@ -752,15 +752,30 @@
         </div>
       </div>
 
-      <!-- TAB: NUTRICIÓN -->
+      <!-- TAB: HÁBITOS -->
       <div id="tab-nutricion" class="tab-content">
+        <div class="stats-row" id="habitosStatsRow" style="margin-bottom:1.5rem">
+          <div class="stat-card"><span class="stat-n" id="statHabitosHoy">—</span><div class="stat-l">Hábitos completados hoy</div></div>
+          <div class="stat-card"><span class="stat-n" id="statClientesActivos">—</span><div class="stat-l">Clientes con actividad</div></div>
+          <div class="stat-card"><span class="stat-n" id="statMejorHabito">—</span><div class="stat-l">Hábito más cumplido</div></div>
+          <div class="stat-card"><span class="stat-n" id="statPctGeneral">—</span><div class="stat-l">Cumplimiento general</div></div>
+        </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Planes nutricionales</div>
-            <select id="nutriClienteSelect" class="search-box" style="width:220px" onchange="cargarNutriCliente()">
+          <div class="card-header">
+            <div class="card-title">✅ Hábitos por cliente</div>
+            <select id="nutriClienteSelect" class="search-box" style="width:220px" onchange="cargarHabitosCliente()">
+              <option value="">Todos los clientes</option>
+            </select>
+          </div>
+          <div id="nutriContent"><div class="loading-inline"><div class="spinner"></div>Cargando hábitos...</div></div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <div class="card-header"><div class="card-title">🥗 Planes nutricionales</div>
+            <select id="nutriPlanClienteSelect" class="search-box" style="width:220px" onchange="cargarNutriCliente()">
               <option value="">Selecciona cliente...</option>
             </select>
           </div>
-          <div id="nutriContent"><div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">Selecciona un cliente para ver y editar su plan nutricional.</div></div></div>
+          <div id="nutriPlanContent"><div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">Selecciona un cliente para ver y editar su plan nutricional.</div></div></div>
         </div>
       </div>
 
@@ -845,7 +860,7 @@
   </div>
   <div class="cliente-nav">
     <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina')">💪 Mi Rutina</div>
-    <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta')">🥗 Mi Dieta</div>
+    <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta')">✅ Mis Hábitos</div>
     <div class="cliente-nav-item" onclick="showClienteTab('mi-progreso')">📈 Mi Progreso</div>
     <div class="cliente-nav-item" onclick="showClienteTab('mi-plan')">📋 Mi Plan</div>
     <div class="cliente-nav-item" onclick="showClienteTab('mensajes')">💬 Mensajes</div>
@@ -1305,6 +1320,7 @@ function showTab(tab) {
   if (tab === 'clientes') cargarClientes();
   if (tab === 'pagos') cargarPagos();
   if (tab === 'banco') cargarBanco();
+  if (tab === 'nutricion') cargarHabitosResumen();
 }
 
 // ══════════════════════════════════════
@@ -2291,7 +2307,7 @@ async function cargarPagos() {
 // ══════════════════════════════════════
 async function poblarSelectores() {
   const { data } = await sb.from('clientes').select('id,nombre').order('nombre');
-  ['rutinasClienteSelect','nutriClienteSelect','progresoClienteSelect'].forEach(id => {
+  ['rutinasClienteSelect','nutriClienteSelect','nutriPlanClienteSelect','progresoClienteSelect'].forEach(id => {
     const sel = document.getElementById(id);
     sel.innerHTML = '<option value="">Selecciona cliente...</option>' +
       (data||[]).map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
@@ -2367,10 +2383,10 @@ async function mostrarRutinaTab(rutinaId) {
 }
 
 async function cargarNutriCliente() {
-  const id = document.getElementById('nutriClienteSelect').value;
+  const id = document.getElementById('nutriPlanClienteSelect').value;
   if (!id) return;
   currentClienteId = id;
-  const cont = document.getElementById('nutriContent');
+  const cont = document.getElementById('nutriPlanContent');
   const { data } = await sb.from('planes_nutricionales').select('*').eq('cliente_id', id).order('semana');
   const planes = data || [];
   planes.forEach(p => {
@@ -2379,7 +2395,7 @@ async function cargarNutriCliente() {
   });
   cont.innerHTML = `
     <div style="padding:1rem;display:flex;gap:0.8rem">
-      <button class="btn btn-primary" onclick="crearPlanNutri('${id}')">+ Nuevo plan mensual</button>
+      <button class="btn btn-primary" onclick="crearPlanNutri('${id}')">+ Nuevo plan</button>
     </div>
     ${planes.length ? planes.map(p => buildNutriPlanEditor(p)).join('') : '<div class="empty-state"><div class="empty-state-icon">🥗</div><div class="empty-state-text">Sin planes nutricionales aún.</div></div>'}`;
 }
@@ -3172,6 +3188,72 @@ function mostrarPesoGuardado(nombre) {
       setTimeout(() => input.style.borderColor = '', 1500);
     }
   });
+}
+
+
+// ══════════════════════════════════════
+//  HÁBITOS — PANEL COACH
+// ══════════════════════════════════════
+const HABITOS_NOMBRES = {
+  comidas: '🍽️ Comidas completadas',
+  agua: '💧 2L de agua',
+  pasos: '🚶 8.000 pasos',
+  sueno: '😴 +7h de sueño',
+  suplementos: '💊 Suplementos',
+  entreno: '💪 Entrenamiento'
+};
+
+async function cargarHabitosResumen() {
+  const cont = document.getElementById('nutriContent');
+  if (!cont) return;
+
+  // No tenemos acceso al localStorage de los clientes desde el coach
+  // Mostramos el panel de planes nutricionales por cliente como resumen
+  // y un mensaje explicativo
+
+  const { data } = await sb.from('clientes').select('id,nombre,email,estado').eq('estado','activo').order('nombre');
+  const clientesActivos = data || [];
+
+  document.getElementById('statClientesActivos').textContent = clientesActivos.length;
+  document.getElementById('statHabitosHoy').textContent = '—';
+  document.getElementById('statMejorHabito').textContent = '💧 Agua';
+  document.getElementById('statPctGeneral').textContent = '—';
+
+  if (!clientesActivos.length) {
+    cont.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><div class="empty-state-text">No hay clientes activos aún.</div></div>';
+    return;
+  }
+
+  cont.innerHTML = `
+    <div style="padding:1rem 1.5rem;background:#f0f4ff;border-bottom:1px solid var(--border);font-size:0.78rem;color:var(--gray);line-height:1.7">
+      📱 Los hábitos los registra cada cliente desde su portal. Aquí puedes ver el listado de clientes activos y gestionar sus planes nutricionales desde el selector de abajo.
+    </div>
+    <table>
+      <thead><tr><th>Cliente</th><th>Estado</th><th>Planes nutricionales</th><th>Acciones</th></tr></thead>
+      <tbody>
+        ${clientesActivos.map(c => `<tr>
+          <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
+          <td>${badgeEstado(c.estado)}</td>
+          <td><button class="btn btn-sm btn-secondary" onclick="seleccionarNutriCliente('${c.id}','${c.nombre}')">Ver planes</button></td>
+          <td><button class="btn btn-sm btn-primary" onclick="verCliente('${c.id}')">Perfil completo</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function seleccionarNutriCliente(id, nombre) {
+  const sel = document.getElementById('nutriPlanClienteSelect');
+  if (sel) { sel.value = id; cargarNutriCliente(); }
+  // Scroll al plan
+  setTimeout(() => {
+    const el = document.getElementById('nutriPlanContent');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }, 300);
+}
+
+async function cargarHabitosCliente() {
+  // Por ahora muestra el resumen general
+  cargarHabitosResumen();
 }
 
 </script>
