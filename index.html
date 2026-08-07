@@ -409,6 +409,38 @@
     /* Tab banco en nav coach */
     .nav-item-banco { cursor: pointer; }
 
+
+    /* ── CAMPO PESO EJERCICIO ── */
+    .peso-input-wrap {
+      display: flex; align-items: center; gap: 4px;
+      flex-shrink: 0;
+    }
+    .peso-input {
+      width: 70px; border: 1px solid var(--border);
+      border-radius: 4px; padding: 0.3rem 0.5rem;
+      font-size: 0.78rem; font-family: var(--body);
+      color: var(--navy); text-align: center; outline: none;
+      transition: border-color 0.2s;
+    }
+    .peso-input:focus { border-color: var(--blue); }
+    .peso-input::placeholder { color: var(--gray); font-size: 0.7rem; }
+    .peso-label {
+      font-size: 0.6rem; color: var(--gray);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .peso-saved { color: var(--green); font-size: 0.65rem; opacity: 0; transition: opacity 0.3s; }
+    .peso-saved.show { opacity: 1; }
+    
+    /* Vista cliente — ejercicio con peso */
+    .ex-check-row { position: relative; }
+    .ex-peso-badge {
+      background: var(--blue); color: #fff;
+      font-size: 0.6rem; font-weight: 600;
+      padding: 0.15rem 0.5rem; border-radius: 3px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .ex-peso-badge.vacio { background: var(--border); color: var(--gray); }
+
     /* ── PREVENIR SCROLL LATERAL ── */
     html, body { overflow-x: hidden; max-width: 100vw; }
     * { -webkit-tap-highlight-color: transparent; }
@@ -2359,11 +2391,11 @@ async function cargarMiRutina(clienteId) {
         <div class="rutina-dia-body">
           ${dia.calentamiento && dia.calentamiento.length ? `
             <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:0.8rem 0 0.5rem">🔥 Calentamiento</div>
-            ${dia.calentamiento.map((e,ei) => buildClienteExRow(e, `c-${i}-${ei}`)).join('')}
+            ${dia.calentamiento.map((e,ei) => buildClienteExRow(e, `c-${i}-${ei}`, rutina.id, i)).join('')}
           ` : ''}
           ${dia.ejercicios && dia.ejercicios.length ? `
             <div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:0.8rem 0 0.5rem">💪 Sesión principal</div>
-            ${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`)).join('')}
+            ${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`, rutina.id, i)).join('')}
           ` : ''}
         </div>
       </div>`;
@@ -2403,22 +2435,36 @@ function mostrarMiRutina(idx) {
           <span style="font-size:0.72rem;color:var(--gray)">${allEx.length} ejercicios</span>
         </div>
         <div class="rutina-dia-body">
-          ${dia.calentamiento&&dia.calentamiento.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:0.8rem 0 0.5rem">🔥 Calentamiento</div>${dia.calentamiento.map((e,ei) => buildClienteExRow(e, `c-${i}-${ei}`)).join('')}` : ''}
-          ${dia.ejercicios&&dia.ejercicios.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:0.8rem 0 0.5rem">💪 Sesión principal</div>${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`)).join('')}` : ''}
+          ${dia.calentamiento&&dia.calentamiento.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:0.8rem 0 0.5rem">🔥 Calentamiento</div>${dia.calentamiento.map((e,ei) => buildClienteExRow(e, `c-${i}-${ei}`, rutina.id, i)).join('')}` : ''}
+          ${dia.ejercicios&&dia.ejercicios.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:0.8rem 0 0.5rem">💪 Sesión principal</div>${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`, rutina.id, i)).join('')}` : ''}
         </div>
       </div>`;
     }).join('')}`;
   setTimeout(() => initCheckinBar(r.cliente_id), 100);
 }
 
-function buildClienteExRow(e, key) {
+function buildClienteExRow(e, key, rutinaId, diaIdx) {
   if (!e.nombre) return '';
+  const pesoKey = 'peso_' + key;
+  const pesoGuardado = window._cargasCliente?.[e.nombre] || '';
   return `<div class="ex-check-row" id="exrow-${key}">
     <div class="ex-checkbox" onclick="event.stopPropagation();marcarEjercicio(this)">
       <span class="ex-check-tick" style="display:none;color:#fff;font-size:0.75rem;font-weight:700;pointer-events:none">✓</span>
     </div>
-    <span class="ex-check-name">${e.nombre}</span>
-    <span class="ex-check-info">${e.series||''}${e.series&&e.reps?' × ':''}${e.reps||''} ${e.descanso?'· '+e.descanso:''}</span>
+    <div style="flex:1;min-width:0">
+      <span class="ex-check-name">${e.nombre}</span>
+      <div style="font-size:0.68rem;color:var(--gray);margin-top:1px">${e.series||''}${e.series&&e.reps?' × ':''}${e.reps||''} ${e.descanso?'· '+e.descanso:''}</div>
+    </div>
+    <div class="peso-input-wrap">
+      <input class="peso-input" 
+        id="${pesoKey}"
+        placeholder="kg" 
+        value="${pesoGuardado}"
+        onclick="event.stopPropagation()"
+        onchange="event.stopPropagation();guardarCargaEjercicio('${e.nombre}', this.value, '${rutinaId||''}', ${diaIdx||0})"
+        title="Peso usado en este ejercicio">
+      <span class="peso-label">kg</span>
+    </div>
   </div>`;
 }
 
@@ -2950,6 +2996,87 @@ const _rutinaTimers = {};
 function autoguardarRutina(rutinaId) {
   clearTimeout(_rutinaTimers[rutinaId]);
   _rutinaTimers[rutinaId] = setTimeout(() => guardarRutina(rutinaId), 2000);
+}
+
+
+// ══════════════════════════════════════
+//  CARGAS DE EJERCICIOS (portal cliente)
+// ══════════════════════════════════════
+window._cargasCliente = {};
+window._cargasClienteIds = {}; // nombre_ejercicio -> id en DB
+
+async function cargarCargasCliente(clienteId, rutinaId) {
+  const { data } = await sb.from('cargas_ejercicios')
+    .select('*')
+    .eq('cliente_id', clienteId)
+    .eq('rutina_id', rutinaId);
+  
+  window._cargasCliente = {};
+  window._cargasClienteIds = {};
+  (data || []).forEach(c => {
+    window._cargasCliente[c.ejercicio_nombre] = c.peso;
+    window._cargasClienteIds[c.ejercicio_nombre] = c.id;
+  });
+
+  // Actualizar inputs ya renderizados
+  Object.entries(window._cargasCliente).forEach(([nombre, peso]) => {
+    document.querySelectorAll('.peso-input').forEach(input => {
+      const row = input.closest('.ex-check-row');
+      const nameEl = row?.querySelector('.ex-check-name');
+      if (nameEl && nameEl.textContent === nombre) {
+        input.value = peso;
+      }
+    });
+  });
+}
+
+async function guardarCargaEjercicio(nombre, peso, rutinaId, diaIdx) {
+  if (!nombre) return;
+  
+  // Actualizar cache local
+  window._cargasCliente[nombre] = peso;
+
+  // Buscar el cliente_id del usuario actual
+  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  if (!cliente) return;
+
+  const existingId = window._cargasClienteIds[nombre];
+  
+  if (existingId) {
+    // Actualizar
+    sb.from('cargas_ejercicios').update({ 
+      peso, 
+      updated_at: new Date().toISOString() 
+    }).eq('id', existingId).then(({ error }) => {
+      if (!error) mostrarPesoGuardado(nombre);
+    });
+  } else {
+    // Insertar nuevo
+    sb.from('cargas_ejercicios').insert([{
+      cliente_id: cliente.id,
+      rutina_id: rutinaId,
+      dia_idx: diaIdx,
+      ejercicio_nombre: nombre,
+      peso
+    }]).select().single().then(({ data, error }) => {
+      if (!error && data) {
+        window._cargasClienteIds[nombre] = data.id;
+        mostrarPesoGuardado(nombre);
+      }
+    });
+  }
+}
+
+function mostrarPesoGuardado(nombre) {
+  // Feedback visual en el input
+  document.querySelectorAll('.peso-input').forEach(input => {
+    const row = input.closest('.ex-check-row');
+    const nameEl = row?.querySelector('.ex-check-name');
+    if (nameEl && nameEl.textContent === nombre) {
+      input.style.borderColor = 'var(--green)';
+      setTimeout(() => input.style.borderColor = '', 1500);
+    }
+  });
 }
 
 </script>
