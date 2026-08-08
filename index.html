@@ -2542,6 +2542,12 @@ async function cargarMiRutina(clienteId) {
             ${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`, rutina.id, i)).join('')}
           ` : ''}
         </div>
+        <div class="dia-progress-bar">
+          <div class="dia-progress-inner"><div class="dia-progress-fill" style="width:0%"></div></div>
+          <div class="dia-progress-text">0/${allEx.length}</div>
+          <button class="btn-dia-checkin" onclick="hacerCheckinDia(${i}, '${rutina.id}', '${dia.nombre}', '${dia.titulo||''}')">&#x2713; Check-in</button>
+          <span class="dia-checkin-done">&#x2705; Completado</span>
+        </div>
       </div>`;
     }).join('')}</div>`;
 
