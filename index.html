@@ -531,6 +531,43 @@
       .habito-item:last-child { border-bottom: none; }
     }
 
+
+    /* ── PROGRESO POR DÍA ── */
+    .dia-progress-bar {
+      padding: 0.6rem 1.2rem;
+      background: #f8faff;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .dia-progress-inner {
+      flex: 1; height: 5px; background: var(--border);
+      border-radius: 3px; overflow: hidden;
+    }
+    .dia-progress-fill {
+      height: 100%; background: var(--blue);
+      border-radius: 3px; transition: width 0.3s ease;
+      width: 0%;
+    }
+    .dia-progress-fill.completo { background: var(--green); }
+    .dia-progress-text {
+      font-size: 0.65rem; color: var(--gray);
+      white-space: nowrap; font-weight: 600; min-width: 55px; text-align: right;
+    }
+    .btn-dia-checkin {
+      background: var(--green); color: #fff; border: none;
+      padding: 0.4rem 1rem; font-family: var(--display);
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; cursor: pointer;
+      transition: all 0.2s; display: none;
+    }
+    .btn-dia-checkin.visible { display: block; }
+    .btn-dia-checkin:active { transform: scale(0.97); }
+    .dia-checkin-done {
+      font-size: 0.68rem; color: var(--green);
+      font-weight: 600; display: none; white-space: nowrap;
+    }
+    .dia-checkin-done.visible { display: block; }
+
     /* ── PREVENIR SCROLL LATERAL ── */
     html, body { overflow-x: hidden; max-width: 100vw; }
     * { -webkit-tap-highlight-color: transparent; }
@@ -2533,17 +2570,26 @@ function mostrarMiRutina(idx) {
     ${dias.map((dia, i) => {
       if (dia.descanso) return `<div class="rutina-dia descanso"><div class="rutina-dia-header" style="cursor:default"><div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div><span style="font-size:0.72rem;color:#6b3fa0">🛌 Descanso</span></div></div>`;
       const allEx = [...(dia.calentamiento||[]), ...(dia.ejercicios||[])];
+      const rutinaIdStr = rutina ? rutina.id : '';
       return `<div class="rutina-dia open" id="rdía-${i}">
         <div class="rutina-dia-header" onclick="toggleRutinaDia(this.parentElement)">
           <div>
             <div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div>
             ${dia.titulo ? `<div style="font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-top:2px">${dia.titulo}</div>` : ''}
           </div>
-          <span style="font-size:0.72rem;color:var(--gray)">${allEx.length} ejercicios</span>
+          <span style="font-size:0.72rem;color:var(--gray)" id="dia-count-${i}">${allEx.length} ejercicios</span>
         </div>
         <div class="rutina-dia-body">
           ${dia.calentamiento&&dia.calentamiento.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:0.8rem 0 0.5rem">🔥 Calentamiento</div>${dia.calentamiento.map((e,ei) => buildClienteExRow(e, `c-${i}-${ei}`, rutina.id, i)).join('')}` : ''}
           ${dia.ejercicios&&dia.ejercicios.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:0.8rem 0 0.5rem">💪 Sesión principal</div>${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`, rutina.id, i)).join('')}` : ''}
+        </div>
+        <div class="dia-progress-bar">
+          <div class="dia-progress-inner">
+            <div class="dia-progress-fill" style="width:0%"></div>
+          </div>
+          <div class="dia-progress-text">0/${allEx.length}</div>
+          <button class="btn-dia-checkin" onclick="hacerCheckinDia(${i}, '${rutinaIdStr}', '${dia.nombre}', '${dia.titulo||''}')">✓ Check-in</button>
+          <span class="dia-checkin-done">✅ Completado</span>
         </div>
       </div>`;
     }).join('')}`;
@@ -2554,7 +2600,7 @@ function buildClienteExRow(e, key, rutinaId, diaIdx) {
   if (!e.nombre) return '';
   const pesoKey = 'peso_' + key;
   const pesoGuardado = window._cargasCliente?.[e.nombre] || '';
-  return `<div class="ex-check-row" id="exrow-${key}">
+  return `<div class="ex-check-row" id="exrow-${key}" data-dia="${diaIdx}" data-rutina="${rutinaId||''}">
     <div class="ex-checkbox" onclick="event.stopPropagation();marcarEjercicio(this)">
       <span class="ex-check-tick" style="display:none;color:#fff;font-size:0.75rem;font-weight:700;pointer-events:none">✓</span>
     </div>
@@ -2582,7 +2628,33 @@ function marcarEjercicio(checkboxEl) {
   tick.style.display = isDone ? 'block' : 'none';
   checkboxEl.style.background = isDone ? 'var(--blue)' : '';
   checkboxEl.style.borderColor = isDone ? 'var(--blue)' : '';
+  // Actualizar progreso del día correspondiente
+  const diaIdx = row.dataset.dia;
+  if (diaIdx !== undefined) actualizarProgressDia(diaIdx);
   actualizarCheckinBar();
+}
+
+function actualizarProgressDia(diaIdx) {
+  const diaEl = document.getElementById('rdía-' + diaIdx);
+  if (!diaEl) return;
+  const total = diaEl.querySelectorAll('.ex-check-row').length;
+  const done = diaEl.querySelectorAll('.ex-check-row.done').length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+
+  const fill = diaEl.querySelector('.dia-progress-fill');
+  const text = diaEl.querySelector('.dia-progress-text');
+  const btnCheckin = diaEl.querySelector('.btn-dia-checkin');
+  const doneLabel = diaEl.querySelector('.dia-checkin-done');
+
+  if (fill) {
+    fill.style.width = pct + '%';
+    fill.classList.toggle('completo', done === total && total > 0);
+  }
+  if (text) text.textContent = done + '/' + total + ' ejercicios';
+  if (btnCheckin) btnCheckin.classList.toggle('visible', done === total && total > 0);
+  if (doneLabel) {
+    // No ocultar si ya se hizo checkin
+  }
 }
 
 function toggleRutinaDia(el) {
@@ -2833,9 +2905,9 @@ function actualizarCheckinBar() {
   totalEjercicios = allRows.length;
   hechos = document.querySelectorAll('#cliente-mi-rutina .ex-check-row.done').length;
 
-  if (totalEjercicios === 0) { bar.classList.remove('visible'); return; }
+  if (totalEjercicios === 0) { bar?.classList.remove('visible'); return; }
 
-  bar.classList.add('visible');
+  // bar.classList.add('visible'); // Desactivado — usamos progreso por día
   const pct = Math.round((hechos / totalEjercicios) * 100);
   text.textContent = `${hechos} / ${totalEjercicios} ejercicios`;
   fill.style.width = pct + '%';
@@ -3338,6 +3410,57 @@ function toggleMacros(el) {
 }
 
 
+
+
+// ── CHECK-IN POR DÍA ──
+async function hacerCheckinDia(diaIdx, rutinaId, diaNombre, tituloEjercicio) {
+  const diaEl = document.getElementById('rdía-' + diaIdx);
+  if (!diaEl) return;
+
+  const total = diaEl.querySelectorAll('.ex-check-row').length;
+  const done = diaEl.querySelectorAll('.ex-check-row.done').length;
+  if (done < total) {
+    toast('Marca todos los ejercicios del día primero', 'error');
+    return;
+  }
+
+  const label = tituloEjercicio || diaNombre || ('Día ' + (diaIdx + 1));
+  const sensaciones = ['💪 Muy bien', '😊 Bien', '😐 Regular', '😓 Con esfuerzo'];
+  const sensacion = sensaciones[0]; // Por defecto muy bien
+
+  // Guardar en Supabase
+  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  if (!cliente) { toast('Error al identificar cliente', 'error'); return; }
+
+  const hoy = new Date().toISOString().split('T')[0];
+  const nota = '💪 Check-in completado: ' + label + ' · ' + new Date().toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+
+  const { error } = await sb.from('progreso').insert([{
+    cliente_id: cliente.id,
+    fecha: hoy,
+    notas: nota
+  }]);
+
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+
+  // UI feedback
+  const btn = diaEl.querySelector('.btn-dia-checkin');
+  const doneLabel = diaEl.querySelector('.dia-checkin-done');
+  const fill = diaEl.querySelector('.dia-progress-fill');
+
+  if (btn) btn.classList.remove('visible');
+  if (doneLabel) doneLabel.classList.add('visible');
+  if (fill) fill.style.background = 'var(--green)';
+
+  toast('✅ ' + label + ' completado y registrado', 'success');
+
+  // Si todos los días completados
+  const totalDias = document.querySelectorAll('.rutina-dia:not(.descanso)').length;
+  const diasCompletados = document.querySelectorAll('.dia-checkin-done.visible').length;
+  if (diasCompletados >= totalDias) {
+    setTimeout(() => toast('🏆 ¡Semana completa! Eres una máquina.', 'success'), 500);
+  }
+}
 
 </script>
 </body>
