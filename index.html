@@ -1217,6 +1217,8 @@ async function login() {
   if (error) { err.style.display = 'block'; return; }
 
   currentUser = data.user;
+  // Guardar email en localStorage para restaurar sesión
+  localStorage.setItem('pf_user_email', currentUser.email);
   await iniciarSesion();
 }
 
@@ -1238,6 +1240,7 @@ async function iniciarSesion() {
 async function logout() {
   await sb.auth.signOut();
   currentUser = null;
+  localStorage.removeItem('pf_user_email');
   showScreen('loginScreen');
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPass').value = '';
@@ -3302,39 +3305,74 @@ const HABITOS_NOMBRES = {
 async function cargarHabitosResumen() {
   const cont = document.getElementById('nutriContent');
   if (!cont) return;
+  cont.innerHTML = '<div class="loading-inline"><div class="spinner"></div>Cargando hábitos...</div>';
 
-  // No tenemos acceso al localStorage de los clientes desde el coach
-  // Mostramos el panel de planes nutricionales por cliente como resumen
-  // y un mensaje explicativo
+  const hoy = new Date().toISOString().split('T')[0];
 
-  const { data } = await sb.from('clientes').select('id,nombre,email,estado').eq('estado','activo').order('nombre');
-  const clientesActivos = data || [];
+  // Cargar clientes activos y sus registros de hábitos de hoy
+  const { data: clientesActivos } = await sb.from('clientes').select('id,nombre,email,estado').eq('estado','activo').order('nombre');
+  const clts = clientesActivos || [];
 
-  document.getElementById('statClientesActivos').textContent = clientesActivos.length;
-  document.getElementById('statHabitosHoy').textContent = '—';
+  // Cargar registros de hábitos de hoy (los que empiezan con HABITOS:)
+  const { data: habitosHoy } = await sb.from('progreso')
+    .select('cliente_id,notas,fecha')
+    .eq('fecha', hoy)
+    .like('notas', 'HABITOS:%');
+
+  const habitosPorCliente = {};
+  (habitosHoy || []).forEach(h => {
+    try {
+      const datos = JSON.parse(h.notas.replace('HABITOS:', ''));
+      habitosPorCliente[h.cliente_id] = datos;
+    } catch(e) {}
+  });
+
+  const HABITOS_LABELS = {
+    comidas: '🍽️ Comidas', agua: '💧 Agua', pasos: '🚶 Pasos',
+    sueno: '😴 Sueño', suplementos: '💊 Suplementos', entreno: '💪 Entreno'
+  };
+
+  const clientesConHabitos = clts.filter(c => habitosPorCliente[c.id]);
+  const totalHabitosHoy = clientesConHabitos.reduce((acc, c) => {
+    return acc + Object.values(habitosPorCliente[c.id] || {}).filter(Boolean).length;
+  }, 0);
+
+  // Stats
+  document.getElementById('statClientesActivos').textContent = clts.length;
+  document.getElementById('statHabitosHoy').textContent = clientesConHabitos.length + '/' + clts.length;
   document.getElementById('statMejorHabito').textContent = '💧 Agua';
-  document.getElementById('statPctGeneral').textContent = '—';
+  const pctGeneral = clts.length ? Math.round((clientesConHabitos.length / clts.length) * 100) : 0;
+  document.getElementById('statPctGeneral').textContent = pctGeneral + '%';
 
-  if (!clientesActivos.length) {
+  if (!clts.length) {
     cont.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><div class="empty-state-text">No hay clientes activos aún.</div></div>';
     return;
   }
 
-  cont.innerHTML = `
-    <div style="padding:1rem 1.5rem;background:#f0f4ff;border-bottom:1px solid var(--border);font-size:0.78rem;color:var(--gray);line-height:1.7">
-      📱 Los hábitos los registra cada cliente desde su portal. Aquí puedes ver el listado de clientes activos y gestionar sus planes nutricionales desde el selector de abajo.
-    </div>
-    <table>
-      <thead><tr><th>Cliente</th><th>Estado</th><th>Planes nutricionales</th><th>Acciones</th></tr></thead>
-      <tbody>
-        ${clientesActivos.map(c => `<tr>
-          <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
-          <td>${badgeEstado(c.estado)}</td>
-          <td><button class="btn btn-sm btn-secondary" onclick="seleccionarNutriCliente('${c.id}','${c.nombre}')">Ver planes</button></td>
-          <td><button class="btn btn-sm btn-primary" onclick="verCliente('${c.id}')">Perfil completo</button></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
+  let rows = clts.map(c => {
+    const habitos = habitosPorCliente[c.id] || null;
+    const hechos = habitos ? Object.values(habitos).filter(Boolean).length : null;
+    const habitosHtml = habitos
+      ? Object.entries(HABITOS_LABELS).map(([id, label]) =>
+          '<span style="display:inline-block;padding:0.15rem 0.5rem;margin:1px;font-size:0.62rem;border-radius:2px;background:' +
+          (habitos[id] ? '#d1fae5;color:#065f46' : '#fee2e2;color:#991b1b') + '">' +
+          label + (habitos[id] ? ' ✓' : ' ✗') + '</span>'
+        ).join('')
+      : '<span style="font-size:0.72rem;color:var(--gray)">Sin actividad hoy</span>';
+
+    const progresoBadge = habitos
+      ? '<span class="badge ' + (hechos === 6 ? 'badge-green' : hechos >= 3 ? 'badge-amber' : 'badge-red') + '">' + hechos + '/6</span>'
+      : '<span class="badge" style="background:#f3f4f6;color:#6b7280">—</span>';
+
+    return '<tr>'
+      + '<td><strong>' + c.nombre + '</strong><div style="font-size:0.72rem;color:var(--gray)">' + c.email + '</div></td>'
+      + '<td>' + progresoBadge + '</td>'
+      + '<td style="max-width:300px">' + habitosHtml + '</td>'
+      + '<td><button class="btn btn-sm btn-primary" data-id="' + c.id + '" onclick="verCliente(this.dataset.id)">Perfil</button></td>'
+      + '</tr>';
+  }).join('');
+
+  cont.innerHTML = '<table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 function seleccionarNutriCliente(id, nombre) {
