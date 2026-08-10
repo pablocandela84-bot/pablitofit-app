@@ -2634,7 +2634,17 @@ function marcarEjercicio(checkboxEl) {
   tick.style.display = isDone ? 'block' : 'none';
   checkboxEl.style.background = isDone ? 'var(--blue)' : '';
   checkboxEl.style.borderColor = isDone ? 'var(--blue)' : '';
-  // Actualizar progreso del día correspondiente
+
+  // Guardar en localStorage
+  const exId = row.id;
+  const rutinaId = row.dataset.rutina || '';
+  const storageKey = 'checklist_' + rutinaId + '_' + new Date().toISOString().split('T')[0];
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  if (isDone) saved[exId] = true;
+  else delete saved[exId];
+  localStorage.setItem(storageKey, JSON.stringify(saved));
+
+  // Actualizar progreso del día
   const diaIdx = row.dataset.dia;
   if (diaIdx !== undefined) actualizarProgressDia(diaIdx);
   actualizarCheckinBar();
@@ -3219,11 +3229,17 @@ async function cargarCargasCliente(clienteId, rutinaId) {
       }
     });
   });
+
+  // Restaurar también los pesos guardados localmente (por si Supabase falla)
+  restaurarPesosLocal(rutinaId);
 }
 
 async function guardarCargaEjercicio(nombre, peso, rutinaId, diaIdx) {
   if (!nombre) return;
   
+  // Guardar en localStorage como backup inmediato
+  guardarPesoLocal(nombre, peso, rutinaId);
+
   // Actualizar cache local
   window._cargasCliente[nombre] = peso;
 
@@ -3467,6 +3483,70 @@ async function hacerCheckinDia(diaIdx, rutinaId, diaNombre, tituloEjercicio) {
     setTimeout(() => toast('🏆 ¡Semana completa! Eres una máquina.', 'success'), 500);
   }
 }
+
+
+// ── RESTAURAR CHECKLIST DESDE LOCALSTORAGE ──
+function restaurarChecklist(rutinaId) {
+  const hoy = new Date().toISOString().split('T')[0];
+  const storageKey = 'checklist_' + rutinaId + '_' + hoy;
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+  if (!Object.keys(saved).length) return;
+
+  // Restaurar cada ejercicio marcado
+  Object.keys(saved).forEach(exId => {
+    const row = document.getElementById(exId);
+    if (!row) return;
+    row.classList.add('done');
+    const tick = row.querySelector('.ex-check-tick');
+    const checkbox = row.querySelector('.ex-checkbox');
+    if (tick) tick.style.display = 'block';
+    if (checkbox) {
+      checkbox.style.background = 'var(--blue)';
+      checkbox.style.borderColor = 'var(--blue)';
+    }
+  });
+
+  // Actualizar barras de progreso de todos los días
+  [0,1,2,3,4,5,6].forEach(i => actualizarProgressDia(i));
+  actualizarCheckinBar();
+}
+
+// ── RESTAURAR PESOS DESDE LOCALSTORAGE (backup offline) ──
+function guardarPesoLocal(nombre, peso, rutinaId) {
+  const key = 'pesos_' + rutinaId;
+  const pesos = JSON.parse(localStorage.getItem(key) || '{}');
+  pesos[nombre] = peso;
+  localStorage.setItem(key, JSON.stringify(pesos));
+}
+
+function restaurarPesosLocal(rutinaId) {
+  const key = 'pesos_' + rutinaId;
+  const pesos = JSON.parse(localStorage.getItem(key) || '{}');
+  document.querySelectorAll('.peso-input').forEach(input => {
+    const row = input.closest('.ex-check-row');
+    const nombre = row?.querySelector('.ex-check-name')?.textContent;
+    if (nombre && pesos[nombre] && !input.value) {
+      input.value = pesos[nombre];
+    }
+  });
+}
+
+// ── LIMPIAR CHECKLISTS ANTIGUOS (más de 7 días) ──
+function limpiarChecklistsAntiguos() {
+  const hoy = new Date();
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('checklist_')) {
+      const parts = key.split('_');
+      const fecha = parts[parts.length - 1];
+      if (fecha && fecha.match(/\d{4}-\d{2}-\d{2}/)) {
+        const diasDiff = (hoy - new Date(fecha)) / 86400000;
+        if (diasDiff > 7) localStorage.removeItem(key);
+      }
+    }
+  });
+}
+limpiarChecklistsAntiguos();
 
 </script>
 </body>
