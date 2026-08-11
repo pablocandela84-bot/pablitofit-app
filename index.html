@@ -2567,22 +2567,127 @@ async function cargarProgresoCliente() {
   const id = document.getElementById('progresoClienteSelect').value;
   if (!id) return;
   progresoClienteId = id;
-  // Usar mock para tab separado
-  const { data } = await sb.from('progreso').select('*').eq('cliente_id', id).order('fecha', {ascending:false});
-  const entradas = data || [];
+  
   const cont = document.getElementById('progresoContent');
-  cont.innerHTML = `
-    <div style="padding:1rem;display:flex;gap:0.8rem">
-      <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
-    </div>
-    ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
-      ${entradas.map(e => `<tr>
-        <td>${fmtFecha(e.fecha)}</td>
-        <td><strong>${e.peso||'—'} kg</strong></td>
-        <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
-        <td><button class="btn btn-sm btn-danger" onclick="eliminarProgresoTab('${e.id}')">Borrar</button></td>
-      </tr>`).join('')}
-    </tbody></table>` : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>'}`;
+  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando progreso...</div>';
+  
+  try {
+    // Obtener todas las fechas con progreso
+    const { data: ejerciciosData } = await sb
+      .from('progreso_ejercicios_diarios')
+      .select('fecha')
+      .eq('cliente_id', id)
+      .order('fecha', { ascending: false });
+    
+    const { data: habitosData } = await sb
+      .from('progreso_habitos_diarios')
+      .select('fecha')
+      .eq('cliente_id', id)
+      .order('fecha', { ascending: false });
+    
+    // Obtener notas desde tabla progreso antigua
+    const { data: notasData } = await sb
+      .from('progreso')
+      .select('*')
+      .eq('cliente_id', id)
+      .order('fecha', { ascending: false });
+    
+    // Agrupar fechas únicas
+    const fechasSet = new Set();
+    ejerciciosData?.forEach(e => fechasSet.add(e.fecha));
+    habitosData?.forEach(h => fechasSet.add(h.fecha));
+    
+    const fechas = Array.from(fechasSet).sort().reverse();
+    
+    if (fechas.length === 0) {
+      cont.innerHTML = `
+        <div style="padding:1rem;display:flex;gap:0.8rem">
+          <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
+        </div>
+        <div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>
+      `;
+      return;
+    }
+    
+    let html = `
+      <div style="padding:1rem;display:flex;gap:0.8rem;margin-bottom:1rem">
+        <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
+      </div>
+      <div style="display:grid; gap:2rem;">
+    `;
+    
+    for (const fecha of fechas) {
+      // Ejercicios del día
+      const { data: ejercicios } = await sb
+        .from('progreso_ejercicios_diarios')
+        .select('*')
+        .eq('cliente_id', id)
+        .eq('fecha', fecha)
+        .eq('completado', true);
+      
+      // Hábitos del día
+      const { data: habitos } = await sb
+        .from('progreso_habitos_diarios')
+        .select('*')
+        .eq('cliente_id', id)
+        .eq('fecha', fecha)
+        .eq('completado', true);
+      
+      // Notas del día
+      const notasDia = notasData?.find(n => n.fecha === fecha);
+      
+      html += `
+        <div style="border:1px solid var(--border); border-radius:0.8rem; padding:1.5rem; background:var(--white);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
+            <div style="font-family:var(--display); font-size:1.1rem; font-weight:900; color:var(--navy);">${fmtFecha(new Date(fecha))}</div>
+            <button class="btn btn-sm btn-danger" onclick="eliminarProgresoTab('${notasDia?.id || ''}')">Borrar</button>
+          </div>
+          
+          <!-- Notas -->
+          ${notasDia?.notas ? `
+            <div style="margin-bottom:1.5rem; padding:1rem; background:#f5f5f5; border-radius:0.5rem;">
+              <div style="font-size:0.85rem; font-weight:600; color:var(--navy); margin-bottom:0.5rem;">📝 Notas:</div>
+              <div style="color:var(--gray); font-size:0.9rem;">${notasDia.notas}</div>
+            </div>
+          ` : ''}
+          
+          <!-- Ejercicios -->
+          <div style="margin-bottom:1.5rem;">
+            <div style="font-size:0.9rem; font-weight:600; color:var(--navy); margin-bottom:0.8rem;">💪 Ejercicios completados:</div>
+            ${ejercicios && ejercicios.length > 0 ? `
+              <div style="display:grid; gap:0.5rem;">
+                ${ejercicios.map(ex => `
+                  <div style="padding:0.8rem; background:#f9f9f9; border-left:3px solid var(--blue); border-radius:0.4rem;">
+                    <div style="font-weight:600; color:var(--navy);">✅ ${ex.ejercicio_nombre}</div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '<div style="color:var(--gray); font-size:0.9rem;">Sin ejercicios completados</div>'}
+          </div>
+          
+          <!-- Hábitos -->
+          <div>
+            <div style="font-size:0.9rem; font-weight:600; color:var(--navy); margin-bottom:0.8rem;">✅ Hábitos completados:</div>
+            ${habitos && habitos.length > 0 ? `
+              <div style="display:grid; gap:0.5rem;">
+                ${habitos.map(h => `
+                  <div style="padding:0.8rem; background:#f9f9f9; border-left:3px solid var(--blue); border-radius:0.4rem;">
+                    <div style="font-weight:600; color:var(--navy);">✓ ${h.habito_nombre}</div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '<div style="color:var(--gray); font-size:0.9rem;">Sin hábitos completados</div>'}
+          </div>
+        </div>
+      `;
+    }
+    
+    html += `</div>`;
+    cont.innerHTML = html;
+  } catch (error) {
+    console.error('Error:', error);
+    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-text">Error cargando progreso</div></div>`;
+  }
 }
 
 async function eliminarProgresoTab(id) {
