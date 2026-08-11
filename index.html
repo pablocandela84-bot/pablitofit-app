@@ -2493,6 +2493,75 @@ async function cargarPortalCliente() {
   await cargarMisMensajes(cliente.id);
 }
 
+// ══════════════════════════════════════════════════════════════
+// CARGAR PROGRESO GUARDADO (Ejercicios + Hábitos)
+// ══════════════════════════════════════════════════════════════
+async function cargarProgresoGuardado(clienteId) {
+  if (!clienteId) return;
+  
+  const hoy = new Date().toISOString().split('T')[0];
+  
+  // 1. Cargar ejercicios completados del día
+  const { data: ejerciciosData } = await sb.from('progreso_ejercicios_diarios').select('*').eq('cliente_id', clienteId).eq('fecha', hoy);
+  
+  if (ejerciciosData && ejerciciosData.length > 0) {
+    ejerciciosData.forEach(ex => {
+      const rowEl = document.getElementById('exrow-' + ex.ejercicio_id);
+      if (rowEl) {
+        rowEl.classList.add('done');
+        const tick = rowEl.querySelector('.ex-check-tick');
+        if (tick) tick.style.display = 'block';
+        const checkbox = rowEl.querySelector('.ex-checkbox');
+        if (checkbox) {
+          checkbox.style.background = 'var(--blue)';
+          checkbox.style.borderColor = 'var(--blue)';
+        }
+      }
+      if (ex.peso) {
+        const pesoInput = document.getElementById('peso_' + ex.ejercicio_id);
+        if (pesoInput) pesoInput.value = ex.peso;
+      }
+    });
+    document.querySelectorAll('.rutina-dia').forEach((dia, idx) => {
+      actualizarProgressDia(idx);
+    });
+  }
+  
+  // 2. Cargar hábitos completados del día
+  const { data: habitosData } = await sb.from('progreso_habitos_diarios').select('*').eq('cliente_id', clienteId).eq('fecha', hoy);
+  
+  if (habitosData && habitosData.length > 0) {
+    habitosData.forEach(habito => {
+      const habitoEl = document.querySelector(`.habito-item[data-id="${habito.habito_id}"]`);
+      if (habitoEl) {
+        habitoEl.classList.add('done');
+        const check = habitoEl.querySelector('.habito-check');
+        if (check) check.textContent = '✓';
+      }
+    });
+    actualizarBarraHabitos(clienteId);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ACTUALIZAR BARRA DE HÁBITOS
+// ══════════════════════════════════════════════════════════════
+async function actualizarBarraHabitos(clienteId) {
+  const hoy = new Date().toISOString().split('T')[0];
+  
+  const { count } = await sb.from('progreso_habitos_diarios').select('id', { count: 'exact' }).eq('cliente_id', clienteId).eq('fecha', hoy).eq('completado', true);
+  
+  const hechos = count || 0;
+  const total = 6;
+  const pct = Math.round((hechos / total) * 100);
+  
+  const fill = document.getElementById('habitosProgressFill');
+  if (fill) fill.style.width = pct + '%';
+  
+  const txt = document.querySelector('.habitos-progress-text');
+  if (txt) txt.textContent = hechos + '/' + total + ' hábitos';
+}
+
 function showClienteTab(tab) {
   document.querySelectorAll('.cliente-nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.cliente-tab-content').forEach(t => t.classList.remove('active'));
@@ -2504,6 +2573,7 @@ function showClienteTab(tab) {
 }
 
 async function cargarMiRutina(clienteId) {
+  await cargarProgresoGuardado(clienteId);
   const cont = document.getElementById('cliente-mi-rutina');
   const { data } = await sb.from('rutinas').select('*').eq('cliente_id', clienteId).order('semana', {ascending:true});
   const rutinas = data || [];
@@ -2630,7 +2700,7 @@ function buildClienteExRow(e, key, rutinaId, diaIdx) {
   </div>`;
 }
 
-function marcarEjercicio(checkboxEl) {
+async function marcarEjercicio(checkboxEl) {
   const row = checkboxEl.closest('.ex-check-row');
   const tick = checkboxEl.querySelector('.ex-check-tick');
   const isDone = row.classList.toggle('done');
@@ -2638,18 +2708,38 @@ function marcarEjercicio(checkboxEl) {
   checkboxEl.style.background = isDone ? 'var(--blue)' : '';
   checkboxEl.style.borderColor = isDone ? 'var(--blue)' : '';
 
-  // Guardar en localStorage
   const exId = row.id;
   const rutinaId = row.dataset.rutina || '';
-  const storageKey = 'checklist_' + rutinaId + '_' + new Date().toISOString().split('T')[0];
-  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-  if (isDone) saved[exId] = true;
-  else delete saved[exId];
-  localStorage.setItem(storageKey, JSON.stringify(saved));
-
-  // Actualizar progreso del día
   const diaIdx = row.dataset.dia;
-  if (diaIdx !== undefined) actualizarProgressDia(diaIdx);
+  const hoy = new Date().toISOString().split('T')[0];
+  const ejercicioNombre = row.querySelector('.ex-check-name')?.textContent || '';
+  
+  if (!currentUser) {
+    toast('Error: Usuario no autenticado', 'error');
+    return;
+  }
+  
+  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  if (!cliente) { toast('Error: Cliente no encontrado', 'error'); return; }
+
+  try {
+    if (isDone) {
+      const { data: existing } = await sb.from('progreso_ejercicios_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', hoy).eq('ejercicio_id', exId).maybeSingle();
+      if (existing) {
+        await sb.from('progreso_ejercicios_diarios').update({ completado: true, updated_at: new Date().toISOString() }).eq('id', existing.id);
+      } else {
+        await sb.from('progreso_ejercicios_diarios').insert([{ cliente_id: cliente.id, rutina_id: rutinaId || null, fecha: hoy, dia_idx: diaIdx || 0, ejercicio_id: exId, ejercicio_nombre: ejercicioNombre, completado: true }]);
+      }
+    } else {
+      await sb.from('progreso_ejercicios_diarios').update({ completado: false, updated_at: new Date().toISOString() }).eq('cliente_id', cliente.id).eq('fecha', hoy).eq('ejercicio_id', exId);
+    }
+  } catch (error) {
+    console.error('Error al guardar ejercicio:', error);
+    toast('Error al guardar: ' + error.message, 'error');
+  }
+
+  const diaIdx_num = parseInt(diaIdx);
+  if (!isNaN(diaIdx_num)) actualizarProgressDia(diaIdx_num);
   actualizarCheckinBar();
 }
 
@@ -2723,7 +2813,7 @@ async function cargarMiDieta(clienteId) {
       </div>
       <div class="habitos-grid">
         ${HABITOS.map(h => `
-          <div class="habito-item${habitosGuardados[h.id] ? ' done' : ''}" onclick="toggleHabito('${h.id}', '${hoyKey}', this)">
+          <div class="habito-item${habitosGuardados[h.id] ? ' done' : ''}" data-id="${h.id}" onclick="toggleHabito('${h.id}', '${hoyKey}', this)">
             <span class="habito-icon">${h.icon}</span>
             <span class="habito-text">${h.texto}</span>
             <div class="habito-check" style="margin-left:auto">${habitosGuardados[h.id] ? '✓' : ''}</div>
@@ -2757,26 +2847,35 @@ async function cargarMiDieta(clienteId) {
   mostrarMiPlanNutri(planes.length - 1);
 }
 
-function toggleHabito(id, fechaKey, el) {
-  const guardados = JSON.parse(localStorage.getItem('habitos_' + fechaKey) || '{}');
-  const ahora = !guardados[id];
-  guardados[id] = ahora;
-  localStorage.setItem('habitos_' + fechaKey, JSON.stringify(guardados));
-
+async function toggleHabito(id, fechaKey, el) {
+  const hoy = new Date().toISOString().split('T')[0];
+  const ahora = !el.classList.contains('done');
+  
   el.classList.toggle('done', ahora);
   const check = el.querySelector('.habito-check');
   if (check) check.textContent = ahora ? '✓' : '';
 
-  // Actualizar barra
-  const total = 6;
-  const hechos = Object.values(guardados).filter(Boolean).length;
-  const pct = Math.round((hechos / total) * 100);
-  const fill = document.getElementById('habitosProgressFill');
-  if (fill) fill.style.width = pct + '%';
-  const txt = document.querySelector('.habitos-progress-text');
-  if (txt) txt.textContent = hechos + '/' + total + ' hábitos';
+  if (!currentUser) { toast('Error: Usuario no autenticado', 'error'); return; }
+  
+  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  if (!cliente) { toast('Error: Cliente no encontrado', 'error'); return; }
 
-  // Confetti si completa todo
+  try {
+    const { data: existing } = await sb.from('progreso_habitos_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', hoy).eq('habito_id', id).maybeSingle();
+    
+    if (existing) {
+      await sb.from('progreso_habitos_diarios').update({ completado: ahora, updated_at: new Date().toISOString() }).eq('id', existing.id);
+    } else if (ahora) {
+      await sb.from('progreso_habitos_diarios').insert([{ cliente_id: cliente.id, fecha: hoy, habito_id: id, habito_nombre: el.textContent || id, completado: true }]);
+    }
+  } catch (error) {
+    console.error('Error al guardar hábito:', error);
+    toast('Error al guardar: ' + error.message, 'error');
+  }
+
+  actualizarBarraHabitos(cliente.id);
+  const total = 6;
+  const hechos = document.querySelectorAll('.habito-item.done').length;
   if (hechos === 6) toast('🎉 ¡Todos los hábitos completados! Brutal.', 'success');
 }
 
@@ -3240,40 +3339,43 @@ async function cargarCargasCliente(clienteId, rutinaId) {
 async function guardarCargaEjercicio(nombre, peso, rutinaId, diaIdx) {
   if (!nombre) return;
   
-  // Guardar en localStorage como backup inmediato
   guardarPesoLocal(nombre, peso, rutinaId);
-
-  // Actualizar cache local
   window._cargasCliente[nombre] = peso;
 
-  // Buscar el cliente_id del usuario actual
-  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
-  if (!cliente) return;
+  if (!currentUser) return;
 
-  const existingId = window._cargasClienteIds[nombre];
-  
-  if (existingId) {
-    // Actualizar
-    sb.from('cargas_ejercicios').update({ 
-      peso, 
-      updated_at: new Date().toISOString() 
-    }).eq('id', existingId).then(({ error }) => {
+  try {
+    const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+    if (!cliente) return;
+
+    const existingId = window._cargasClienteIds[nombre];
+    
+    if (existingId) {
+      const { error } = await sb.from('cargas_ejercicios').update({ 
+        peso, 
+        updated_at: new Date().toISOString() 
+      }).eq('id', existingId);
+      
       if (!error) mostrarPesoGuardado(nombre);
-    });
-  } else {
-    // Insertar nuevo
-    sb.from('cargas_ejercicios').insert([{
-      cliente_id: cliente.id,
-      rutina_id: rutinaId,
-      dia_idx: diaIdx,
-      ejercicio_nombre: nombre,
-      peso
-    }]).select().single().then(({ data, error }) => {
+      else console.error('Error actualizar peso:', error);
+    } else {
+      const { data, error } = await sb.from('cargas_ejercicios').insert([{
+        cliente_id: cliente.id,
+        rutina_id: rutinaId || null,
+        dia_idx: diaIdx || 0,
+        ejercicio_nombre: nombre,
+        peso
+      }]).select().single();
+      
       if (!error && data) {
         window._cargasClienteIds[nombre] = data.id;
         mostrarPesoGuardado(nombre);
+      } else {
+        console.error('Error insertar peso:', error);
       }
-    });
+    }
+  } catch (error) {
+    console.error('Error guardar carga:', error);
   }
 }
 
