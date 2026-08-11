@@ -2474,7 +2474,7 @@ async function eliminarProgresoTab(id) {
 // ══════════════════════════════════════
 async function cargarPortalCliente() {
   // Buscar cliente por email del usuario logueado
-  const { data: clienteData } = await sb.from('clientes').select('*').eq('email', currentUser.email).single();
+  const { data: clienteData } = await sb.from('clientes').select('*').eq('user_id', currentUser.id).single();
 
   if (!clienteData) {
     document.getElementById('clienteNombreTop').textContent = currentUser.email;
@@ -2719,7 +2719,7 @@ async function marcarEjercicio(checkboxEl) {
     return;
   }
   
-  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
   if (!cliente) { toast('Error: Cliente no encontrado', 'error'); return; }
 
   try {
@@ -2857,7 +2857,7 @@ async function toggleHabito(id, fechaKey, el) {
 
   if (!currentUser) { toast('Error: Usuario no autenticado', 'error'); return; }
   
-  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
   if (!cliente) { toast('Error: Cliente no encontrado', 'error'); return; }
 
   try {
@@ -3345,7 +3345,7 @@ async function guardarCargaEjercicio(nombre, peso, rutinaId, diaIdx) {
   if (!currentUser) return;
 
   try {
-    const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+    const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
     if (!cliente) return;
 
     const existingId = window._cargasClienteIds[nombre];
@@ -3591,7 +3591,7 @@ async function hacerCheckinDia(diaIdx, rutinaId, diaNombre, tituloEjercicio) {
   const sensacion = sensaciones[0]; // Por defecto muy bien
 
   // Guardar en Supabase
-  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
   if (!cliente) { toast('Error al identificar cliente', 'error'); return; }
 
   const hoy = new Date().toISOString().split('T')[0];
