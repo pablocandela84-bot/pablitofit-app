@@ -2506,8 +2506,13 @@ async function cargarProgresoGuardado(clienteId) {
   const clienteRealId = cliente.id;
   const hoy = new Date().toISOString().split('T')[0];
   
-  // 2. Cargar ejercicios completados del día
-  const { data: ejerciciosData } = await sb.from('progreso_ejercicios_diarios').select('*').eq('cliente_id', clienteRealId).eq('fecha', hoy);
+  // 2. Cargar solo ejercicios COMPLETADOS del día (completado = true)
+  const { data: ejerciciosData } = await sb
+    .from('progreso_ejercicios_diarios')
+    .select('*')
+    .eq('cliente_id', clienteRealId)
+    .eq('fecha', hoy)
+    .eq('completado', true);
   
   if (ejerciciosData && ejerciciosData.length > 0) {
     ejerciciosData.forEach(ex => {
@@ -2522,19 +2527,40 @@ async function cargarProgresoGuardado(clienteId) {
           checkbox.style.borderColor = 'var(--blue)';
         }
       }
-      if (ex.peso) {
-        const keyWithoutPrefix = ex.ejercicio_id.replace('exrow-', '');
-        const pesoInput = document.getElementById('peso_' + keyWithoutPrefix);
-        if (pesoInput) pesoInput.value = ex.peso;
-      }
     });
     document.querySelectorAll('.rutina-dia').forEach((dia, idx) => {
       actualizarProgressDia(idx);
     });
   }
   
-  // 3. Cargar hábitos completados del día
-  const { data: habitosData } = await sb.from('progreso_habitos_diarios').select('*').eq('cliente_id', clienteRealId).eq('fecha', hoy);
+  // 3. Cargar pesos desde cargas_ejercicios (tabla separada)
+  const { data: cargasData } = await sb
+    .from('cargas_ejercicios')
+    .select('*')
+    .eq('cliente_id', clienteRealId);
+  
+  if (cargasData && cargasData.length > 0) {
+    cargasData.forEach(carga => {
+      // El nombre del ejercicio está en carga.ejercicio_nombre
+      // Necesito encontrar el input por nombre
+      const inputs = document.querySelectorAll('.peso-input');
+      inputs.forEach(input => {
+        const row = input.closest('.ex-check-row');
+        const nameEl = row?.querySelector('.ex-check-name');
+        if (nameEl && nameEl.textContent === carga.ejercicio_nombre) {
+          input.value = carga.peso;
+        }
+      });
+    });
+  }
+  
+  // 4. Cargar hábitos COMPLETADOS del día (completado = true)
+  const { data: habitosData } = await sb
+    .from('progreso_habitos_diarios')
+    .select('*')
+    .eq('cliente_id', clienteRealId)
+    .eq('fecha', hoy)
+    .eq('completado', true);
   
   if (habitosData && habitosData.length > 0) {
     habitosData.forEach(habito => {
