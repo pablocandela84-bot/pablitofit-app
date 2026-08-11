@@ -728,6 +728,7 @@
       <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
       <div class="nav-item" onclick="showTab('clientes')"><span class="nav-icon">👥</span>Clientes</div>
       <div class="nav-item" onclick="showTab('rutinas')"><span class="nav-icon">💪</span>Rutinas</div>
+      <div class="nav-item" onclick="showTab('progreso-hoy')"><span class="nav-icon">📊</span>Progreso Hoy</div>
       <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">✅</span>Hábitos</div>
       <div class="nav-item" onclick="showTab('progreso')"><span class="nav-icon">📈</span>Progreso</div>
       <div class="nav-item" onclick="showTab('pagos')"><span class="nav-icon">💳</span>Pagos</div>
@@ -816,7 +817,17 @@
         </div>
       </div>
 
-      <!-- TAB: PROGRESO -->
+      <!-- TAB: PROGRESO HOY -->
+      <div id="tab-progreso-hoy" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📊 Progreso de clientes - Hoy</div>
+          </div>
+          <div id="progresoHoyContent"><div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">Cargando progreso del día...</div></div></div>
+        </div>
+      </div>
+
+      <!-- TAB: PROGRESO (individual)
       <div id="tab-progreso" class="tab-content">
         <div class="card">
           <div class="card-header"><div class="card-title">Seguimiento de progreso</div>
@@ -1361,6 +1372,7 @@ function showTab(tab) {
   if (tab === 'clientes') cargarClientes();
   if (tab === 'pagos') cargarPagos();
   if (tab === 'banco') cargarBanco();
+  if (tab === 'progreso-hoy') cargarProgresoHoy();
   if (tab === 'nutricion') cargarHabitosResumen();
 }
 
@@ -2313,6 +2325,95 @@ async function guardarMensaje() {
   toast('✓ Nota enviada','success');
   closeModal('modalMensaje');
   renderMensajesPanel(mensajeClienteId);
+}
+
+// ══════════════════════════════════════
+//  COACH: PROGRESO HOY
+// ══════════════════════════════════════
+async function cargarProgresoHoy() {
+  const hoy = new Date().toISOString().split('T')[0];
+  const cont = document.getElementById('progresoHoyContent');
+  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando progreso...</div>';
+  
+  // Obtener todos los clientes
+  const { data: clientes } = await sb.from('clientes').select('*').order('fecha_inicio');
+  if (!clientes || !clientes.length) {
+    cont.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">No hay clientes.</div></div>';
+    return;
+  }
+  
+  let html = `<div style="display:grid; gap:2rem;">`;
+  
+  for (const cliente of clientes) {
+    // Ejercicios completados hoy
+    const { data: ejercicios } = await sb
+      .from('progreso_ejercicios_diarios')
+      .select('*')
+      .eq('cliente_id', cliente.id)
+      .eq('fecha', hoy)
+      .eq('completado', true);
+    
+    // Hábitos completados hoy
+    const { data: habitos } = await sb
+      .from('progreso_habitos_diarios')
+      .select('*')
+      .eq('cliente_id', cliente.id)
+      .eq('fecha', hoy)
+      .eq('completado', true);
+    
+    // Total de ejercicios de hoy (para %)
+    const { data: todosEjercicios } = await sb
+      .from('progreso_ejercicios_diarios')
+      .select('id')
+      .eq('cliente_id', cliente.id)
+      .eq('fecha', hoy);
+    
+    const ejerciciosTotal = todosEjercicios?.length || 0;
+    const ejerciciosCompletos = ejercicios?.length || 0;
+    const ejerciciosPct = ejerciciosTotal > 0 ? Math.round((ejerciciosCompletos / ejerciciosTotal) * 100) : 0;
+    
+    const habitosTotal = 6;
+    const habitosCompletos = habitos?.length || 0;
+    const habitosPct = Math.round((habitosCompletos / habitosTotal) * 100);
+    
+    // Renderizar cliente
+    html += `
+      <div style="border:1px solid var(--border); border-radius:0.8rem; padding:1.5rem; background:var(--white);">
+        <div style="font-family:var(--display); font-size:1.2rem; font-weight:900; color:var(--navy); margin-bottom:1rem;">${cliente.nombre}</div>
+        
+        <!-- Ejercicios -->
+        <div style="margin-bottom:1.5rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
+            <span style="font-size:1.2rem;">💪</span>
+            <span style="font-weight:600; color:var(--navy);">Ejercicios: ${ejerciciosCompletos}/${ejerciciosTotal}</span>
+            <span style="font-size:0.8rem; color:var(--gray); margin-left:auto;">${ejerciciosPct}%</span>
+          </div>
+          ${ejercicios && ejercicios.length > 0 ? `
+            <div style="padding-left:1.5rem; font-size:0.9rem;">
+              ${ejercicios.map(ex => `<div style="color:var(--gray); margin-bottom:0.4rem;">✅ ${ex.ejercicio_nombre}</div>`).join('')}
+            </div>
+          ` : '<div style="color:var(--gray); font-size:0.9rem; padding-left:1.5rem;">Sin ejercicios completados</div>'}
+        </div>
+        
+        <!-- Hábitos -->
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
+            <span style="font-size:1.2rem;">✅</span>
+            <span style="font-weight:600; color:var(--navy);">Hábitos: ${habitosCompletos}/${habitosTotal}</span>
+            <span style="font-size:0.8rem; color:var(--gray); margin-left:auto;">${habitosPct}%</span>
+          </div>
+          ${habitos && habitos.length > 0 ? `
+            <div style="padding-left:1.5rem; font-size:0.9rem;">
+              ${habitos.map(h => `<div style="color:var(--gray); margin-bottom:0.4rem;">✓ ${h.habito_nombre}</div>`).join('')}
+            </div>
+          ` : '<div style="color:var(--gray); font-size:0.9rem; padding-left:1.5rem;">Sin hábitos completados</div>'}
+        </div>
+      </div>
+    `;
+  }
+  
+  html += `</div>`;
+  cont.innerHTML = html;
 }
 
 // ══════════════════════════════════════
