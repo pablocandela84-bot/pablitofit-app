@@ -1363,7 +1363,15 @@ function showTab(tab) {
   if(window.innerWidth <= 768) closeSidebar();
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
+  
+  const tabEl = document.getElementById('tab-'+tab);
+  if (tabEl) {
+    tabEl.classList.add('active');
+  } else {
+    console.warn('Tab no encontrado:', tab);
+    return;
+  }
+  
   document.querySelectorAll('.nav-item').forEach(n => {
     if (n.textContent.toLowerCase().includes(tab.substring(0,4))) n.classList.add('active');
   });
@@ -2331,89 +2339,100 @@ async function guardarMensaje() {
 //  COACH: PROGRESO HOY
 // ══════════════════════════════════════
 async function cargarProgresoHoy() {
-  const hoy = new Date().toISOString().split('T')[0];
   const cont = document.getElementById('progresoHoyContent');
-  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando progreso...</div>';
-  
-  // Obtener todos los clientes
-  const { data: clientes } = await sb.from('clientes').select('*').order('fecha_inicio');
-  if (!clientes || !clientes.length) {
-    cont.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">No hay clientes.</div></div>';
+  if (!cont) {
+    console.error('Elemento progresoHoyContent no encontrado');
     return;
   }
   
-  let html = `<div style="display:grid; gap:2rem;">`;
+  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando progreso...</div>';
   
-  for (const cliente of clientes) {
-    // Ejercicios completados hoy
-    const { data: ejercicios } = await sb
-      .from('progreso_ejercicios_diarios')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .eq('fecha', hoy)
-      .eq('completado', true);
+  try {
+    const hoy = new Date().toISOString().split('T')[0];
     
-    // Hábitos completados hoy
-    const { data: habitos } = await sb
-      .from('progreso_habitos_diarios')
-      .select('*')
-      .eq('cliente_id', cliente.id)
-      .eq('fecha', hoy)
-      .eq('completado', true);
+    // Obtener todos los clientes
+    const { data: clientes } = await sb.from('clientes').select('*').order('fecha_inicio');
+    if (!clientes || !clientes.length) {
+      cont.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">No hay clientes.</div></div>';
+      return;
+    }
     
-    // Total de ejercicios de hoy (para %)
-    const { data: todosEjercicios } = await sb
-      .from('progreso_ejercicios_diarios')
-      .select('id')
-      .eq('cliente_id', cliente.id)
-      .eq('fecha', hoy);
+    let html = `<div style="display:grid; gap:2rem;">`;
     
-    const ejerciciosTotal = todosEjercicios?.length || 0;
-    const ejerciciosCompletos = ejercicios?.length || 0;
-    const ejerciciosPct = ejerciciosTotal > 0 ? Math.round((ejerciciosCompletos / ejerciciosTotal) * 100) : 0;
-    
-    const habitosTotal = 6;
-    const habitosCompletos = habitos?.length || 0;
-    const habitosPct = Math.round((habitosCompletos / habitosTotal) * 100);
-    
-    // Renderizar cliente
-    html += `
-      <div style="border:1px solid var(--border); border-radius:0.8rem; padding:1.5rem; background:var(--white);">
-        <div style="font-family:var(--display); font-size:1.2rem; font-weight:900; color:var(--navy); margin-bottom:1rem;">${cliente.nombre}</div>
-        
-        <!-- Ejercicios -->
-        <div style="margin-bottom:1.5rem;">
-          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
-            <span style="font-size:1.2rem;">💪</span>
-            <span style="font-weight:600; color:var(--navy);">Ejercicios: ${ejerciciosCompletos}/${ejerciciosTotal}</span>
-            <span style="font-size:0.8rem; color:var(--gray); margin-left:auto;">${ejerciciosPct}%</span>
-          </div>
-          ${ejercicios && ejercicios.length > 0 ? `
-            <div style="padding-left:1.5rem; font-size:0.9rem;">
-              ${ejercicios.map(ex => `<div style="color:var(--gray); margin-bottom:0.4rem;">✅ ${ex.ejercicio_nombre}</div>`).join('')}
+    for (const cliente of clientes) {
+      // Ejercicios completados hoy
+      const { data: ejercicios } = await sb
+        .from('progreso_ejercicios_diarios')
+        .select('*')
+        .eq('cliente_id', cliente.id)
+        .eq('fecha', hoy)
+        .eq('completado', true);
+      
+      // Hábitos completados hoy
+      const { data: habitos } = await sb
+        .from('progreso_habitos_diarios')
+        .select('*')
+        .eq('cliente_id', cliente.id)
+        .eq('fecha', hoy)
+        .eq('completado', true);
+      
+      // Total de ejercicios de hoy
+      const { data: todosEjercicios } = await sb
+        .from('progreso_ejercicios_diarios')
+        .select('id')
+        .eq('cliente_id', cliente.id)
+        .eq('fecha', hoy);
+      
+      const ejerciciosTotal = todosEjercicios?.length || 0;
+      const ejerciciosCompletos = ejercicios?.length || 0;
+      const ejerciciosPct = ejerciciosTotal > 0 ? Math.round((ejerciciosCompletos / ejerciciosTotal) * 100) : 0;
+      
+      const habitosTotal = 6;
+      const habitosCompletos = habitos?.length || 0;
+      const habitosPct = Math.round((habitosCompletos / habitosTotal) * 100);
+      
+      // Renderizar cliente
+      html += `
+        <div style="border:1px solid var(--border); border-radius:0.8rem; padding:1.5rem; background:var(--white);">
+          <div style="font-family:var(--display); font-size:1.2rem; font-weight:900; color:var(--navy); margin-bottom:1rem;">${cliente.nombre}</div>
+          
+          <!-- Ejercicios -->
+          <div style="margin-bottom:1.5rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
+              <span style="font-size:1.2rem;">💪</span>
+              <span style="font-weight:600; color:var(--navy);">Ejercicios: ${ejerciciosCompletos}/${ejerciciosTotal}</span>
+              <span style="font-size:0.8rem; color:var(--gray); margin-left:auto;">${ejerciciosPct}%</span>
             </div>
-          ` : '<div style="color:var(--gray); font-size:0.9rem; padding-left:1.5rem;">Sin ejercicios completados</div>'}
-        </div>
-        
-        <!-- Hábitos -->
-        <div>
-          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
-            <span style="font-size:1.2rem;">✅</span>
-            <span style="font-weight:600; color:var(--navy);">Hábitos: ${habitosCompletos}/${habitosTotal}</span>
-            <span style="font-size:0.8rem; color:var(--gray); margin-left:auto;">${habitosPct}%</span>
+            ${ejercicios && ejercicios.length > 0 ? `
+              <div style="padding-left:1.5rem; font-size:0.9rem;">
+                ${ejercicios.map(ex => `<div style="color:var(--gray); margin-bottom:0.4rem;">✅ ${ex.ejercicio_nombre}</div>`).join('')}
+              </div>
+            ` : '<div style="color:var(--gray); font-size:0.9rem; padding-left:1.5rem;">Sin ejercicios completados</div>'}
           </div>
-          ${habitos && habitos.length > 0 ? `
-            <div style="padding-left:1.5rem; font-size:0.9rem;">
-              ${habitos.map(h => `<div style="color:var(--gray); margin-bottom:0.4rem;">✓ ${h.habito_nombre}</div>`).join('')}
+          
+          <!-- Hábitos -->
+          <div>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
+              <span style="font-size:1.2rem;">✅</span>
+              <span style="font-weight:600; color:var(--navy);">Hábitos: ${habitosCompletos}/${habitosTotal}</span>
+              <span style="font-size:0.8rem; color:var(--gray); margin-left:auto;">${habitosPct}%</span>
             </div>
-          ` : '<div style="color:var(--gray); font-size:0.9rem; padding-left:1.5rem;">Sin hábitos completados</div>'}
+            ${habitos && habitos.length > 0 ? `
+              <div style="padding-left:1.5rem; font-size:0.9rem;">
+                ${habitos.map(h => `<div style="color:var(--gray); margin-bottom:0.4rem;">✓ ${h.habito_nombre}</div>`).join('')}
+              </div>
+            ` : '<div style="color:var(--gray); font-size:0.9rem; padding-left:1.5rem;">Sin hábitos completados</div>'}
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
+    
+    html += `</div>`;
+    cont.innerHTML = html;
+  } catch (error) {
+    console.error('Error en cargarProgresoHoy:', error);
+    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-text">Error cargando progreso: ${error.message}</div></div>`;
   }
-  
-  html += `</div>`;
-  cont.innerHTML = html;
 }
 
 // ══════════════════════════════════════
@@ -2451,8 +2470,10 @@ async function poblarSelectores() {
   const { data } = await sb.from('clientes').select('id,nombre').order('nombre');
   ['rutinasClienteSelect','nutriClienteSelect','nutriPlanClienteSelect','progresoClienteSelect'].forEach(id => {
     const sel = document.getElementById(id);
-    sel.innerHTML = '<option value="">Selecciona cliente...</option>' +
-      (data||[]).map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    if (sel) {
+      sel.innerHTML = '<option value="">Selecciona cliente...</option>' +
+        (data||[]).map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    }
   });
 }
 
