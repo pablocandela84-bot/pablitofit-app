@@ -2584,7 +2584,6 @@ function showClienteTab(tab) {
 }
 
 async function cargarMiRutina(clienteId) {
-  await cargarProgresoGuardado(clienteId);
   const cont = document.getElementById('cliente-mi-rutina');
   const { data } = await sb.from('rutinas').select('*').eq('cliente_id', clienteId).order('semana', {ascending:true});
   const rutinas = data || [];
@@ -2635,7 +2634,11 @@ async function cargarMiRutina(clienteId) {
       </div>`;
     }).join('')}</div>`;
 
-  setTimeout(() => initCheckinBar(clienteId), 100);
+  // ← AHORA se llama DESPUÉS de renderizar, cuando los elementos YA EXISTEN
+  setTimeout(async () => {
+    await cargarProgresoGuardado(clienteId);
+    initCheckinBar(clienteId);
+  }, 100);
 }
 
 function mostrarMiRutina(idx) {
