@@ -569,10 +569,35 @@
     .dia-checkin-done.visible { display: block; }
 
     /* ── PREVENIR SCROLL LATERAL ── */
-    html, body { overflow-x: hidden; max-width: 100vw; }
-    * { -webkit-tap-highlight-color: transparent; }
+    html, body { 
+      overflow-x: hidden; 
+      max-width: 100vw; 
+      width: 100%;
+    }
+    * { 
+      -webkit-tap-highlight-color: transparent;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    
+    /* Extra protection para móvil */
+    @media (max-width: 768px) {
+      html, body {
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        position: relative !important;
+      }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+    }
 
     @media(max-width:768px){
+      /* ── BLOQUEAR SCROLL HORIZONTAL ── */
+      body, html, .screen { overflow-x: hidden !important; width: 100vw; }
+      * { max-width: 100% !important; }
+      
       /* ── SIDEBAR → DRAWER LATERAL ── */
       .sidebar{
         width:260px; height:100vh;
@@ -608,10 +633,10 @@
       .sidebar-overlay.open{display:block}
 
       /* ── MAIN: sin margen lateral ── */
-      .main-content{margin-left:0; padding-bottom:0; min-height:100vh}
+      .main-content{margin-left:0 !important; padding-bottom:0; min-height:100vh; overflow-x: hidden}
       .topbar{padding:0.8rem 1rem; position:sticky; top:0; z-index:100}
       .topbar-title{font-size:0.85rem}
-      .page-body{padding:1rem}
+      .page-body{padding:1rem; overflow-x: hidden}
       
       /* Botón hamburguesa en topbar */
       .hamburger{display:flex}
@@ -656,20 +681,42 @@
       .client-tab{padding:0.7rem 1rem; font-size:0.62rem; white-space:nowrap}
 
       /* ── PORTAL CLIENTE ── */
-      #clienteScreen{padding-bottom:0}
+      #clienteScreen{padding-bottom:0; overflow-x: hidden}
       .cliente-topbar{padding:0.8rem 1rem}
       .cliente-brand{font-size:0.8rem}
-      .cliente-nav{padding:0 0.5rem; gap:0}
-      .cliente-nav-item{padding:0.8rem 0.8rem; font-size:0.62rem}
-      .cliente-body{padding:0.8rem; padding-bottom:1rem}
+      .cliente-nav{padding:0 0.5rem; gap:0; overflow-x: auto; -webkit-overflow-scrolling: touch}
+      .cliente-nav-item{padding:0.8rem 0.8rem; font-size:0.62rem; white-space: nowrap; flex-shrink: 0}
+      .cliente-body{padding:0.8rem; padding-bottom:1rem; overflow-x: hidden}
 
       /* ── RUTINA CLIENTE ── */
       .rutina-dia-header{padding:0.8rem 1rem}
       .rutina-dia-name{font-size:0.8rem}
-      .rutina-dia-body{padding:0 1rem 0.8rem}
-      .ex-check-row{padding:0.5rem 0}
-      .ex-check-name{font-size:0.78rem}
+      .rutina-dia-body{padding:0 1rem 0.8rem; overflow-x: hidden}
+      .ex-check-row{padding:0.5rem 0; display: flex; gap: 0.5rem; overflow-x: hidden}
+      .ex-check-name{font-size:0.78rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis}
       .ex-check-info{font-size:0.65rem}
+
+      /* ── SELECTS ANCHO FIJO → RESPONSIVE ── */
+      #rutinasClienteSelect,
+      #nutriClienteSelect,
+      #nutriPlanClienteSelect,
+      #progresoClienteSelect,
+      .search-box {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      /* ── INPUTS ANCHO FIJO → RESPONSIVE ── */
+      .exercise-input {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      /* ── BARRA DE CHECKIN ── */
+      .checkin-bar-progress {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
 
       /* ── LOGIN ── */
       .login-box{padding:2rem 1.5rem; max-width:100%; margin:1rem}
@@ -682,7 +729,12 @@
 
       /* ── CARD HEADERS ── */
       .card-header{padding:0.8rem 1rem; flex-wrap:wrap; gap:0.5rem}
-      .search-box{width:100%}
+      .search-box{width:100% !important}
+      
+      /* ── ASEGURAR QUE NINGÚN ELEMENTO DESBORDA ── */
+      .page-body > *, .cliente-body > * {
+        overflow-x: hidden !important;
+      }
     }
 
     /* ── BLOQUEAR SCROLL LATERAL VIA JS ── */
@@ -1242,9 +1294,43 @@ async function iniciarSesion() {
     await cargarDashboard();
     await poblarSelectores();
   } else {
-    // Es cliente
+    // Es cliente - VINCULAR user_id en tabla clientes
+    await vincularClienteConUser(email, currentUser.id);
     showScreen('clienteScreen');
     await cargarPortalCliente();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// VINCULAR user_id CON cliente
+// ══════════════════════════════════════════════════════════════
+async function vincularClienteConUser(email, userId) {
+  try {
+    // Buscar cliente por email
+    const { data: cliente, error: searchError } = await sb
+      .from('clientes')
+      .select('id')
+      .eq('email', email)
+      .single();
+    
+    if (searchError || !cliente) {
+      console.log('Cliente no encontrado por email:', email);
+      return;
+    }
+    
+    // Actualizar user_id en tabla clientes
+    const { error: updateError } = await sb
+      .from('clientes')
+      .update({ user_id: userId })
+      .eq('id', cliente.id);
+    
+    if (updateError) {
+      console.error('Error actualizando user_id:', updateError);
+    } else {
+      console.log('✓ Cliente vinculado con user_id:', cliente.id);
+    }
+  } catch (error) {
+    console.error('Error en vincularClienteConUser:', error);
   }
 }
 
@@ -2718,6 +2804,9 @@ async function cargarPortalCliente() {
   await cargarMiProgreso(cliente.id);
   await cargarMiPlan(cliente);
   await cargarMisMensajes(cliente.id);
+  
+  // ← RESTAURAR PROGRESO GUARDADO (Ejercicios + Hábitos de hoy)
+  await cargarProgresoGuardado(cliente.id);
 }
 
 // ══════════════════════════════════════════════════════════════
