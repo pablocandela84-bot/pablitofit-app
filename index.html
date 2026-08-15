@@ -118,6 +118,30 @@
     .form-section{margin-bottom:1.5rem}
     .form-section-title{font-family:var(--display);font-size:0.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)}
 
+    /* ── PANEL FILTROS MOBILE ── */
+    .mensajes-filtros-panel{display:none;position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--white);border-right:1px solid var(--border);z-index:1500;flex-direction:column;animation:slideInLeft 0.3s ease}
+    .mensajes-filtros-panel.open{display:flex}
+    @keyframes slideInLeft{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+    .mensajes-filtros-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1400}
+    .mensajes-filtros-overlay.open{display:block}
+    .mensajes-filtros-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .mensajes-filtros-title{font-family:var(--display);font-size:0.85rem;font-weight:700}
+    .mensajes-filtros-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray);padding:0}
+    .mensajes-filtros-content{padding:1.5rem;overflow-y:auto;flex:1}
+    .mensajes-filtro-group{margin-bottom:1.5rem}
+    .mensajes-filtro-label{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;margin-bottom:0.6rem;display:block}
+    .mensajes-filtro-input{width:100%;border:1px solid var(--border);padding:0.75rem 0.9rem;font-family:var(--body);font-size:0.85rem;color:var(--navy);outline:none;border-radius:2px}
+    .mensajes-btn-filtros{display:none;background:none;border:none;padding:0.5rem;cursor:pointer;color:var(--gray);font-size:1rem}
+    .mensajes-btn-filtros:hover{color:var(--navy)}
+    @media (max-width:768px){
+      .mensajes-header-desktop{display:none}
+      .mensajes-btn-filtros{display:block}
+    }
+    @media (min-width:769px){
+      .mensajes-filtros-panel{display:none !important}
+      .mensajes-filtros-overlay{display:none !important}
+    }
+
     /* ── PERFIL CLIENTE ── */
     .client-header{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start;background:var(--navy);padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
     .client-header::before{content:'CLIENTE';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-family:var(--display);font-size:6rem;font-weight:900;color:rgba(255,255,255,0.03);pointer-events:none}
@@ -939,14 +963,40 @@
 
       <!-- TAB: MENSAJES INBOX -->
       <div id="tab-mensajes-inbox" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">📬 Mensajes de clientes</div>
-            <div style="display:flex;gap:0.8rem">
-              <select id="mensajesClienteFiltro" class="search-box" style="width:200px" onchange="filtrarMensajesPorCliente()">
+        <!-- PANEL FILTROS MOBILE -->
+        <div class="mensajes-filtros-overlay" id="mensajesFiltrosOverlay" onclick="cerrarFiltrosMensajes()"></div>
+        <div class="mensajes-filtros-panel" id="mensajesFiltrosPanel">
+          <div class="mensajes-filtros-header">
+            <div class="mensajes-filtros-title">🔍 Filtros</div>
+            <button class="mensajes-filtros-close" onclick="cerrarFiltrosMensajes()">✕</button>
+          </div>
+          <div class="mensajes-filtros-content">
+            <div class="mensajes-filtro-group">
+              <label class="mensajes-filtro-label">Cliente</label>
+              <select id="mensajesClienteFiltro" class="mensajes-filtro-input" onchange="filtrarMensajesPorCliente()">
                 <option value="">Todos los clientes</option>
               </select>
-              <input class="search-box" id="searchMensajes" placeholder="Buscar en mensajes..." oninput="filtrarMensajesPorTexto()" style="flex:1;max-width:300px">
+            </div>
+            <div class="mensajes-filtro-group">
+              <label class="mensajes-filtro-label">Búsqueda</label>
+              <input class="mensajes-filtro-input" id="searchMensajes" placeholder="Buscar en mensajes..." oninput="filtrarMensajesPorTexto()">
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD CON MENSAJES -->
+        <div class="card">
+          <div class="card-header">
+            <div style="display:flex;align-items:center;gap:0.8rem;width:100%">
+              <button class="mensajes-btn-filtros" onclick="abrirFiltrosMensajes()" title="Filtros">⚙️</button>
+              <div class="card-title">📬 Mensajes de clientes</div>
+            </div>
+            <!-- HEADER DESKTOP CON FILTROS -->
+            <div class="mensajes-header-desktop" style="display:flex;gap:0.8rem">
+              <select id="mensajesClienteFiltroDesktop" class="search-box" style="width:200px" onchange="filtrarMensajesPorCliente()">
+                <option value="">Todos los clientes</option>
+              </select>
+              <input class="search-box" id="searchMensajesDesktop" placeholder="Buscar en mensajes..." oninput="filtrarMensajesPorTexto()" style="flex:1;max-width:300px">
             </div>
           </div>
           <div id="mensajesInboxContent"><div class="loading"><div class="spinner"></div>Cargando mensajes...</div></div>
@@ -3492,19 +3542,23 @@ async function enviarMensajeCliente() {
   }
   
   const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
+  console.log('👤 [DEBUG CLIENTE] Cliente encontrado:', cliente);
   if (!cliente) {
     toast('Error: Cliente no encontrado', 'error');
     return;
   }
   
   try {
+    console.log('📤 [DEBUG CLIENTE] Enviando mensaje...', {cliente_id: cliente.id, texto});
     // Guardar mensaje en tabla mensajes_clientes (nueva tabla para mensajes DE clientes)
-    const { error } = await sb.from('mensajes_clientes').insert([{
+    const { data: msgData, error } = await sb.from('mensajes_clientes').insert([{
       cliente_id: cliente.id,
       texto: texto,
       leido: false,
       created_at: new Date().toISOString()
-    }]);
+    }]).select();
+    
+    console.log('📬 [DEBUG CLIENTE] Respuesta Supabase:', {data: msgData, error});
     
     if (error) throw error;
     
@@ -3517,7 +3571,7 @@ async function enviarMensajeCliente() {
     await cargarMisMensajes(cliente.id);
     
   } catch (error) {
-    console.error('Error al enviar mensaje:', error);
+    console.error('❌ [DEBUG CLIENTE] Error al enviar mensaje:', error);
     toast('Error al enviar: ' + error.message, 'error');
   }
 }
@@ -4254,9 +4308,14 @@ async function cargarMensajesInbox() {
   const cont = document.getElementById('mensajesInboxContent');
   cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando mensajes...</div>';
   
+  console.log('🔍 [DEBUG] Iniciando cargarMensajesInbox...');
+  
   // Obtener todos los mensajes DE LOS CLIENTES (tabla mensajes_clientes)
-  const { data: mensajes } = await sb.from('mensajes_clientes').select('*').order('created_at', {ascending:false});
-  const { data: clientes } = await sb.from('clientes').select('id, nombre, email');
+  const { data: mensajes, error: errorMensajes } = await sb.from('mensajes_clientes').select('*').order('created_at', {ascending:false});
+  console.log('📨 [DEBUG] Mensajes obtenidos:', mensajes, 'Error:', errorMensajes);
+  
+  const { data: clientes, error: errorClientes } = await sb.from('clientes').select('id, nombre, email');
+  console.log('👥 [DEBUG] Clientes obtenidos:', clientes?.length, 'Error:', errorClientes);
   
   // Mapear cliente_id a cliente para luego filtrar/mostrar
   const clientesMap = {};
@@ -4267,29 +4326,62 @@ async function cargarMensajesInbox() {
     cliente: clientesMap[m.cliente_id] || { nombre: 'Cliente desconocido', email: '' }
   }));
   
-  // Poblar select de filtro
-  const selectClientes = document.getElementById('mensajesClienteFiltro');
-  if (selectClientes) {
+  console.log('📦 [DEBUG] Datos procesados:', mensajesInboxData.length, 'mensajes');
+  
+  // Poblar select de filtro (MOBILE)
+  const selectClientesMobile = document.getElementById('mensajesClienteFiltro');
+  if (selectClientesMobile) {
     const clientesUnicos = [...new Set(mensajesInboxData.map(m => m.cliente_id))];
     const options = '<option value="">Todos los clientes</option>' + 
       clientesUnicos.map(cid => {
         const cli = clientesMap[cid];
         return `<option value="${cid}">${cli?.nombre || 'Desconocido'}</option>`;
       }).join('');
-    selectClientes.innerHTML = options;
-    selectClientes.value = mensajesInboxFiltroCliente;
+    selectClientesMobile.innerHTML = options;
+    selectClientesMobile.value = mensajesInboxFiltroCliente;
+  }
+  
+  // Poblar select de filtro (DESKTOP)
+  const selectClientesDesktop = document.getElementById('mensajesClienteFiltroDesktop');
+  if (selectClientesDesktop) {
+    const clientesUnicos = [...new Set(mensajesInboxData.map(m => m.cliente_id))];
+    const options = '<option value="">Todos los clientes</option>' + 
+      clientesUnicos.map(cid => {
+        const cli = clientesMap[cid];
+        return `<option value="${cid}">${cli?.nombre || 'Desconocido'}</option>`;
+      }).join('');
+    selectClientesDesktop.innerHTML = options;
+    selectClientesDesktop.value = mensajesInboxFiltroCliente;
   }
   
   renderMensajesInbox();
 }
 
 function filtrarMensajesPorCliente() {
-  mensajesInboxFiltroCliente = document.getElementById('mensajesClienteFiltro')?.value || '';
+  // Obtener valor de cualquiera de los dos selects (mobile o desktop)
+  const selectMobile = document.getElementById('mensajesClienteFiltro');
+  const selectDesktop = document.getElementById('mensajesClienteFiltroDesktop');
+  
+  mensajesInboxFiltroCliente = selectMobile?.value || selectDesktop?.value || '';
+  
+  // Sincronizar ambos selects
+  if (selectMobile) selectMobile.value = mensajesInboxFiltroCliente;
+  if (selectDesktop) selectDesktop.value = mensajesInboxFiltroCliente;
+  
   renderMensajesInbox();
 }
 
 function filtrarMensajesPorTexto() {
-  mensajesInboxFiltroBusqueda = document.getElementById('searchMensajes')?.value || '';
+  // Obtener valor de cualquiera de los dos inputs (mobile o desktop)
+  const inputMobile = document.getElementById('searchMensajes');
+  const inputDesktop = document.getElementById('searchMensajesDesktop');
+  
+  mensajesInboxFiltroBusqueda = inputMobile?.value || inputDesktop?.value || '';
+  
+  // Sincronizar ambos inputs
+  if (inputMobile) inputMobile.value = mensajesInboxFiltroBusqueda;
+  if (inputDesktop) inputDesktop.value = mensajesInboxFiltroBusqueda;
+  
   renderMensajesInbox();
 }
 
@@ -4371,6 +4463,19 @@ async function eliminarMensajeInbox(mensajeId) {
   // Borrar en DB (tabla mensajes_clientes)
   await sb.from('mensajes_clientes').delete().eq('id', mensajeId);
   toast('✓ Mensaje eliminado', 'success');
+}
+
+// ── ABRIR/CERRAR PANEL FILTROS MOBILE ──
+function abrirFiltrosMensajes() {
+  document.getElementById('mensajesFiltrosPanel').classList.add('open');
+  document.getElementById('mensajesFiltrosOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarFiltrosMensajes() {
+  document.getElementById('mensajesFiltrosPanel').classList.remove('open');
+  document.getElementById('mensajesFiltrosOverlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 </script>
