@@ -72,9 +72,11 @@
     .card{background:var(--white);border:1px solid var(--border)}
     .card-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
     .card-title{font-family:var(--display);font-size:0.85rem;font-weight:900;letter-spacing:-0.3px}
+    .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .table-scroll table{min-width:100%}
     table{width:100%;border-collapse:collapse}
-    th{font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;text-align:left;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);background:#f8faff}
-    td{padding:0.9rem 1.2rem;font-size:0.82rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    th{font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;text-align:left;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);background:#f8faff;white-space:nowrap}
+    td{padding:0.9rem 1.2rem;font-size:0.82rem;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}
     tr:last-child td{border-bottom:none}
     tr:hover td{background:#f8faff}
     .badge{display:inline-block;padding:0.2rem 0.6rem;font-size:0.65rem;font-weight:600;letter-spacing:0.5px;border-radius:2px}
@@ -201,6 +203,26 @@
     .cliente-nav{display:flex;gap:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;overflow-x:auto}
     .cliente-nav-item{padding:1rem 1.2rem;font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s}
     .cliente-nav-item.active{color:var(--blue);border-bottom-color:var(--blue)}
+    
+    /* ── PANEL LATERAL CLIENTE (MOBILE) ── */
+    .cliente-nav-panel{display:none;position:fixed;left:-280px;top:60px;bottom:0;width:280px;background:var(--white);border-right:1px solid var(--border);z-index:1500;flex-direction:column;transition:left 0.3s ease;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto}
+    .cliente-nav-panel.open{left:0;display:flex}
+    .cliente-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1400;top:60px}
+    .cliente-nav-overlay.open{display:block}
+    .cliente-nav-mobile{display:none;flex-direction:column;gap:0}
+    .cliente-nav-mobile .cliente-nav-item{padding:1rem 1.5rem;border-bottom:1px solid var(--border);border-left:3px solid transparent;font-size:0.75rem}
+    .cliente-nav-mobile .cliente-nav-item.active{border-left-color:var(--blue);background:rgba(26,63,160,0.04)}
+    .cliente-hamburger{display:none;background:none;border:none;cursor:pointer;color:#fff;font-size:1.2rem;padding:0.5rem}
+    @media (max-width:600px){
+      .cliente-nav{display:none}
+      .cliente-hamburger{display:block}
+      .cliente-nav-mobile{display:flex}
+    }
+    @media (min-width:601px){
+      .cliente-nav-panel{display:none !important}
+      .cliente-nav-overlay{display:none !important}
+    }
+
     .cliente-body{padding:2rem;max-width:900px;margin:0 auto;width:100%}
     .cliente-tab-content{display:none}
     .cliente-tab-content.active{display:block}
@@ -1020,11 +1042,26 @@
 ══════════════════════════════════════ -->
 <div id="clienteScreen" class="screen">
   <div class="cliente-topbar">
-    <div>
-      <div style="display:flex;align-items:center;gap:10px"><img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="cliente-hamburger" onclick="abrirNavClienteMobile()" title="Menú">☰</button>
+      <img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div>
     </div>
     <button class="btn" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)" onclick="logout()">Salir</button>
   </div>
+  
+  <!-- PANEL LATERAL MOBILE -->
+  <div class="cliente-nav-overlay" id="clienteNavOverlay" onclick="cerrarNavClienteMobile()"></div>
+  <div class="cliente-nav-panel" id="clienteNavPanel">
+    <div class="cliente-nav-mobile" style="flex:1">
+      <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina');cerrarNavClienteMobile()">💪 Mi Rutina</div>
+      <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta');cerrarNavClienteMobile()">✅ Mis Hábitos</div>
+      <div class="cliente-nav-item" onclick="showClienteTab('mi-progreso');cerrarNavClienteMobile()">📈 Mi Progreso</div>
+      <div class="cliente-nav-item" onclick="showClienteTab('mi-plan');cerrarNavClienteMobile()">📋 Mi Plan</div>
+      <div class="cliente-nav-item" onclick="showClienteTab('mensajes');cerrarNavClienteMobile()">💬 Mensajes</div>
+    </div>
+  </div>
+  
+  <!-- NAVEGACIÓN HORIZONTAL DESKTOP -->
   <div class="cliente-nav">
     <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina')">💪 Mi Rutina</div>
     <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta')">✅ Mis Hábitos</div>
@@ -1580,7 +1617,7 @@ async function cargarDashboard() {
         <span style="color:var(--gray);font-size:1.2rem">›</span>
       </div>`).join('')}</div>`;
   } else {
-    list.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
+    list.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
       <tbody>${clientes.slice(0,8).map(c => {
         const v = fechaVencimiento(c.fecha_inicio, c.plan);
         return `<tr>
@@ -1591,8 +1628,7 @@ async function cargarDashboard() {
           <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
           <td><button class="btn btn-sm btn-secondary" onclick="verCliente('${c.id}')">Ver perfil</button></td>
         </tr>`;
-      }).join('')}</tbody></table>`;
-  }
+      }).join('')}</tbody></table></div>`;
 }
 
 // ══════════════════════════════════════
@@ -1639,7 +1675,7 @@ function renderTablaClientes(data) {
         </div>
       </div>`).join('')}</div>`;
   } else {
-    container.innerHTML = `<table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Acciones</th></tr></thead>
+    container.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Acciones</th></tr></thead>
       <tbody>${data.map(c => `<tr>
         <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
         <td style="color:var(--gray)">${c.telefono||'—'}</td>
@@ -1651,7 +1687,7 @@ function renderTablaClientes(data) {
           <button class="btn btn-sm btn-secondary" onclick="editarCliente('${c.id}')">Editar</button>
           <button class="btn btn-sm btn-danger" onclick="eliminarCliente('${c.id}','${c.nombre}')">Borrar</button>
         </td>
-      </tr>`).join('')}</tbody></table>`;
+      </tr>`).join('')}</tbody></table></div>`;
   }
 }
 
@@ -2394,14 +2430,14 @@ async function renderProgresoPanel(clienteId) {
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title">Historial de check-ins</div></div>
-      ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
+      ${entradas.length ? `<div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
         ${entradas.map(e => `<tr>
           <td>${fmtFecha(e.fecha)}</td>
           <td><strong>${e.peso||'—'} kg</strong></td>
           <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
           <td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso('${e.id}','${clienteId}')">Borrar</button></td>
         </tr>`).join('')}
-      </tbody></table>` : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros de progreso.</div></div>`}
+      </tbody></table></div>` : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros de progreso.</div></div>`}
     </div>`;
 }
 
@@ -2597,7 +2633,7 @@ async function cargarPagos() {
   const cont = document.getElementById('pagosContent');
   if (!data || !data.length) { cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💳</div><div class="empty-state-text">No hay clientes aún.</div></div>`; return; }
   const hoy = new Date();
-  cont.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
+  cont.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
     <tbody>${data.map(c => {
       const v = fechaVencimiento(c.fecha_inicio, c.plan);
       const diasRestantes = v ? Math.ceil((v - hoy) / 86400000) : null;
@@ -2614,7 +2650,7 @@ async function cargarPagos() {
         <td>${badgeEstado(c.estado)}</td>
         <td>${situacion}</td>
       </tr>`;
-    }).join('')}</tbody></table>`;
+    }).join('')}</tbody></table></div>`;
 }
 
 // ══════════════════════════════════════
@@ -3438,8 +3474,8 @@ async function cargarMiProgreso(clienteId) {
       </div>
     </div>
     ${entradas.length ? `<div class="card"><div class="card-header"><div class="card-title">Historial</div></div>
-      <table><thead><tr><th>Fecha</th><th>Peso</th><th>Nota del coach</th></tr></thead>
-      <tbody>${entradas.reverse().map(e => `<tr><td>${fmtFecha(e.fecha)}</td><td><strong>${e.peso||'—'} kg</strong></td><td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td></tr>`).join('')}</tbody></table></div>`
+      <div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Peso</th><th>Nota del coach</th></tr></thead>
+      <tbody>${entradas.reverse().map(e => `<tr><td>${fmtFecha(e.fecha)}</td><td><strong>${e.peso||'—'} kg</strong></td><td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td></tr>`).join('')}</tbody></table></div></div>`
     : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Tu coach irá registrando tu progreso aquí.</div></div>`}`;
 }
 
@@ -3748,12 +3784,12 @@ function renderBancoTab() {
     lista.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-text">No hay ejercicios aún. Añade el primero con el botón de arriba.</div></div>`;
     return;
   }
-  lista.innerHTML = `<table><thead><tr><th>Ejercicio</th><th>Grupo muscular</th><th>Acciones</th></tr></thead>
+  lista.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Ejercicio</th><th>Grupo muscular</th><th>Acciones</th></tr></thead>
     <tbody>${filtrados.map(e => `<tr>
       <td><strong>${e.nombre}</strong></td>
       <td><span class="badge badge-blue">${e.grupo_muscular||'—'}</span></td>
       <td><button class="btn btn-sm btn-danger" onclick="eliminarDelBanco('${e.id}')">Borrar</button></td>
-    </tr>`).join('')}</tbody></table>`;
+    </tr>`).join('')}</tbody></table></div>`;
 }
 
 function filtrarBanco(grupo) {
@@ -4083,7 +4119,7 @@ async function cargarHabitosResumen() {
       + '</tr>';
   }).join('');
 
-  cont.innerHTML = '<table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  cont.innerHTML = '<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
 }
 
 function seleccionarNutriCliente(id, nombre) {
@@ -4456,13 +4492,26 @@ function copiarMensaje(mensajeId) {
 async function eliminarMensajeInbox(mensajeId) {
   if (!confirm('¿Eliminar este mensaje?')) return;
   
-  // Eliminar localmente
-  mensajesInboxData = mensajesInboxData.filter(m => m.id !== mensajeId);
-  renderMensajesInbox();
-  
-  // Borrar en DB (tabla mensajes_clientes)
-  await sb.from('mensajes_clientes').delete().eq('id', mensajeId);
-  toast('✓ Mensaje eliminado', 'success');
+  try {
+    // Borrar en DB (tabla mensajes_clientes)
+    const { error } = await sb.from('mensajes_clientes').delete().eq('id', mensajeId);
+    
+    if (error) {
+      console.error('❌ Error al eliminar:', error);
+      toast('Error al eliminar el mensaje', 'error');
+      return;
+    }
+    
+    // Si se eliminó exitosamente, actualizar la lista
+    mensajesInboxData = mensajesInboxData.filter(m => m.id !== mensajeId);
+    renderMensajesInbox();
+    toast('✓ Mensaje eliminado', 'success');
+    console.log('✓ Mensaje eliminado correctamente');
+    
+  } catch (err) {
+    console.error('❌ Error:', err);
+    toast('Error al eliminar', 'error');
+  }
 }
 
 // ── ABRIR/CERRAR PANEL FILTROS MOBILE ──
@@ -4500,6 +4549,40 @@ function actualizarVistaFiltros() {
 window.addEventListener('load', actualizarVistaFiltros);
 // Ejecutar al redimensionar
 window.addEventListener('resize', actualizarVistaFiltros);
+
+// ══════════════════════════════════════
+//  CLIENTE: PANEL LATERAL MOBILE
+// ══════════════════════════════════════
+function abrirNavClienteMobile() {
+  console.log('📱 [CLIENTE] Abriendo menú...');
+  document.getElementById('clienteNavPanel').classList.add('open');
+  document.getElementById('clienteNavOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarNavClienteMobile() {
+  console.log('📱 [CLIENTE] Cerrando menú...');
+  document.getElementById('clienteNavPanel').classList.remove('open');
+  document.getElementById('clienteNavOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Sincronizar items activos entre navegación mobile y desktop
+const origShowClienteTab = typeof showClienteTab === 'function' ? showClienteTab : null;
+window.showClienteTab = function(tab) {
+  if (origShowClienteTab) origShowClienteTab(tab);
+  
+  // Actualizar items activos en AMBAS navegaciones
+  document.querySelectorAll('.cliente-nav-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  
+  document.querySelectorAll('.cliente-nav-item').forEach(item => {
+    if (item.textContent.toLowerCase().includes(tab.split('-')[1] || tab)) {
+      item.classList.add('active');
+    }
+  });
+};
 
 </script>
 </body>
