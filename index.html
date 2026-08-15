@@ -4254,8 +4254,8 @@ async function cargarMensajesInbox() {
   const cont = document.getElementById('mensajesInboxContent');
   cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando mensajes...</div>';
   
-  // Obtener todos los mensajes con datos del cliente
-  const { data: mensajes } = await sb.from('mensajes').select('*').order('created_at', {ascending:false});
+  // Obtener todos los mensajes DE LOS CLIENTES (tabla mensajes_clientes)
+  const { data: mensajes } = await sb.from('mensajes_clientes').select('*').order('created_at', {ascending:false});
   const { data: clientes } = await sb.from('clientes').select('id, nombre, email');
   
   // Mapear cliente_id a cliente para luego filtrar/mostrar
@@ -4368,8 +4368,8 @@ async function eliminarMensajeInbox(mensajeId) {
   mensajesInboxData = mensajesInboxData.filter(m => m.id !== mensajeId);
   renderMensajesInbox();
   
-  // Borrar en DB
-  await sb.from('mensajes').delete().eq('id', mensajeId);
+  // Borrar en DB (tabla mensajes_clientes)
+  await sb.from('mensajes_clientes').delete().eq('id', mensajeId);
   toast('✓ Mensaje eliminado', 'success');
 }
 
