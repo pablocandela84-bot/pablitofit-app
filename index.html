@@ -2809,10 +2809,10 @@ async function cargarPortalCliente() {
   await cargarProgresoGuardado(cliente.id);
 }
 
-// ══════════════════════════════════════════════════════════════
-// CARGAR PROGRESO GUARDADO (Ejercicios + Hábitos)
-// ══════════════════════════════════════════════════════════════
-async function cargarProgresoGuardado(clienteId) {
+// ══════════════════════════════════════════════════════════════════════════════
+// CARGAR PROGRESO GUARDADO (Ejercicios + Hábitos) - CON FECHA PERSONALIZADA
+// ══════════════════════════════════════════════════════════════════════════════
+async function cargarProgresoGuardado(clienteId, fechaPersonalizada = null) {
   if (!currentUser) return;
   
   // 1. Buscar el cliente por user_id para obtener su id real
@@ -2820,14 +2820,15 @@ async function cargarProgresoGuardado(clienteId) {
   if (!cliente) return;
   
   const clienteRealId = cliente.id;
-  const hoy = new Date().toISOString().split('T')[0];
+  // ← Usar fecha personalizada o hoy
+  const fecha = fechaPersonalizada || new Date().toISOString().split('T')[0];
   
-  // 2. Cargar solo ejercicios COMPLETADOS del día (completado = true)
+  // 2. Cargar solo ejercicios COMPLETADOS de la fecha especificada
   const { data: ejerciciosData } = await sb
     .from('progreso_ejercicios_diarios')
     .select('*')
     .eq('cliente_id', clienteRealId)
-    .eq('fecha', hoy)
+    .eq('fecha', fecha)
     .eq('completado', true);
   
   if (ejerciciosData && ejerciciosData.length > 0) {
@@ -2870,12 +2871,12 @@ async function cargarProgresoGuardado(clienteId) {
     });
   }
   
-  // 4. Cargar hábitos COMPLETADOS del día (completado = true)
+  // 4. Cargar hábitos COMPLETADOS de la fecha especificada
   const { data: habitosData } = await sb
     .from('progreso_habitos_diarios')
     .select('*')
     .eq('cliente_id', clienteRealId)
-    .eq('fecha', hoy)
+    .eq('fecha', fecha)
     .eq('completado', true);
   
   if (habitosData && habitosData.length > 0) {
@@ -2938,8 +2939,21 @@ async function cargarMiRutina(clienteId) {
     return;
   }
 
+  // ← SELECTOR DE FECHA
+  const hoy = new Date();
+  let fechaSeleccionada = localStorage.getItem('fechaSeleccionada') || hoy.toISOString().split('T')[0];
+  
   const dias = rutina.datos.dias || [];
   cont.innerHTML = `
+    <!-- SELECTOR DE FECHA -->
+    <div style="background:var(--white);border-bottom:1px solid var(--border);padding:1rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <label style="font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--gray);flex-shrink:0">Día:</label>
+      <input type="date" id="rutina-fecha-selector" value="${fechaSeleccionada}" 
+        style="border:1px solid var(--border);padding:0.5rem;font-size:0.85rem;border-radius:4px;cursor:pointer"
+        onchange="cambiarFechaRutina(this.value, '${clienteId}')">
+      <button onclick="irAlDiaActual()" style="background:var(--blue);color:#fff;border:none;padding:0.5rem 1rem;border-radius:4px;font-size:0.7rem;cursor:pointer;text-transform:uppercase;flex-shrink:0;white-space:nowrap">Hoy</button>
+    </div>
+
     <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:4px">RUTINA MENSUAL</div>
@@ -2977,11 +2991,43 @@ async function cargarMiRutina(clienteId) {
       </div>`;
     }).join('')}</div>`;
 
-  // ← AHORA se llama DESPUÉS de renderizar, cuando los elementos YA EXISTEN
+  // ← CARGAR PROGRESO de la fecha seleccionada
   setTimeout(async () => {
-    await cargarProgresoGuardado(clienteId);
+    await cargarProgresoGuardado(clienteId, fechaSeleccionada);
     initCheckinBar(clienteId);
   }, 100);
+}
+
+// ── CAMBIAR FECHA SELECCIONADA ──
+async function cambiarFechaRutina(fecha, clienteId) {
+  localStorage.setItem('fechaSeleccionada', fecha);
+  
+  // Desmarcar todos
+  document.querySelectorAll('.ex-check-row.done').forEach(el => {
+    el.classList.remove('done');
+    const checkbox = el.querySelector('.ex-checkbox');
+    if (checkbox) {
+      checkbox.style.background = '';
+      checkbox.style.borderColor = '';
+    }
+    const tick = el.querySelector('.ex-check-tick');
+    if (tick) tick.style.display = 'none';
+  });
+  
+  // Cargar progreso de la nueva fecha
+  await cargarProgresoGuardado(clienteId, fecha);
+  actualizarCheckinBar();
+}
+
+// ── IR AL DÍA ACTUAL ──
+function irAlDiaActual() {
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('rutina-fecha-selector').value = hoy;
+  const clienteId = (async () => {
+    const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
+    return cliente?.id;
+  })();
+  clienteId.then(id => cambiarFechaRutina(hoy, id));
 }
 
 function mostrarMiRutina(idx) {
@@ -3068,7 +3114,8 @@ async function marcarEjercicio(checkboxEl) {
   const exId = row.id;
   const rutinaId = row.dataset.rutina || '';
   const diaIdx = row.dataset.dia;
-  const hoy = new Date().toISOString().split('T')[0];
+  // ← USAR FECHA SELECCIONADA, no siempre hoy
+  const fecha = localStorage.getItem('fechaSeleccionada') || new Date().toISOString().split('T')[0];
   const ejercicioNombre = row.querySelector('.ex-check-name')?.textContent || '';
   
   if (!currentUser) {
@@ -3081,14 +3128,14 @@ async function marcarEjercicio(checkboxEl) {
 
   try {
     if (isDone) {
-      const { data: existing } = await sb.from('progreso_ejercicios_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', hoy).eq('ejercicio_id', exId).maybeSingle();
+      const { data: existing } = await sb.from('progreso_ejercicios_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', fecha).eq('ejercicio_id', exId).maybeSingle();
       if (existing) {
         await sb.from('progreso_ejercicios_diarios').update({ completado: true, updated_at: new Date().toISOString() }).eq('id', existing.id);
       } else {
-        await sb.from('progreso_ejercicios_diarios').insert([{ cliente_id: cliente.id, rutina_id: rutinaId || null, fecha: hoy, dia_idx: diaIdx || 0, ejercicio_id: exId, ejercicio_nombre: ejercicioNombre, completado: true }]);
+        await sb.from('progreso_ejercicios_diarios').insert([{ cliente_id: cliente.id, rutina_id: rutinaId || null, fecha: fecha, dia_idx: diaIdx || 0, ejercicio_id: exId, ejercicio_nombre: ejercicioNombre, completado: true }]);
       }
     } else {
-      await sb.from('progreso_ejercicios_diarios').update({ completado: false, updated_at: new Date().toISOString() }).eq('cliente_id', cliente.id).eq('fecha', hoy).eq('ejercicio_id', exId);
+      await sb.from('progreso_ejercicios_diarios').update({ completado: false, updated_at: new Date().toISOString() }).eq('cliente_id', cliente.id).eq('fecha', fecha).eq('ejercicio_id', exId);
     }
   } catch (error) {
     console.error('Error al guardar ejercicio:', error);
@@ -3321,12 +3368,90 @@ async function cargarMisMensajes(clienteId) {
   const cont = document.getElementById('cliente-mensajes');
   const { data } = await sb.from('mensajes').select('*').eq('cliente_id', clienteId).order('created_at', {ascending:false});
   const msgs = data || [];
-  cont.innerHTML = msgs.length
-    ? msgs.map(m => `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem">
-        <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.5rem">📌 ${fmtFecha(m.created_at)} · De tu coach</div>
-        <div style="font-size:0.88rem;line-height:1.8;color:var(--navy)">${m.texto}</div>
-      </div>`).join('')
-    : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No hay mensajes de tu coach aún.</div></div>`;
+  
+  cont.innerHTML = `
+    <!-- FORMULARIO PARA ENVIAR MENSAJES -->
+    <div style="background:var(--white);border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;border-radius:4px">
+      <div style="font-family:var(--display);font-size:0.9rem;font-weight:700;margin-bottom:1rem">✉️ Enviar mensaje al coach</div>
+      <textarea id="clienteMensajeTexto" 
+        placeholder="Cuéntale tu duda, sugerencia o pregunta sobre tu rutina..." 
+        style="width:100%;min-height:100px;border:1px solid var(--border);padding:0.8rem;font-family:var(--body);font-size:0.85rem;border-radius:4px;resize:vertical;margin-bottom:0.8rem"
+      ></textarea>
+      <div style="display:flex;gap:0.8rem">
+        <button onclick="enviarMensajeCliente()" 
+          style="flex:1;background:var(--blue);color:#fff;border:none;padding:0.8rem;border-radius:4px;font-weight:600;cursor:pointer;font-size:0.8rem;text-transform:uppercase">
+          Enviar mensaje
+        </button>
+        <button onclick="limpiarMensajeCliente()" 
+          style="background:var(--border);color:var(--navy);border:none;padding:0.8rem 1.5rem;border-radius:4px;cursor:pointer;font-size:0.8rem;text-transform:uppercase">
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <!-- MENSAJES RECIBIDOS -->
+    <div style="font-family:var(--display);font-size:0.85rem;font-weight:700;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">
+      📬 Mensajes de tu coach (${msgs.length})
+    </div>
+    ${msgs.length
+      ? msgs.map(m => `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem;border-radius:2px">
+          <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.5rem">📌 ${fmtFecha(m.created_at)} · De tu coach</div>
+          <div style="font-size:0.88rem;line-height:1.8;color:var(--navy)">${m.texto}</div>
+        </div>`).join('')
+      : `<div class="empty-state" style="padding:2rem"><div class="empty-state-icon">💬</div><div class="empty-state-text">Tu coach aún no ha enviado mensajes. ¡Envíale una pregunta!</div></div>`
+    }
+  `;
+}
+
+// ── ENVIAR MENSAJE DESDE CLIENTE ──
+async function enviarMensajeCliente() {
+  const textarea = document.getElementById('clienteMensajeTexto');
+  const texto = textarea.value.trim();
+  
+  if (!texto) {
+    toast('Escribe un mensaje antes de enviar', 'error');
+    return;
+  }
+  
+  if (!currentUser) {
+    toast('Error: No estás autenticado', 'error');
+    return;
+  }
+  
+  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
+  if (!cliente) {
+    toast('Error: Cliente no encontrado', 'error');
+    return;
+  }
+  
+  try {
+    // Guardar mensaje en tabla mensajes_clientes (nueva tabla para mensajes DE clientes)
+    const { error } = await sb.from('mensajes_clientes').insert([{
+      cliente_id: cliente.id,
+      texto: texto,
+      leido: false,
+      created_at: new Date().toISOString()
+    }]);
+    
+    if (error) throw error;
+    
+    // Limpiar textarea
+    textarea.value = '';
+    
+    toast('✅ Mensaje enviado a tu coach', 'success');
+    
+    // Recargar mensajes para mostrar el que acaba de enviarse
+    await cargarMisMensajes(cliente.id);
+    
+  } catch (error) {
+    console.error('Error al enviar mensaje:', error);
+    toast('Error al enviar: ' + error.message, 'error');
+  }
+}
+
+// ── LIMPIAR TEXTAREA ──
+function limpiarMensajeCliente() {
+  document.getElementById('clienteMensajeTexto').value = '';
 }
 
 // Bloquear scroll lateral en móvil
