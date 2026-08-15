@@ -119,25 +119,25 @@
     .form-section-title{font-family:var(--display);font-size:0.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)}
 
     /* ── PANEL FILTROS MOBILE ── */
-    .mensajes-filtros-panel{display:none;position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--white);border-right:1px solid var(--border);z-index:1500;flex-direction:column;animation:slideInLeft 0.3s ease}
-    .mensajes-filtros-panel.open{display:flex}
-    @keyframes slideInLeft{from{transform:translateX(-100%)}to{transform:translateX(0)}}
-    .mensajes-filtros-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1400}
+    .mensajes-filtros-panel{display:none;position:fixed;left:-280px;top:0;bottom:0;width:280px;background:var(--white);border-right:1px solid var(--border);z-index:1500;flex-direction:column;transition:left 0.3s ease;box-shadow:-2px 0 8px rgba(0,0,0,0.1)}
+    .mensajes-filtros-panel.open{left:0;display:flex}
+    .mensajes-filtros-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1400;transition:opacity 0.3s ease}
     .mensajes-filtros-overlay.open{display:block}
-    .mensajes-filtros-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .mensajes-filtros-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
     .mensajes-filtros-title{font-family:var(--display);font-size:0.85rem;font-weight:700}
-    .mensajes-filtros-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray);padding:0}
+    .mensajes-filtros-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray);padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;transition:color 0.2s}
+    .mensajes-filtros-close:active{color:var(--navy)}
     .mensajes-filtros-content{padding:1.5rem;overflow-y:auto;flex:1}
     .mensajes-filtro-group{margin-bottom:1.5rem}
     .mensajes-filtro-label{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;margin-bottom:0.6rem;display:block}
-    .mensajes-filtro-input{width:100%;border:1px solid var(--border);padding:0.75rem 0.9rem;font-family:var(--body);font-size:0.85rem;color:var(--navy);outline:none;border-radius:2px}
-    .mensajes-btn-filtros{display:none;background:none;border:none;padding:0.5rem;cursor:pointer;color:var(--gray);font-size:1rem}
-    .mensajes-btn-filtros:hover{color:var(--navy)}
-    @media (max-width:768px){
-      .mensajes-header-desktop{display:none}
-      .mensajes-btn-filtros{display:block}
+    .mensajes-filtro-input{width:100%;border:1px solid var(--border);padding:0.75rem 0.9rem;font-family:var(--body);font-size:0.85rem;color:var(--navy);outline:none;border-radius:2px;box-sizing:border-box}
+    .mensajes-btn-filtros{display:none;background:none;border:none;padding:0.5rem;cursor:pointer;color:var(--gray);font-size:1.1rem;flex-shrink:0;transition:color 0.2s}
+    .mensajes-btn-filtros:active{color:var(--navy)}
+    @media (max-width:600px){
+      .mensajes-header-desktop{display:none !important}
+      .mensajes-btn-filtros{display:block !important}
     }
-    @media (min-width:769px){
+    @media (min-width:601px){
       .mensajes-filtros-panel{display:none !important}
       .mensajes-filtros-overlay{display:none !important}
     }
@@ -4467,16 +4467,39 @@ async function eliminarMensajeInbox(mensajeId) {
 
 // ── ABRIR/CERRAR PANEL FILTROS MOBILE ──
 function abrirFiltrosMensajes() {
+  console.log('📱 [DEBUG] Abriendo filtros...');
   document.getElementById('mensajesFiltrosPanel').classList.add('open');
   document.getElementById('mensajesFiltrosOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function cerrarFiltrosMensajes() {
+  console.log('📱 [DEBUG] Cerrando filtros...');
   document.getElementById('mensajesFiltrosPanel').classList.remove('open');
   document.getElementById('mensajesFiltrosOverlay').classList.remove('open');
   document.body.style.overflow = '';
 }
+
+// Verificar tamaño en tiempo real
+function actualizarVistaFiltros() {
+  const isMobile = window.innerWidth <= 600;
+  const btn = document.querySelector('.mensajes-btn-filtros');
+  const headerDesktop = document.querySelector('.mensajes-header-desktop');
+  
+  if (btn) {
+    btn.style.display = isMobile ? 'block' : 'none';
+  }
+  if (headerDesktop) {
+    headerDesktop.style.display = isMobile ? 'none' : 'flex';
+  }
+  
+  console.log('📱 [DEBUG] isMobile:', isMobile, 'Width:', window.innerWidth);
+}
+
+// Ejecutar al cargar
+window.addEventListener('load', actualizarVistaFiltros);
+// Ejecutar al redimensionar
+window.addEventListener('resize', actualizarVistaFiltros);
 
 </script>
 </body>
