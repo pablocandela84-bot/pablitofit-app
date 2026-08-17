@@ -1379,18 +1379,51 @@ async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
+  const btn = document.getElementById('btnLogin');
+  
   err.style.display = 'none';
-  document.getElementById('btnLogin').textContent = 'Entrando...';
-
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  document.getElementById('btnLogin').textContent = 'Entrar →';
-
-  if (error) { err.style.display = 'block'; return; }
-
-  currentUser = data.user;
-  // Guardar email en localStorage para restaurar sesión
-  localStorage.setItem('pf_user_email', currentUser.email);
-  await iniciarSesion();
+  btn.textContent = 'Entrando...';
+  btn.disabled = true;
+  
+  try {
+    console.log('📝 Intentando login con:', email);
+    
+    const { data, error } = await sb.auth.signInWithPassword({ 
+      email: email, 
+      password: pass 
+    });
+    
+    console.log('📡 Respuesta de Supabase:', { data, error });
+    
+    btn.textContent = 'Entrar →';
+    btn.disabled = false;
+    
+    if (error) {
+      console.error('❌ Error Supabase:', error.message);
+      err.textContent = error.message || 'Email o contraseña incorrectos';
+      err.style.display = 'block';
+      return;
+    }
+    
+    if (!data.user) {
+      console.error('❌ No user data');
+      err.textContent = 'Error: No se recibió datos del usuario';
+      err.style.display = 'block';
+      return;
+    }
+    
+    console.log('✅ Login exitoso:', data.user.email);
+    currentUser = data.user;
+    localStorage.setItem('pf_user_email', currentUser.email);
+    await iniciarSesion();
+    
+  } catch (err) {
+    console.error('❌ Error en login:', err);
+    btn.textContent = 'Entrar →';
+    btn.disabled = false;
+    document.getElementById('loginErr').textContent = 'Error: ' + err.message;
+    document.getElementById('loginErr').style.display = 'block';
+  }
 }
 
 async function iniciarSesion() {
