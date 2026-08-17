@@ -72,11 +72,9 @@
     .card{background:var(--white);border:1px solid var(--border)}
     .card-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
     .card-title{font-family:var(--display);font-size:0.85rem;font-weight:900;letter-spacing:-0.3px}
-    .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .table-scroll table{min-width:100%}
     table{width:100%;border-collapse:collapse}
-    th{font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;text-align:left;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);background:#f8faff;white-space:nowrap}
-    td{padding:0.9rem 1.2rem;font-size:0.82rem;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}
+    th{font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;text-align:left;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);background:#f8faff}
+    td{padding:0.9rem 1.2rem;font-size:0.82rem;border-bottom:1px solid var(--border);vertical-align:middle}
     tr:last-child td{border-bottom:none}
     tr:hover td{background:#f8faff}
     .badge{display:inline-block;padding:0.2rem 0.6rem;font-size:0.65rem;font-weight:600;letter-spacing:0.5px;border-radius:2px}
@@ -119,30 +117,6 @@
     .form-field textarea{resize:vertical;min-height:80px}
     .form-section{margin-bottom:1.5rem}
     .form-section-title{font-family:var(--display);font-size:0.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)}
-
-    /* ── PANEL FILTROS MOBILE ── */
-    .mensajes-filtros-panel{display:none;position:fixed;left:-280px;top:0;bottom:0;width:280px;background:var(--white);border-right:1px solid var(--border);z-index:1500;flex-direction:column;transition:left 0.3s ease;box-shadow:-2px 0 8px rgba(0,0,0,0.1)}
-    .mensajes-filtros-panel.open{left:0;display:flex}
-    .mensajes-filtros-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1400;transition:opacity 0.3s ease}
-    .mensajes-filtros-overlay.open{display:block}
-    .mensajes-filtros-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-    .mensajes-filtros-title{font-family:var(--display);font-size:0.85rem;font-weight:700}
-    .mensajes-filtros-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray);padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;transition:color 0.2s}
-    .mensajes-filtros-close:active{color:var(--navy)}
-    .mensajes-filtros-content{padding:1.5rem;overflow-y:auto;flex:1}
-    .mensajes-filtro-group{margin-bottom:1.5rem}
-    .mensajes-filtro-label{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;margin-bottom:0.6rem;display:block}
-    .mensajes-filtro-input{width:100%;border:1px solid var(--border);padding:0.75rem 0.9rem;font-family:var(--body);font-size:0.85rem;color:var(--navy);outline:none;border-radius:2px;box-sizing:border-box}
-    .mensajes-btn-filtros{display:none;background:none;border:none;padding:0.5rem;cursor:pointer;color:var(--gray);font-size:1.1rem;flex-shrink:0;transition:color 0.2s}
-    .mensajes-btn-filtros:active{color:var(--navy)}
-    @media (max-width:600px){
-      .mensajes-header-desktop{display:none !important}
-      .mensajes-btn-filtros{display:block !important}
-    }
-    @media (min-width:601px){
-      .mensajes-filtros-panel{display:none !important}
-      .mensajes-filtros-overlay{display:none !important}
-    }
 
     /* ── PERFIL CLIENTE ── */
     .client-header{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start;background:var(--navy);padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
@@ -203,26 +177,6 @@
     .cliente-nav{display:flex;gap:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;overflow-x:auto}
     .cliente-nav-item{padding:1rem 1.2rem;font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s}
     .cliente-nav-item.active{color:var(--blue);border-bottom-color:var(--blue)}
-    
-    /* ── PANEL LATERAL CLIENTE (MOBILE) ── */
-    .cliente-nav-panel{display:none;position:fixed;left:-280px;top:60px;bottom:0;width:280px;background:var(--white);border-right:1px solid var(--border);z-index:1500;flex-direction:column;transition:left 0.3s ease;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto}
-    .cliente-nav-panel.open{left:0;display:flex}
-    .cliente-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1400;top:60px}
-    .cliente-nav-overlay.open{display:block}
-    .cliente-nav-mobile{display:none;flex-direction:column;gap:0}
-    .cliente-nav-mobile .cliente-nav-item{padding:1rem 1.5rem;border-bottom:1px solid var(--border);border-left:3px solid transparent;font-size:0.75rem}
-    .cliente-nav-mobile .cliente-nav-item.active{border-left-color:var(--blue);background:rgba(26,63,160,0.04)}
-    .cliente-hamburger{display:none;background:none;border:none;cursor:pointer;color:#fff;font-size:1.2rem;padding:0.5rem}
-    @media (max-width:600px){
-      .cliente-nav{display:none}
-      .cliente-hamburger{display:block}
-      .cliente-nav-mobile{display:flex}
-    }
-    @media (min-width:601px){
-      .cliente-nav-panel{display:none !important}
-      .cliente-nav-overlay{display:none !important}
-    }
-
     .cliente-body{padding:2rem;max-width:900px;margin:0 auto;width:100%}
     .cliente-tab-content{display:none}
     .cliente-tab-content.active{display:block}
@@ -796,18 +750,18 @@
 ══════════════════════════════════════ -->
 <div id="loginScreen" class="screen active">
   <div class="login-box">
-    <div style="font-size:3rem;text-align:center;margin-bottom:1rem">💪</div>
+    <img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:80px;height:80px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 1rem" alt="PablitoFit">
     <div class="login-brand" style="text-align:center">PABLITO<span>FIT</span></div>
     <div class="login-sub" style="text-align:center">Plataforma de entrenamiento</div>
     <div class="login-field">
       <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="pablocandela84@gmail.com" value="pablocandela84@gmail.com" autocomplete="email">
+      <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email">
     </div>
     <div class="login-field">
       <label>Contraseña</label>
-      <input type="password" id="loginPass" placeholder="••••••••" value="140972" autocomplete="current-password">
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <button class="btn-login" id="btnLogin" onclick="login()">Entrar →</button>
+    <button class="btn-login" id="btnLogin">Entrar →</button>
     <div class="login-err" id="loginErr">Email o contraseña incorrectos</div>
   </div>
 </div>
@@ -820,7 +774,7 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-brand">
-      <div style="display:flex;align-items:center;gap:10px"><div style="font-size:1.5rem">💪</div><div><div class="sidebar-brand-name">PABLITO<span>FIT</span></div><div class="sidebar-brand-sub">Panel Coach</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="sidebar-brand-name">PABLITO<span>FIT</span></div><div class="sidebar-brand-sub">Panel Coach</div></div></div>
     </div>
     <div class="sidebar-nav">
       <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
@@ -829,7 +783,6 @@
       <div class="nav-item" onclick="showTab('progreso-hoy')"><span class="nav-icon">📊</span>Progreso Hoy</div>
       <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">✅</span>Hábitos</div>
       <div class="nav-item" onclick="showTab('progreso')"><span class="nav-icon">📈</span>Progreso</div>
-      <div class="nav-item" onclick="showTab('mensajes-inbox')"><span class="nav-icon">💬</span>Mensajes</div>
       <div class="nav-item" onclick="showTab('pagos')"><span class="nav-icon">💳</span>Pagos</div>
       <div class="nav-item" onclick="showTab('banco')"><span class="nav-icon">📚</span>Banco</div>
     </div>
@@ -983,48 +936,6 @@
         </div>
       </div>
 
-      <!-- TAB: MENSAJES INBOX -->
-      <div id="tab-mensajes-inbox" class="tab-content">
-        <!-- PANEL FILTROS MOBILE -->
-        <div class="mensajes-filtros-overlay" id="mensajesFiltrosOverlay" onclick="cerrarFiltrosMensajes()"></div>
-        <div class="mensajes-filtros-panel" id="mensajesFiltrosPanel">
-          <div class="mensajes-filtros-header">
-            <div class="mensajes-filtros-title">🔍 Filtros</div>
-            <button class="mensajes-filtros-close" onclick="cerrarFiltrosMensajes()">✕</button>
-          </div>
-          <div class="mensajes-filtros-content">
-            <div class="mensajes-filtro-group">
-              <label class="mensajes-filtro-label">Cliente</label>
-              <select id="mensajesClienteFiltro" class="mensajes-filtro-input" onchange="filtrarMensajesPorCliente()">
-                <option value="">Todos los clientes</option>
-              </select>
-            </div>
-            <div class="mensajes-filtro-group">
-              <label class="mensajes-filtro-label">Búsqueda</label>
-              <input class="mensajes-filtro-input" id="searchMensajes" placeholder="Buscar en mensajes..." oninput="filtrarMensajesPorTexto()">
-            </div>
-          </div>
-        </div>
-
-        <!-- CARD CON MENSAJES -->
-        <div class="card">
-          <div class="card-header">
-            <div style="display:flex;align-items:center;gap:0.8rem;width:100%">
-              <button class="mensajes-btn-filtros" onclick="abrirFiltrosMensajes()" title="Filtros">⚙️</button>
-              <div class="card-title">📬 Mensajes de clientes</div>
-            </div>
-            <!-- HEADER DESKTOP CON FILTROS -->
-            <div class="mensajes-header-desktop" style="display:flex;gap:0.8rem">
-              <select id="mensajesClienteFiltroDesktop" class="search-box" style="width:200px" onchange="filtrarMensajesPorCliente()">
-                <option value="">Todos los clientes</option>
-              </select>
-              <input class="search-box" id="searchMensajesDesktop" placeholder="Buscar en mensajes..." oninput="filtrarMensajesPorTexto()" style="flex:1;max-width:300px">
-            </div>
-          </div>
-          <div id="mensajesInboxContent"><div class="loading"><div class="spinner"></div>Cargando mensajes...</div></div>
-        </div>
-      </div>
-
       <!-- TAB: PAGOS -->
       <div id="tab-pagos" class="tab-content">
         <div class="card">
@@ -1042,26 +953,11 @@
 ══════════════════════════════════════ -->
 <div id="clienteScreen" class="screen">
   <div class="cliente-topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="cliente-hamburger" onclick="abrirNavClienteMobile()" title="Menú">☰</button>
-      <div style="font-size:1.8rem">💪</div><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div>
+    <div>
+      <div style="display:flex;align-items:center;gap:10px"><img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div></div>
     </div>
     <button class="btn" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)" onclick="logout()">Salir</button>
   </div>
-  
-  <!-- PANEL LATERAL MOBILE -->
-  <div class="cliente-nav-overlay" id="clienteNavOverlay" onclick="cerrarNavClienteMobile()"></div>
-  <div class="cliente-nav-panel" id="clienteNavPanel">
-    <div class="cliente-nav-mobile" style="flex:1">
-      <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina');cerrarNavClienteMobile()">💪 Mi Rutina</div>
-      <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta');cerrarNavClienteMobile()">✅ Mis Hábitos</div>
-      <div class="cliente-nav-item" onclick="showClienteTab('mi-progreso');cerrarNavClienteMobile()">📈 Mi Progreso</div>
-      <div class="cliente-nav-item" onclick="showClienteTab('mi-plan');cerrarNavClienteMobile()">📋 Mi Plan</div>
-      <div class="cliente-nav-item" onclick="showClienteTab('mensajes');cerrarNavClienteMobile()">💬 Mensajes</div>
-    </div>
-  </div>
-  
-  <!-- NAVEGACIÓN HORIZONTAL DESKTOP -->
   <div class="cliente-nav">
     <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina')">💪 Mi Rutina</div>
     <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta')">✅ Mis Hábitos</div>
@@ -1310,7 +1206,7 @@ const sb = createClient(
 // ══════════════════════════════════════
 //  ESTADO GLOBAL
 // ══════════════════════════════════════
-const COACH_EMAIL = 'pablocandela84@gmail.com'; // ← tu email real
+const COACH_EMAIL = 'pablocandela84@gmail.com'; // ← cambia por tu email real
 let currentUser = null;
 let currentClienteId = null;
 let clientes = [];
@@ -1365,102 +1261,38 @@ function fechaVencimiento(fechaInicio, plan) {
 // ══════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════
-window.addEventListener('load', async () => {
-  // Agregar listener Enter en campo de contraseña
-  const loginPass = document.getElementById('loginPass');
-  if (loginPass) {
-    loginPass.addEventListener('keydown', e => {
-      if (e.key === 'Enter') login();
-    });
-  }
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
 });
+
+document.getElementById('btnLogin').addEventListener('click', login);
 
 async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
-  const btn = document.getElementById('btnLogin');
-  
   err.style.display = 'none';
-  btn.textContent = 'Entrando...';
-  btn.disabled = true;
-  
-  try {
-    // Verificar que email y contraseña no estén vacíos
-    if (!email) {
-      err.textContent = '❌ Email vacío';
-      err.style.display = 'block';
-      btn.textContent = 'Entrar →';
-      btn.disabled = false;
-      return;
-    }
-    
-    if (!pass) {
-      err.textContent = '❌ Contraseña vacía';
-      err.style.display = 'block';
-      btn.textContent = 'Entrar →';
-      btn.disabled = false;
-      return;
-    }
-    
-    // Verificar que Supabase esté inicializado
-    if (!sb) {
-      err.textContent = '❌ Error: Supabase no inicializado';
-      err.style.display = 'block';
-      btn.textContent = 'Entrar →';
-      btn.disabled = false;
-      return;
-    }
-    
-    err.textContent = '⏳ Conectando a Supabase...';
-    err.style.display = 'block';
-    err.style.color = 'var(--blue)';
-    
-    const { data, error } = await sb.auth.signInWithPassword({ 
-      email: email, 
-      password: pass 
-    });
-    
-    err.style.color = 'var(--red)';
-    btn.textContent = 'Entrar →';
-    btn.disabled = false;
-    
-    if (error) {
-      err.textContent = '❌ ' + (error.message || 'Email o contraseña incorrectos');
-      err.style.display = 'block';
-      return;
-    }
-    
-    if (!data.user) {
-      err.textContent = '❌ Error: No se recibió usuario';
-      err.style.display = 'block';
-      return;
-    }
-    
-    err.style.color = 'var(--green)';
-    err.textContent = '✅ Login exitoso, cargando...';
-    currentUser = data.user;
-    localStorage.setItem('pf_user_email', currentUser.email);
-    
-    await iniciarSesion();
-    
-  } catch (err) {
-    btn.textContent = 'Entrar →';
-    btn.disabled = false;
-    document.getElementById('loginErr').textContent = '❌ Error: ' + err.message;
-    document.getElementById('loginErr').style.display = 'block';
-    document.getElementById('loginErr').style.color = 'var(--red)';
-  }
+  document.getElementById('btnLogin').textContent = 'Entrando...';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  document.getElementById('btnLogin').textContent = 'Entrar →';
+
+  if (error) { err.style.display = 'block'; return; }
+
+  currentUser = data.user;
+  // Guardar email en localStorage para restaurar sesión
+  localStorage.setItem('pf_user_email', currentUser.email);
+  await iniciarSesion();
 }
 
 async function iniciarSesion() {
   const email = currentUser.email;
-  if (email.toLowerCase() === COACH_EMAIL.toLowerCase()) {
+  if (email === COACH_EMAIL) {
     // Es coach
     document.getElementById('sidebarEmail').textContent = email;
     showScreen('coachScreen');
     await cargarDashboard();
-    // Nota: poblarSelectores se ejecutará después
+    await poblarSelectores();
   } else {
     // Es cliente - VINCULAR user_id en tabla clientes
     await vincularClienteConUser(email, currentUser.id);
@@ -1588,7 +1420,7 @@ async function confirmarPassword() {
 const tabTitles = {
   dashboard:'Dashboard', clientes:'Clientes',
   rutinas:'Rutinas', nutricion:'Nutrición',
-  progreso:'Progreso', 'mensajes-inbox':'Mensajes', pagos:'Pagos', banco:'Banco de Ejercicios'
+  progreso:'Progreso', pagos:'Pagos', banco:'Banco de Ejercicios'
 };
 const tabActions = {
   clientes: () => `<button class="btn btn-primary" onclick="abrirNuevoCliente()">+ Nuevo cliente</button>`
@@ -1636,71 +1468,63 @@ function showTab(tab) {
   if (tab === 'banco') cargarBanco();
   if (tab === 'progreso-hoy') cargarProgresoHoy();
   if (tab === 'nutricion') cargarHabitosResumen();
-  if (tab === 'mensajes-inbox') cargarMensajesInbox();
 }
 
 // ══════════════════════════════════════
 //  COACH: DASHBOARD
 // ══════════════════════════════════════
 async function cargarDashboard() {
-  try {
-    // Carga en paralelo para mayor velocidad
-    const { data, error } = await sb.from('clientes').select('*').order('created_at', {ascending:false});
-    
-    if (error) {
-      console.error('❌ Error cargando clientes:', error.message);
-      const list = document.getElementById('dashboardList');
-      list.innerHTML = `<div class="empty-state"><div class="empty-state-text">❌ Error cargando clientes: ${error.message}</div></div>`;
-      return;
-    }
-    
-    clientes = data || [];
-    console.log('✅ Clientes cargados:', clientes.length);
+  // Carga en paralelo para mayor velocidad
+  const [{ data }] = await Promise.all([
+    sb.from('clientes').select('*').order('created_at', {ascending:false})
+  ]);
+  clientes = data || [];
 
-    const activos = clientes.filter(c => c.estado === 'activo');
-    const plan6 = clientes.filter(c => c.plan === '6meses');
-    const plan12 = clientes.filter(c => c.plan === '12meses');
-    const hoy = new Date();
-    const finMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
-    const vencen = clientes.filter(c => {
-      const v = fechaVencimiento(c.fecha_inicio, c.plan);
-      return v && v >= hoy && v <= finMes;
-    });
+  const activos = clientes.filter(c => c.estado === 'activo');
+  const plan6 = clientes.filter(c => c.plan === '6meses');
+  const plan12 = clientes.filter(c => c.plan === '12meses');
+  const hoy = new Date();
+  const finMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
+  const vencen = clientes.filter(c => {
+    const v = fechaVencimiento(c.fecha_inicio, c.plan);
+    return v && v >= hoy && v <= finMes;
+  });
 
-    document.getElementById('statTotal').textContent = activos.length;
-    document.getElementById('statPlan6').textContent = plan6.length;
-    document.getElementById('statPlan12').textContent = plan12.length;
-    document.getElementById('statVence').textContent = vencen.length;
+  document.getElementById('statTotal').textContent = activos.length;
+  document.getElementById('statPlan6').textContent = plan6.length;
+  document.getElementById('statPlan12').textContent = plan12.length;
+  document.getElementById('statVence').textContent = vencen.length;
 
-    const list = document.getElementById('dashboardList');
-    if (!clientes.length) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Aún no tienes clientes. Crea el primero desde la sección Clientes.</div></div>`;
-      return;
-    }
-    const isMob = window.innerWidth <= 768;
-    if (isMob) {
-      list.innerHTML = `<div style="padding:0.8rem">${clientes.slice(0,6).map(c => `
-        <div class="cliente-card" onclick="showTab('clientes');setTimeout(()=>verCliente('${c.id}'),100)">
-          <div class="cliente-card-info">
-            <div class="cliente-card-name">${c.nombre}</div>
-            <div class="cliente-card-email">${c.email}</div>
-            <div class="cliente-card-meta">${badgePlan(c.plan)} ${badgeEstado(c.estado)}</div>
-          </div>
-          <span style="color:var(--gray);font-size:1.2rem">›</span>
-        </div>`).join('')}</div>`;
-    } else {
-      list.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
-        <tbody>${clientes.slice(0,8).map(c => {
-          const v = fechaVencimiento(c.fecha_inicio, c.plan);
-          return `<tr>
-            <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
-            <td>${badgePlan(c.plan)}</td>
-            <td>${badgeEstado(c.estado)}</td>
+  const list = document.getElementById('dashboardList');
+  if (!clientes.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Aún no tienes clientes. Crea el primero desde la sección Clientes.</div></div>`;
+    return;
+  }
+  const isMob = window.innerWidth <= 768;
+  if (isMob) {
+    list.innerHTML = `<div style="padding:0.8rem">${clientes.slice(0,6).map(c => `
+      <div class="cliente-card" onclick="showTab('clientes');setTimeout(()=>verCliente('${c.id}'),100)">
+        <div class="cliente-card-info">
+          <div class="cliente-card-name">${c.nombre}</div>
+          <div class="cliente-card-email">${c.email}</div>
+          <div class="cliente-card-meta">${badgePlan(c.plan)} ${badgeEstado(c.estado)}</div>
+        </div>
+        <span style="color:var(--gray);font-size:1.2rem">›</span>
+      </div>`).join('')}</div>`;
+  } else {
+    list.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
+      <tbody>${clientes.slice(0,8).map(c => {
+        const v = fechaVencimiento(c.fecha_inicio, c.plan);
+        return `<tr>
+          <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
+          <td>${badgePlan(c.plan)}</td>
+          <td>${badgeEstado(c.estado)}</td>
           <td>${fmtFecha(c.fecha_inicio)}</td>
           <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
           <td><button class="btn btn-sm btn-secondary" onclick="verCliente('${c.id}')">Ver perfil</button></td>
         </tr>`;
-      }).join('')}</tbody></table></div>`;
+      }).join('')}</tbody></table>`;
+  }
 }
 
 // ══════════════════════════════════════
@@ -1747,7 +1571,7 @@ function renderTablaClientes(data) {
         </div>
       </div>`).join('')}</div>`;
   } else {
-    container.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Acciones</th></tr></thead>
+    container.innerHTML = `<table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Acciones</th></tr></thead>
       <tbody>${data.map(c => `<tr>
         <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
         <td style="color:var(--gray)">${c.telefono||'—'}</td>
@@ -1759,7 +1583,7 @@ function renderTablaClientes(data) {
           <button class="btn btn-sm btn-secondary" onclick="editarCliente('${c.id}')">Editar</button>
           <button class="btn btn-sm btn-danger" onclick="eliminarCliente('${c.id}','${c.nombre}')">Borrar</button>
         </td>
-      </tr>`).join('')}</tbody></table></div>`;
+      </tr>`).join('')}</tbody></table>`;
   }
 }
 
@@ -2502,14 +2326,14 @@ async function renderProgresoPanel(clienteId) {
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title">Historial de check-ins</div></div>
-      ${entradas.length ? `<div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
+      ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
         ${entradas.map(e => `<tr>
           <td>${fmtFecha(e.fecha)}</td>
           <td><strong>${e.peso||'—'} kg</strong></td>
           <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
           <td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso('${e.id}','${clienteId}')">Borrar</button></td>
         </tr>`).join('')}
-      </tbody></table></div>` : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros de progreso.</div></div>`}
+      </tbody></table>` : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros de progreso.</div></div>`}
     </div>`;
 }
 
@@ -2705,7 +2529,7 @@ async function cargarPagos() {
   const cont = document.getElementById('pagosContent');
   if (!data || !data.length) { cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💳</div><div class="empty-state-text">No hay clientes aún.</div></div>`; return; }
   const hoy = new Date();
-  cont.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
+  cont.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
     <tbody>${data.map(c => {
       const v = fechaVencimiento(c.fecha_inicio, c.plan);
       const diasRestantes = v ? Math.ceil((v - hoy) / 86400000) : null;
@@ -2722,7 +2546,7 @@ async function cargarPagos() {
         <td>${badgeEstado(c.estado)}</td>
         <td>${situacion}</td>
       </tr>`;
-    }).join('')}</tbody></table></div>`;
+    }).join('')}</tbody></table>`;
 }
 
 // ══════════════════════════════════════
@@ -2985,10 +2809,10 @@ async function cargarPortalCliente() {
   await cargarProgresoGuardado(cliente.id);
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CARGAR PROGRESO GUARDADO (Ejercicios + Hábitos) - CON FECHA PERSONALIZADA
-// ══════════════════════════════════════════════════════════════════════════════
-async function cargarProgresoGuardado(clienteId, fechaPersonalizada = null) {
+// ══════════════════════════════════════════════════════════════
+// CARGAR PROGRESO GUARDADO (Ejercicios + Hábitos)
+// ══════════════════════════════════════════════════════════════
+async function cargarProgresoGuardado(clienteId) {
   if (!currentUser) return;
   
   // 1. Buscar el cliente por user_id para obtener su id real
@@ -2996,15 +2820,14 @@ async function cargarProgresoGuardado(clienteId, fechaPersonalizada = null) {
   if (!cliente) return;
   
   const clienteRealId = cliente.id;
-  // ← Usar fecha personalizada o hoy
-  const fecha = fechaPersonalizada || new Date().toISOString().split('T')[0];
+  const hoy = new Date().toISOString().split('T')[0];
   
-  // 2. Cargar solo ejercicios COMPLETADOS de la fecha especificada
+  // 2. Cargar solo ejercicios COMPLETADOS del día (completado = true)
   const { data: ejerciciosData } = await sb
     .from('progreso_ejercicios_diarios')
     .select('*')
     .eq('cliente_id', clienteRealId)
-    .eq('fecha', fecha)
+    .eq('fecha', hoy)
     .eq('completado', true);
   
   if (ejerciciosData && ejerciciosData.length > 0) {
@@ -3047,12 +2870,12 @@ async function cargarProgresoGuardado(clienteId, fechaPersonalizada = null) {
     });
   }
   
-  // 4. Cargar hábitos COMPLETADOS de la fecha especificada
+  // 4. Cargar hábitos COMPLETADOS del día (completado = true)
   const { data: habitosData } = await sb
     .from('progreso_habitos_diarios')
     .select('*')
     .eq('cliente_id', clienteRealId)
-    .eq('fecha', fecha)
+    .eq('fecha', hoy)
     .eq('completado', true);
   
   if (habitosData && habitosData.length > 0) {
@@ -3096,19 +2919,7 @@ async function actualizarBarraHabitos(clienteId) {
 function showClienteTab(tab) {
   document.querySelectorAll('.cliente-nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.cliente-tab-content').forEach(t => t.classList.remove('active'));
-  
-  // Marcar como active el item que fue clickeado
-  if (event && event.currentTarget) {
-    event.currentTarget.classList.add('active');
-  } else {
-    // Si no hay event, marcar todos los items que coincidan con el tab
-    document.querySelectorAll('.cliente-nav-item').forEach(item => {
-      if (item.textContent.toLowerCase().includes(tab.split('-')[1] || tab)) {
-        item.classList.add('active');
-      }
-    });
-  }
-  
+  event.currentTarget.classList.add('active');
   document.getElementById('cliente-'+tab).classList.add('active');
   // Mostrar/ocultar checkin bar según tab
   const bar = document.getElementById('checkinBar');
@@ -3127,21 +2938,8 @@ async function cargarMiRutina(clienteId) {
     return;
   }
 
-  // ← SELECTOR DE FECHA
-  const hoy = new Date();
-  let fechaSeleccionada = localStorage.getItem('fechaSeleccionada') || hoy.toISOString().split('T')[0];
-  
   const dias = rutina.datos.dias || [];
   cont.innerHTML = `
-    <!-- SELECTOR DE FECHA -->
-    <div style="background:var(--white);border-bottom:1px solid var(--border);padding:1rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch">
-      <label style="font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--gray);flex-shrink:0">Día:</label>
-      <input type="date" id="rutina-fecha-selector" value="${fechaSeleccionada}" 
-        style="border:1px solid var(--border);padding:0.5rem;font-size:0.85rem;border-radius:4px;cursor:pointer"
-        onchange="cambiarFechaRutina(this.value, '${clienteId}')">
-      <button onclick="irAlDiaActual()" style="background:var(--blue);color:#fff;border:none;padding:0.5rem 1rem;border-radius:4px;font-size:0.7rem;cursor:pointer;text-transform:uppercase;flex-shrink:0;white-space:nowrap">Hoy</button>
-    </div>
-
     <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:4px">RUTINA MENSUAL</div>
@@ -3179,43 +2977,11 @@ async function cargarMiRutina(clienteId) {
       </div>`;
     }).join('')}</div>`;
 
-  // ← CARGAR PROGRESO de la fecha seleccionada
+  // ← AHORA se llama DESPUÉS de renderizar, cuando los elementos YA EXISTEN
   setTimeout(async () => {
-    await cargarProgresoGuardado(clienteId, fechaSeleccionada);
+    await cargarProgresoGuardado(clienteId);
     initCheckinBar(clienteId);
   }, 100);
-}
-
-// ── CAMBIAR FECHA SELECCIONADA ──
-async function cambiarFechaRutina(fecha, clienteId) {
-  localStorage.setItem('fechaSeleccionada', fecha);
-  
-  // Desmarcar todos
-  document.querySelectorAll('.ex-check-row.done').forEach(el => {
-    el.classList.remove('done');
-    const checkbox = el.querySelector('.ex-checkbox');
-    if (checkbox) {
-      checkbox.style.background = '';
-      checkbox.style.borderColor = '';
-    }
-    const tick = el.querySelector('.ex-check-tick');
-    if (tick) tick.style.display = 'none';
-  });
-  
-  // Cargar progreso de la nueva fecha
-  await cargarProgresoGuardado(clienteId, fecha);
-  actualizarCheckinBar();
-}
-
-// ── IR AL DÍA ACTUAL ──
-function irAlDiaActual() {
-  const hoy = new Date().toISOString().split('T')[0];
-  document.getElementById('rutina-fecha-selector').value = hoy;
-  const clienteId = (async () => {
-    const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-    return cliente?.id;
-  })();
-  clienteId.then(id => cambiarFechaRutina(hoy, id));
 }
 
 function mostrarMiRutina(idx) {
@@ -3302,8 +3068,7 @@ async function marcarEjercicio(checkboxEl) {
   const exId = row.id;
   const rutinaId = row.dataset.rutina || '';
   const diaIdx = row.dataset.dia;
-  // ← USAR FECHA SELECCIONADA, no siempre hoy
-  const fecha = localStorage.getItem('fechaSeleccionada') || new Date().toISOString().split('T')[0];
+  const hoy = new Date().toISOString().split('T')[0];
   const ejercicioNombre = row.querySelector('.ex-check-name')?.textContent || '';
   
   if (!currentUser) {
@@ -3316,14 +3081,14 @@ async function marcarEjercicio(checkboxEl) {
 
   try {
     if (isDone) {
-      const { data: existing } = await sb.from('progreso_ejercicios_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', fecha).eq('ejercicio_id', exId).maybeSingle();
+      const { data: existing } = await sb.from('progreso_ejercicios_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', hoy).eq('ejercicio_id', exId).maybeSingle();
       if (existing) {
         await sb.from('progreso_ejercicios_diarios').update({ completado: true, updated_at: new Date().toISOString() }).eq('id', existing.id);
       } else {
-        await sb.from('progreso_ejercicios_diarios').insert([{ cliente_id: cliente.id, rutina_id: rutinaId || null, fecha: fecha, dia_idx: diaIdx || 0, ejercicio_id: exId, ejercicio_nombre: ejercicioNombre, completado: true }]);
+        await sb.from('progreso_ejercicios_diarios').insert([{ cliente_id: cliente.id, rutina_id: rutinaId || null, fecha: hoy, dia_idx: diaIdx || 0, ejercicio_id: exId, ejercicio_nombre: ejercicioNombre, completado: true }]);
       }
     } else {
-      await sb.from('progreso_ejercicios_diarios').update({ completado: false, updated_at: new Date().toISOString() }).eq('cliente_id', cliente.id).eq('fecha', fecha).eq('ejercicio_id', exId);
+      await sb.from('progreso_ejercicios_diarios').update({ completado: false, updated_at: new Date().toISOString() }).eq('cliente_id', cliente.id).eq('fecha', hoy).eq('ejercicio_id', exId);
     }
   } catch (error) {
     console.error('Error al guardar ejercicio:', error);
@@ -3378,37 +3143,16 @@ async function cargarMiDieta(clienteId) {
   const { data } = await sb.from('planes_nutricionales').select('*').eq('cliente_id', clienteId).order('semana', {ascending:true});
   const planes = data || [];
 
-  // ── Checklist de hábitos diarios CON SELECTOR DE FECHA ──
-  const hoy = new Date().toISOString().split('T')[0];
-  let fechaSeleccionada = localStorage.getItem('fechaSeleccionadaHabitos') || hoy;
-  
-  const hoyRaw = new Date(fechaSeleccionada).toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
-  const hoyFormato = hoyRaw.replace(/\b[a-záéíóúñ]/g, c => c.toUpperCase());
-  const hoyKey = fechaSeleccionada;
-  
-  // Cargar hábitos de Supabase para la fecha seleccionada
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  const habitosGuardados = {};
-  
-  if (cliente) {
-    const { data: habitosDB } = await sb
-      .from('progreso_habitos_diarios')
-      .select('habito_id')
-      .eq('cliente_id', cliente.id)
-      .eq('fecha', hoyKey)
-      .eq('completado', true);
-    
-    if (habitosDB) {
-      habitosDB.forEach(h => {
-        habitosGuardados[h.habito_id] = true;
-      });
-    }
-  }
+  // ── Checklist de hábitos diarios ──
+  const hoyRaw = new Date().toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+  const hoy = hoyRaw.replace(/\b[a-záéíóúñ]/g, c => c.toUpperCase());
+  const hoyKey = new Date().toISOString().split('T')[0];
+  const habitosGuardados = JSON.parse(localStorage.getItem('habitos_' + hoyKey) || '{}');
 
   const HABITOS = [
     { id:'comidas',    icon:'🍽️', texto:'He completado todas mis comidas' },
     { id:'agua',       icon:'💧', texto:'He bebido 2L de agua' },
-    { id:'pasos',      icon:'🚶', texto:'He dado 10.000 pasos hoy' },
+    { id:'pasos',      icon:'🚶', texto:'He dado 8.000 pasos hoy' },
     { id:'sueno',      icon:'😴', texto:'He dormido +7 horas' },
     { id:'suplementos',icon:'💊', texto:'He tomado mis suplementos' },
     { id:'entreno',    icon:'💪', texto:'He completado mi entrenamiento' },
@@ -3419,19 +3163,10 @@ async function cargarMiDieta(clienteId) {
   const pct = Math.round((hechos / totalHabitos) * 100);
 
   const habitosHtml = `
-    <!-- SELECTOR DE FECHA PARA HÁBITOS -->
-    <div style="background:var(--white);border-bottom:1px solid var(--border);padding:1rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch">
-      <label style="font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--gray);flex-shrink:0">Día:</label>
-      <input type="date" id="habitos-fecha-selector" value="${fechaSeleccionada}" 
-        style="border:1px solid var(--border);padding:0.5rem;font-size:0.85rem;border-radius:4px;cursor:pointer"
-        onchange="cambiarFechaHabitos(this.value, '${clienteId}')">
-      <button onclick="irAlDiaActualHabitos()" style="background:var(--blue);color:#fff;border:none;padding:0.5rem 1rem;border-radius:4px;font-size:0.7rem;cursor:pointer;text-transform:uppercase;flex-shrink:0;white-space:nowrap">Hoy</button>
-    </div>
-
     <div class="habitos-section">
       <div class="habitos-header">
         <div class="habitos-title">✅ Hábitos del día</div>
-        <div class="habitos-fecha">${hoyFormato}</div>
+        <div class="habitos-fecha">${hoy}</div>
       </div>
       <div class="habitos-grid">
         ${HABITOS.map(h => `
@@ -3469,33 +3204,8 @@ async function cargarMiDieta(clienteId) {
   mostrarMiPlanNutri(planes.length - 1);
 }
 
-// ── CAMBIAR FECHA SELECCIONADA HÁBITOS ──
-async function cambiarFechaHabitos(fecha, clienteId) {
-  localStorage.setItem('fechaSeleccionadaHabitos', fecha);
-  
-  // Desmarcar todos los hábitos
-  document.querySelectorAll('.habito-item.done').forEach(el => {
-    el.classList.remove('done');
-    const check = el.querySelector('.habito-check');
-    if (check) check.textContent = '';
-  });
-  
-  // Cargar hábitos de la nueva fecha
-  await cargarMiDieta(clienteId);
-}
-
-// ── IR AL DÍA ACTUAL (HÁBITOS) ──
-async function irAlDiaActualHabitos() {
-  const hoy = new Date().toISOString().split('T')[0];
-  document.getElementById('habitos-fecha-selector').value = hoy;
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  if (cliente) {
-    await cambiarFechaHabitos(hoy, cliente.id);
-  }
-}
-
 async function toggleHabito(id, fechaKey, el) {
-  // ← USAR FECHA SELECCIONADA, no siempre hoy
+  const hoy = new Date().toISOString().split('T')[0];
   const ahora = !el.classList.contains('done');
   
   el.classList.toggle('done', ahora);
@@ -3508,12 +3218,12 @@ async function toggleHabito(id, fechaKey, el) {
   if (!cliente) { toast('Error: Cliente no encontrado', 'error'); return; }
 
   try {
-    const { data: existing } = await sb.from('progreso_habitos_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', fechaKey).eq('habito_id', id).maybeSingle();
+    const { data: existing } = await sb.from('progreso_habitos_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', hoy).eq('habito_id', id).maybeSingle();
     
     if (existing) {
       await sb.from('progreso_habitos_diarios').update({ completado: ahora, updated_at: new Date().toISOString() }).eq('id', existing.id);
     } else if (ahora) {
-      await sb.from('progreso_habitos_diarios').insert([{ cliente_id: cliente.id, fecha: fechaKey, habito_id: id, habito_nombre: el.textContent || id, completado: true }]);
+      await sb.from('progreso_habitos_diarios').insert([{ cliente_id: cliente.id, fecha: hoy, habito_id: id, habito_nombre: el.textContent || id, completado: true }]);
     }
   } catch (error) {
     console.error('Error al guardar hábito:', error);
@@ -3558,8 +3268,8 @@ async function cargarMiProgreso(clienteId) {
       </div>
     </div>
     ${entradas.length ? `<div class="card"><div class="card-header"><div class="card-title">Historial</div></div>
-      <div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Peso</th><th>Nota del coach</th></tr></thead>
-      <tbody>${entradas.reverse().map(e => `<tr><td>${fmtFecha(e.fecha)}</td><td><strong>${e.peso||'—'} kg</strong></td><td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td></tr>`).join('')}</tbody></table></div></div>`
+      <table><thead><tr><th>Fecha</th><th>Peso</th><th>Nota del coach</th></tr></thead>
+      <tbody>${entradas.reverse().map(e => `<tr><td>${fmtFecha(e.fecha)}</td><td><strong>${e.peso||'—'} kg</strong></td><td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td></tr>`).join('')}</tbody></table></div>`
     : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Tu coach irá registrando tu progreso aquí.</div></div>`}`;
 }
 
@@ -3611,94 +3321,12 @@ async function cargarMisMensajes(clienteId) {
   const cont = document.getElementById('cliente-mensajes');
   const { data } = await sb.from('mensajes').select('*').eq('cliente_id', clienteId).order('created_at', {ascending:false});
   const msgs = data || [];
-  
-  cont.innerHTML = `
-    <!-- FORMULARIO PARA ENVIAR MENSAJES -->
-    <div style="background:var(--white);border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;border-radius:4px">
-      <div style="font-family:var(--display);font-size:0.9rem;font-weight:700;margin-bottom:1rem">✉️ Enviar mensaje al coach</div>
-      <textarea id="clienteMensajeTexto" 
-        placeholder="Cuéntale tu duda, sugerencia o pregunta sobre tu rutina..." 
-        style="width:100%;min-height:100px;border:1px solid var(--border);padding:0.8rem;font-family:var(--body);font-size:0.85rem;border-radius:4px;resize:vertical;margin-bottom:0.8rem"
-      ></textarea>
-      <div style="display:flex;gap:0.8rem">
-        <button onclick="enviarMensajeCliente()" 
-          style="flex:1;background:var(--blue);color:#fff;border:none;padding:0.8rem;border-radius:4px;font-weight:600;cursor:pointer;font-size:0.8rem;text-transform:uppercase">
-          Enviar mensaje
-        </button>
-        <button onclick="limpiarMensajeCliente()" 
-          style="background:var(--border);color:var(--navy);border:none;padding:0.8rem 1.5rem;border-radius:4px;cursor:pointer;font-size:0.8rem;text-transform:uppercase">
-          Limpiar
-        </button>
-      </div>
-    </div>
-
-    <!-- MENSAJES RECIBIDOS -->
-    <div style="font-family:var(--display);font-size:0.85rem;font-weight:700;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">
-      📬 Mensajes de tu coach (${msgs.length})
-    </div>
-    ${msgs.length
-      ? msgs.map(m => `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem;border-radius:2px">
-          <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.5rem">📌 ${fmtFecha(m.created_at)} · De tu coach</div>
-          <div style="font-size:0.88rem;line-height:1.8;color:var(--navy)">${m.texto}</div>
-        </div>`).join('')
-      : `<div class="empty-state" style="padding:2rem"><div class="empty-state-icon">💬</div><div class="empty-state-text">Tu coach aún no ha enviado mensajes. ¡Envíale una pregunta!</div></div>`
-    }
-  `;
-}
-
-// ── ENVIAR MENSAJE DESDE CLIENTE ──
-async function enviarMensajeCliente() {
-  const textarea = document.getElementById('clienteMensajeTexto');
-  const texto = textarea.value.trim();
-  
-  if (!texto) {
-    toast('Escribe un mensaje antes de enviar', 'error');
-    return;
-  }
-  
-  if (!currentUser) {
-    toast('Error: No estás autenticado', 'error');
-    return;
-  }
-  
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  console.log('👤 [DEBUG CLIENTE] Cliente encontrado:', cliente);
-  if (!cliente) {
-    toast('Error: Cliente no encontrado', 'error');
-    return;
-  }
-  
-  try {
-    console.log('📤 [DEBUG CLIENTE] Enviando mensaje...', {cliente_id: cliente.id, texto});
-    // Guardar mensaje en tabla mensajes_clientes (nueva tabla para mensajes DE clientes)
-    const { data: msgData, error } = await sb.from('mensajes_clientes').insert([{
-      cliente_id: cliente.id,
-      texto: texto,
-      leido: false,
-      created_at: new Date().toISOString()
-    }]).select();
-    
-    console.log('📬 [DEBUG CLIENTE] Respuesta Supabase:', {data: msgData, error});
-    
-    if (error) throw error;
-    
-    // Limpiar textarea
-    textarea.value = '';
-    
-    toast('✅ Mensaje enviado a tu coach', 'success');
-    
-    // Recargar mensajes para mostrar el que acaba de enviarse
-    await cargarMisMensajes(cliente.id);
-    
-  } catch (error) {
-    console.error('❌ [DEBUG CLIENTE] Error al enviar mensaje:', error);
-    toast('Error al enviar: ' + error.message, 'error');
-  }
-}
-
-// ── LIMPIAR TEXTAREA ──
-function limpiarMensajeCliente() {
-  document.getElementById('clienteMensajeTexto').value = '';
+  cont.innerHTML = msgs.length
+    ? msgs.map(m => `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem">
+        <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.5rem">📌 ${fmtFecha(m.created_at)} · De tu coach</div>
+        <div style="font-size:0.88rem;line-height:1.8;color:var(--navy)">${m.texto}</div>
+      </div>`).join('')
+    : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No hay mensajes de tu coach aún.</div></div>`;
 }
 
 // Bloquear scroll lateral en móvil
@@ -3868,12 +3496,12 @@ function renderBancoTab() {
     lista.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-text">No hay ejercicios aún. Añade el primero con el botón de arriba.</div></div>`;
     return;
   }
-  lista.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Ejercicio</th><th>Grupo muscular</th><th>Acciones</th></tr></thead>
+  lista.innerHTML = `<table><thead><tr><th>Ejercicio</th><th>Grupo muscular</th><th>Acciones</th></tr></thead>
     <tbody>${filtrados.map(e => `<tr>
       <td><strong>${e.nombre}</strong></td>
       <td><span class="badge badge-blue">${e.grupo_muscular||'—'}</span></td>
       <td><button class="btn btn-sm btn-danger" onclick="eliminarDelBanco('${e.id}')">Borrar</button></td>
-    </tr>`).join('')}</tbody></table></div>`;
+    </tr>`).join('')}</tbody></table>`;
 }
 
 function filtrarBanco(grupo) {
@@ -4127,7 +3755,7 @@ function mostrarPesoGuardado(nombre) {
 const HABITOS_NOMBRES = {
   comidas: '🍽️ Comidas completadas',
   agua: '💧 2L de agua',
-  pasos: '🚶 10.000 pasos',
+  pasos: '🚶 8.000 pasos',
   sueno: '😴 +7h de sueño',
   suplementos: '💊 Suplementos',
   entreno: '💪 Entrenamiento'
@@ -4203,7 +3831,7 @@ async function cargarHabitosResumen() {
       + '</tr>';
   }).join('');
 
-  cont.innerHTML = '<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  cont.innerHTML = '<table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 function seleccionarNutriCliente(id, nombre) {
@@ -4416,259 +4044,6 @@ function limpiarChecklistsAntiguos() {
   });
 }
 limpiarChecklistsAntiguos();
-
-// ══════════════════════════════════════
-//  COACH: MENSAJES INBOX (Centralizados)
-// ══════════════════════════════════════
-let mensajesInboxData = [];
-let mensajesInboxFiltroCliente = '';
-let mensajesInboxFiltroBusqueda = '';
-
-async function cargarMensajesInbox() {
-  const cont = document.getElementById('mensajesInboxContent');
-  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando mensajes...</div>';
-  
-  console.log('🔍 [DEBUG] Iniciando cargarMensajesInbox...');
-  
-  // Obtener todos los mensajes DE LOS CLIENTES (tabla mensajes_clientes)
-  const { data: mensajes, error: errorMensajes } = await sb.from('mensajes_clientes').select('*').order('created_at', {ascending:false});
-  console.log('📨 [DEBUG] Mensajes obtenidos:', mensajes, 'Error:', errorMensajes);
-  
-  const { data: clientes, error: errorClientes } = await sb.from('clientes').select('id, nombre, email');
-  console.log('👥 [DEBUG] Clientes obtenidos:', clientes?.length, 'Error:', errorClientes);
-  
-  // Mapear cliente_id a cliente para luego filtrar/mostrar
-  const clientesMap = {};
-  if (clientes) clientes.forEach(c => clientesMap[c.id] = c);
-  
-  mensajesInboxData = (mensajes || []).map(m => ({
-    ...m,
-    cliente: clientesMap[m.cliente_id] || { nombre: 'Cliente desconocido', email: '' }
-  }));
-  
-  console.log('📦 [DEBUG] Datos procesados:', mensajesInboxData.length, 'mensajes');
-  
-  // Poblar select de filtro (MOBILE)
-  const selectClientesMobile = document.getElementById('mensajesClienteFiltro');
-  if (selectClientesMobile) {
-    const clientesUnicos = [...new Set(mensajesInboxData.map(m => m.cliente_id))];
-    const options = '<option value="">Todos los clientes</option>' + 
-      clientesUnicos.map(cid => {
-        const cli = clientesMap[cid];
-        return `<option value="${cid}">${cli?.nombre || 'Desconocido'}</option>`;
-      }).join('');
-    selectClientesMobile.innerHTML = options;
-    selectClientesMobile.value = mensajesInboxFiltroCliente;
-  }
-  
-  // Poblar select de filtro (DESKTOP)
-  const selectClientesDesktop = document.getElementById('mensajesClienteFiltroDesktop');
-  if (selectClientesDesktop) {
-    const clientesUnicos = [...new Set(mensajesInboxData.map(m => m.cliente_id))];
-    const options = '<option value="">Todos los clientes</option>' + 
-      clientesUnicos.map(cid => {
-        const cli = clientesMap[cid];
-        return `<option value="${cid}">${cli?.nombre || 'Desconocido'}</option>`;
-      }).join('');
-    selectClientesDesktop.innerHTML = options;
-    selectClientesDesktop.value = mensajesInboxFiltroCliente;
-  }
-  
-  renderMensajesInbox();
-}
-
-function filtrarMensajesPorCliente() {
-  // Obtener valor de cualquiera de los dos selects (mobile o desktop)
-  const selectMobile = document.getElementById('mensajesClienteFiltro');
-  const selectDesktop = document.getElementById('mensajesClienteFiltroDesktop');
-  
-  mensajesInboxFiltroCliente = selectMobile?.value || selectDesktop?.value || '';
-  
-  // Sincronizar ambos selects
-  if (selectMobile) selectMobile.value = mensajesInboxFiltroCliente;
-  if (selectDesktop) selectDesktop.value = mensajesInboxFiltroCliente;
-  
-  renderMensajesInbox();
-}
-
-function filtrarMensajesPorTexto() {
-  // Obtener valor de cualquiera de los dos inputs (mobile o desktop)
-  const inputMobile = document.getElementById('searchMensajes');
-  const inputDesktop = document.getElementById('searchMensajesDesktop');
-  
-  mensajesInboxFiltroBusqueda = inputMobile?.value || inputDesktop?.value || '';
-  
-  // Sincronizar ambos inputs
-  if (inputMobile) inputMobile.value = mensajesInboxFiltroBusqueda;
-  if (inputDesktop) inputDesktop.value = mensajesInboxFiltroBusqueda;
-  
-  renderMensajesInbox();
-}
-
-function renderMensajesInbox() {
-  const cont = document.getElementById('mensajesInboxContent');
-  
-  // Filtrar
-  let filtrados = mensajesInboxData;
-  if (mensajesInboxFiltroCliente) {
-    filtrados = filtrados.filter(m => m.cliente_id == mensajesInboxFiltroCliente);
-  }
-  if (mensajesInboxFiltroBusqueda) {
-    const busqueda = mensajesInboxFiltroBusqueda.toLowerCase();
-    filtrados = filtrados.filter(m => 
-      (m.texto && m.texto.toLowerCase().includes(busqueda)) ||
-      (m.cliente && m.cliente.nombre && m.cliente.nombre.toLowerCase().includes(busqueda))
-    );
-  }
-  
-  if (!filtrados.length) {
-    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">${mensajesInboxData.length === 0 ? 'No hay mensajes aún' : 'No se encontraron mensajes con ese criterio'}</div></div>`;
-    return;
-  }
-  
-  const html = filtrados.map(m => `
-    <div style="background:var(--white);border:1px solid var(--border);border-left:4px solid var(--blue);padding:1.2rem 1.5rem;margin-bottom:1rem;border-radius:2px">
-      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.6rem">
-        <div>
-          <div style="font-family:var(--display);font-size:0.9rem;font-weight:700;color:var(--navy)">${m.cliente?.nombre || 'Cliente desconocido'}</div>
-          <div style="font-size:0.65rem;color:var(--gray);letter-spacing:1px">${m.cliente?.email || ''}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.4rem">📅 ${fmtFecha(m.created_at)}</div>
-          <button class="btn btn-sm btn-primary" onclick="irAlClienteMensaje('${m.cliente_id}')">Ver cliente →</button>
-        </div>
-      </div>
-      <div style="font-size:0.85rem;line-height:1.7;color:var(--navy);margin:0.8rem 0;padding:0.8rem;background:var(--bg);border-radius:2px;border-left:2px solid var(--blue2)">
-        ${m.texto || '(Sin contenido)'}
-      </div>
-      <div style="display:flex;gap:0.5rem">
-        <button class="btn btn-sm btn-secondary" onclick="copiarMensaje('${m.id}')">📋 Copiar</button>
-        <button class="btn btn-sm btn-danger" onclick="eliminarMensajeInbox('${m.id}')">🗑️ Borrar</button>
-      </div>
-    </div>
-  `).join('');
-  
-  cont.innerHTML = html;
-}
-
-function irAlClienteMensaje(clienteId) {
-  // Navegar a la pestaña de clientes y buscar el cliente
-  showTab('clientes');
-  setTimeout(() => {
-    const rows = document.querySelectorAll('#clientesTable tr');
-    rows.forEach(row => {
-      if (row.dataset?.clienteId === clienteId) {
-        row.click();
-      }
-    });
-  }, 300);
-}
-
-function copiarMensaje(mensajeId) {
-  const msg = mensajesInboxData.find(m => m.id === mensajeId);
-  if (msg && msg.texto) {
-    navigator.clipboard.writeText(msg.texto).then(() => {
-      toast('✓ Mensaje copiado', 'success');
-    });
-  }
-}
-
-async function eliminarMensajeInbox(mensajeId) {
-  if (!confirm('¿Eliminar este mensaje?')) return;
-  
-  try {
-    // Borrar en DB (tabla mensajes_clientes)
-    const { error } = await sb.from('mensajes_clientes').delete().eq('id', mensajeId);
-    
-    if (error) {
-      console.error('❌ Error al eliminar:', error);
-      toast('Error al eliminar el mensaje', 'error');
-      return;
-    }
-    
-    // Si se eliminó exitosamente, actualizar la lista
-    mensajesInboxData = mensajesInboxData.filter(m => m.id !== mensajeId);
-    renderMensajesInbox();
-    toast('✓ Mensaje eliminado', 'success');
-    console.log('✓ Mensaje eliminado correctamente');
-    
-  } catch (err) {
-    console.error('❌ Error:', err);
-    toast('Error al eliminar', 'error');
-  }
-}
-
-// ── ABRIR/CERRAR PANEL FILTROS MOBILE ──
-function abrirFiltrosMensajes() {
-  console.log('📱 [DEBUG] Abriendo filtros...');
-  document.getElementById('mensajesFiltrosPanel').classList.add('open');
-  document.getElementById('mensajesFiltrosOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function cerrarFiltrosMensajes() {
-  console.log('📱 [DEBUG] Cerrando filtros...');
-  document.getElementById('mensajesFiltrosPanel').classList.remove('open');
-  document.getElementById('mensajesFiltrosOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Verificar tamaño en tiempo real
-function actualizarVistaFiltros() {
-  const isMobile = window.innerWidth <= 600;
-  const btn = document.querySelector('.mensajes-btn-filtros');
-  const headerDesktop = document.querySelector('.mensajes-header-desktop');
-  
-  if (btn) {
-    btn.style.display = isMobile ? 'block' : 'none';
-  }
-  if (headerDesktop) {
-    headerDesktop.style.display = isMobile ? 'none' : 'flex';
-  }
-  
-  console.log('📱 [DEBUG] isMobile:', isMobile, 'Width:', window.innerWidth);
-}
-
-// Ejecutar al cargar
-window.addEventListener('load', actualizarVistaFiltros);
-// Ejecutar al redimensionar
-window.addEventListener('resize', actualizarVistaFiltros);
-
-// ══════════════════════════════════════
-//  CLIENTE: PANEL LATERAL MOBILE
-// ══════════════════════════════════════
-function abrirNavClienteMobile() {
-  console.log('📱 [CLIENTE] Abriendo menú...');
-  document.getElementById('clienteNavPanel').classList.add('open');
-  document.getElementById('clienteNavOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function cerrarNavClienteMobile() {
-  console.log('📱 [CLIENTE] Cerrando menú...');
-  document.getElementById('clienteNavPanel').classList.remove('open');
-  document.getElementById('clienteNavOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Sincronizar items activos en navegación del cliente
-const origShowClienteTab = typeof showClienteTab === 'function' ? showClienteTab : null;
-window.showClienteTab = function(tab) {
-  if (origShowClienteTab) origShowClienteTab(tab);
-  
-  // Actualizar items activos en navegación
-  document.querySelectorAll('.cliente-nav-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  
-  document.querySelectorAll('.cliente-nav-item').forEach(item => {
-    if (item.textContent.toLowerCase().includes(tab.split('-')[1] || tab)) {
-      item.classList.add('active');
-    }
-  });
-};
-
-}
 
 </script>
 </body>
