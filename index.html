@@ -1386,43 +1386,70 @@ async function login() {
   btn.disabled = true;
   
   try {
-    console.log('📝 Intentando login con:', email);
+    // Verificar que email y contraseña no estén vacíos
+    if (!email) {
+      err.textContent = '❌ Email vacío';
+      err.style.display = 'block';
+      btn.textContent = 'Entrar →';
+      btn.disabled = false;
+      return;
+    }
+    
+    if (!pass) {
+      err.textContent = '❌ Contraseña vacía';
+      err.style.display = 'block';
+      btn.textContent = 'Entrar →';
+      btn.disabled = false;
+      return;
+    }
+    
+    // Verificar que Supabase esté inicializado
+    if (!sb) {
+      err.textContent = '❌ Error: Supabase no inicializado';
+      err.style.display = 'block';
+      btn.textContent = 'Entrar →';
+      btn.disabled = false;
+      return;
+    }
+    
+    err.textContent = '⏳ Conectando a Supabase...';
+    err.style.display = 'block';
+    err.style.color = 'var(--blue)';
     
     const { data, error } = await sb.auth.signInWithPassword({ 
       email: email, 
       password: pass 
     });
     
-    console.log('📡 Respuesta de Supabase:', { data, error });
-    
+    err.style.color = 'var(--red)';
     btn.textContent = 'Entrar →';
     btn.disabled = false;
     
     if (error) {
-      console.error('❌ Error Supabase:', error.message);
-      err.textContent = error.message || 'Email o contraseña incorrectos';
+      err.textContent = '❌ ' + (error.message || 'Email o contraseña incorrectos');
       err.style.display = 'block';
       return;
     }
     
     if (!data.user) {
-      console.error('❌ No user data');
-      err.textContent = 'Error: No se recibió datos del usuario';
+      err.textContent = '❌ Error: No se recibió usuario';
       err.style.display = 'block';
       return;
     }
     
-    console.log('✅ Login exitoso:', data.user.email);
+    err.style.color = 'var(--green)';
+    err.textContent = '✅ Login exitoso, cargando...';
     currentUser = data.user;
     localStorage.setItem('pf_user_email', currentUser.email);
+    
     await iniciarSesion();
     
   } catch (err) {
-    console.error('❌ Error en login:', err);
     btn.textContent = 'Entrar →';
     btn.disabled = false;
-    document.getElementById('loginErr').textContent = 'Error: ' + err.message;
+    document.getElementById('loginErr').textContent = '❌ Error: ' + err.message;
     document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('loginErr').style.color = 'var(--red)';
   }
 }
 
@@ -1433,7 +1460,7 @@ async function iniciarSesion() {
     document.getElementById('sidebarEmail').textContent = email;
     showScreen('coachScreen');
     await cargarDashboard();
-    await poblarSelectores();
+    // Nota: poblarSelectores se ejecutará después
   } else {
     // Es cliente - VINCULAR user_id en tabla clientes
     await vincularClienteConUser(email, currentUser.id);
