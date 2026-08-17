@@ -801,13 +801,13 @@
     <div class="login-sub" style="text-align:center">Plataforma de entrenamiento</div>
     <div class="login-field">
       <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="Pablo.Candela84@gmail.com" value="Pablo.Candela84@gmail.com" autocomplete="email">
+      <input type="email" id="loginEmail" placeholder="pablocandela84@gmail.com" value="pablocandela84@gmail.com" autocomplete="email">
     </div>
     <div class="login-field">
       <label>Contraseña</label>
       <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <button class="btn-login" id="btnLogin">Entrar →</button>
+    <button class="btn-login" id="btnLogin" onclick="login()">Entrar →</button>
     <div class="login-err" id="loginErr">Email o contraseña incorrectos</div>
   </div>
 </div>
@@ -1310,7 +1310,7 @@ const sb = createClient(
 // ══════════════════════════════════════
 //  ESTADO GLOBAL
 // ══════════════════════════════════════
-const COACH_EMAIL = 'pablocandela84@gmail.com'; // ← cambia por tu email real
+const COACH_EMAIL = 'pablocandela84@gmail.com'; // ← tu email real
 let currentUser = null;
 let currentClienteId = null;
 let clientes = [];
@@ -1365,11 +1365,15 @@ function fechaVencimiento(fechaInicio, plan) {
 // ══════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════
-document.getElementById('loginPass').addEventListener('keydown', e => {
-  if (e.key === 'Enter') login();
+window.addEventListener('load', async () => {
+  // Agregar listener Enter en campo de contraseña
+  const loginPass = document.getElementById('loginPass');
+  if (loginPass) {
+    loginPass.addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+  }
 });
-
-document.getElementById('btnLogin').addEventListener('click', login);
 
 async function login() {
   const email = document.getElementById('loginEmail').value.trim();
@@ -1391,7 +1395,7 @@ async function login() {
 
 async function iniciarSesion() {
   const email = currentUser.email;
-  if (email === COACH_EMAIL) {
+  if (email.toLowerCase() === COACH_EMAIL.toLowerCase()) {
     // Es coach
     document.getElementById('sidebarEmail').textContent = email;
     showScreen('coachScreen');
