@@ -1395,14 +1395,16 @@ async function login() {
 
 async function iniciarSesion() {
   const email = currentUser.email;
+  
   if (email.toLowerCase() === COACH_EMAIL.toLowerCase()) {
-    // Es coach
+    // Es COACH - mostrar panel de coach
+    console.log('👨‍💼 Usuario es COACH:', email);
     document.getElementById('sidebarEmail').textContent = email;
     showScreen('coachScreen');
     await cargarDashboard();
-    await poblarSelectores();
   } else {
-    // Es cliente - VINCULAR user_id en tabla clientes
+    // Es CLIENTE - mostrar portal de cliente
+    console.log('👤 Usuario es CLIENTE:', email);
     await vincularClienteConUser(email, currentUser.id);
     showScreen('clienteScreen');
     await cargarPortalCliente();
@@ -1583,56 +1585,72 @@ function showTab(tab) {
 //  COACH: DASHBOARD
 // ══════════════════════════════════════
 async function cargarDashboard() {
-  // Carga en paralelo para mayor velocidad
-  const [{ data }] = await Promise.all([
-    sb.from('clientes').select('*').order('created_at', {ascending:false})
-  ]);
-  clientes = data || [];
+  try {
+    console.log('📥 Cargando clientes desde Supabase...');
+    
+    // Carga en paralelo para mayor velocidad
+    const [{ data, error }] = await Promise.all([
+      sb.from('clientes').select('*').order('created_at', {ascending:false})
+    ]);
+    
+    if (error) {
+      console.error('❌ Error Supabase:', error);
+      document.getElementById('dashboardList').innerHTML = `<div style="color:red;padding:1rem"><strong>❌ Error:</strong> ${error.message}</div>`;
+      return;
+    }
+    
+    clientes = data || [];
+    console.log('✅ Clientes cargados:', clientes.length);
 
-  const activos = clientes.filter(c => c.estado === 'activo');
-  const plan6 = clientes.filter(c => c.plan === '6meses');
-  const plan12 = clientes.filter(c => c.plan === '12meses');
-  const hoy = new Date();
-  const finMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
-  const vencen = clientes.filter(c => {
-    const v = fechaVencimiento(c.fecha_inicio, c.plan);
-    return v && v >= hoy && v <= finMes;
-  });
+    const activos = clientes.filter(c => c.estado === 'activo');
+    const plan6 = clientes.filter(c => c.plan === '6meses');
+    const plan12 = clientes.filter(c => c.plan === '12meses');
+    const hoy = new Date();
+    const finMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
+    const vencen = clientes.filter(c => {
+      const v = fechaVencimiento(c.fecha_inicio, c.plan);
+      return v && v >= hoy && v <= finMes;
+    });
 
-  document.getElementById('statTotal').textContent = activos.length;
-  document.getElementById('statPlan6').textContent = plan6.length;
-  document.getElementById('statPlan12').textContent = plan12.length;
-  document.getElementById('statVence').textContent = vencen.length;
+    document.getElementById('statTotal').textContent = activos.length;
+    document.getElementById('statPlan6').textContent = plan6.length;
+    document.getElementById('statPlan12').textContent = plan12.length;
+    document.getElementById('statVence').textContent = vencen.length;
 
-  const list = document.getElementById('dashboardList');
-  if (!clientes.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Aún no tienes clientes. Crea el primero desde la sección Clientes.</div></div>`;
-    return;
+    const list = document.getElementById('dashboardList');
+    if (!clientes.length) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Aún no tienes clientes. Crea el primero desde la sección Clientes.</div></div>`;
+      return;
+    }
+    const isMob = window.innerWidth <= 768;
+    if (isMob) {
+      list.innerHTML = `<div style="padding:0.8rem">${clientes.slice(0,6).map(c => `
+        <div class="cliente-card" onclick="showTab('clientes');setTimeout(()=>verCliente('${c.id}'),100)">
+          <div class="cliente-card-info">
+            <div class="cliente-card-name">${c.nombre}</div>
+            <div class="cliente-card-email">${c.email}</div>
+            <div class="cliente-card-meta">${badgePlan(c.plan)} ${badgeEstado(c.estado)}</div>
+          </div>
+          <span style="color:var(--gray);font-size:1.2rem">›</span>
+        </div>`).join('')}</div>`;
+    } else {
+      list.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
+        <tbody>${clientes.slice(0,8).map(c => {
+          const v = fechaVencimiento(c.fecha_inicio, c.plan);
+          return `<tr>
+            <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
+            <td>${badgePlan(c.plan)}</td>
+            <td>${badgeEstado(c.estado)}</td>
+            <td>${fmtFecha(c.fecha_inicio)}</td>
+            <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="verCliente('${c.id}')">Ver perfil</button></td>
+          </tr>`;
+        }).join('')}</tbody></table></div>`;
+    }
+  } catch (err) {
+    console.error('❌ Error en cargarDashboard:', err);
+    document.getElementById('dashboardList').innerHTML = `<div style="color:red;padding:1rem"><strong>❌ Error:</strong> ${err.message}</div>`;
   }
-  const isMob = window.innerWidth <= 768;
-  if (isMob) {
-    list.innerHTML = `<div style="padding:0.8rem">${clientes.slice(0,6).map(c => `
-      <div class="cliente-card" onclick="showTab('clientes');setTimeout(()=>verCliente('${c.id}'),100)">
-        <div class="cliente-card-info">
-          <div class="cliente-card-name">${c.nombre}</div>
-          <div class="cliente-card-email">${c.email}</div>
-          <div class="cliente-card-meta">${badgePlan(c.plan)} ${badgeEstado(c.estado)}</div>
-        </div>
-        <span style="color:var(--gray);font-size:1.2rem">›</span>
-      </div>`).join('')}</div>`;
-  } else {
-    list.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
-      <tbody>${clientes.slice(0,8).map(c => {
-        const v = fechaVencimiento(c.fecha_inicio, c.plan);
-        return `<tr>
-          <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
-          <td>${badgePlan(c.plan)}</td>
-          <td>${badgeEstado(c.estado)}</td>
-          <td>${fmtFecha(c.fecha_inicio)}</td>
-          <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
-          <td><button class="btn btn-sm btn-secondary" onclick="verCliente('${c.id}')">Ver perfil</button></td>
-        </tr>`;
-      }).join('')}</tbody></table></div>`;
 }
 
 // ══════════════════════════════════════
@@ -4599,8 +4617,6 @@ window.showClienteTab = function(tab) {
     }
   });
 };
-
-}
 
 </script>
 </body>
