@@ -37,16 +37,16 @@
     /* ── LAYOUT COACH ── */
     #coachScreen{flex-direction:row}
     .sidebar{width:240px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100}
-    .sidebar-brand{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .sidebar-brand{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}
     .sidebar-brand-name{font-family:var(--display);font-size:1rem;font-weight:900;letter-spacing:-0.5px;color:#fff}
     .sidebar-brand-name span{color:var(--blue2)}
     .sidebar-brand-sub{font-size:0.58rem;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;margin-top:3px}
-    .sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto}
+    .sidebar-nav{flex:1;min-height:0;padding:1rem 0;overflow-y:auto}
     .nav-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.5rem;font-size:0.78rem;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s;border-left:3px solid transparent}
     .nav-item:hover{color:#fff;background:rgba(255,255,255,0.04)}
     .nav-item.active{color:#fff;border-left-color:var(--blue2);background:rgba(79,142,255,0.08)}
     .nav-item .nav-icon{font-size:1rem;flex-shrink:0}
-    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08)}
+    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0}
     .sidebar-user{font-size:0.7rem;color:rgba(255,255,255,0.4)}
     .sidebar-user strong{color:rgba(255,255,255,0.8);display:block;margin-bottom:2px}
     .btn-logout{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:0.4rem 0.8rem;font-size:0.65rem;cursor:pointer;margin-top:0.6rem;transition:all 0.2s;width:100%;letter-spacing:1px;text-transform:uppercase;font-family:var(--body)}
@@ -646,7 +646,7 @@
       
       /* ── SIDEBAR → DRAWER LATERAL ── */
       .sidebar{
-        width:260px; height:100vh;
+        width:260px; height:100vh; height:100dvh;
         position:fixed; top:0; left:0; bottom:0;
         transform:translateX(-100%);
         transition:transform 0.3s cubic-bezier(0.76,0,0.24,1);
@@ -1131,7 +1131,7 @@
           <div class="form-field"><label>Usuario (para acceso) *</label><input id="cUsuario" placeholder="ej: juan.garcia" autocomplete="off"></div>
           <div class="form-field"><label>Email *</label><input id="cEmail" type="email" placeholder="email@ejemplo.com"></div>
           <div class="form-field"><label>Teléfono</label><input id="cTelefono" placeholder="+34 600 000 000"></div>
-          <div class="form-field"><label>Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 8 caracteres"></div>
+          <div class="form-field"><label id="cPasswordLabel">Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"></div>
           <div class="form-field"><label>Peso inicial (kg)</label><input id="cPeso" type="number" placeholder="75"></div>
           <div class="form-field"><label>Altura (cm)</label><input id="cAltura" type="number" placeholder="175"></div>
         </div>
@@ -1394,16 +1394,17 @@ async function login() {
       .eq('usuario', usuario)
       .single();
     
-    if (searchError || !cliente) {
-      err.textContent = 'Usuario o contraseña incorrectos';
-      err.style.display = 'block';
-      btn.textContent = 'Entrar →';
-      btn.disabled = false;
-      return;
+    let email = null;
+    
+    if (cliente && cliente.email) {
+      // Si encontró el usuario en clientes
+      email = cliente.email;
+    } else {
+      // Fallback: asumir que es un email o usuario del coach
+      email = usuario;
     }
 
-    // 2. Login con el email encontrado
-    const email = cliente.email;
+    // 2. Login con el email encontrado (o el usuario si es coach)
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     
     btn.textContent = 'Entrar →';
@@ -1756,6 +1757,8 @@ function abrirNuevoCliente() {
   document.getElementById('cEstado').value = 'activo';
   document.getElementById('cFechaInicio').value = new Date().toISOString().split('T')[0];
   document.getElementById('cObjetivo').value = 'hipertrofia';
+  document.getElementById('cPasswordLabel').textContent = 'Contraseña acceso *';
+  document.getElementById('cPassword').placeholder = 'Mínimo 8 caracteres';
   openModal('modalCliente');
 }
 
@@ -1777,7 +1780,40 @@ function editarCliente(id) {
   document.getElementById('cFechaInicio').value = c.fecha_inicio || '';
   document.getElementById('cObjetivo').value = c.objetivo || 'hipertrofia';
   document.getElementById('cNotas').value = c.notas || '';
+  document.getElementById('cPasswordLabel').textContent = 'Nueva contraseña (opcional)';
+  document.getElementById('cPassword').placeholder = 'Dejar en blanco para no cambiarla';
   openModal('modalCliente');
+}
+
+// ══════════════════════════════════════════════════════════════
+// CAMBIAR CONTRASEÑA DE UN CLIENTE (vía Edge Function admin-update-password)
+// ══════════════════════════════════════════════════════════════
+// El cliente supabase-js del navegador solo puede cambiar la contraseña
+// del usuario que está actualmente logueado (auth.updateUser). Para que el
+// coach pueda cambiar la contraseña de OTRO usuario (un cliente) hace falta
+// la Admin API de Supabase, que requiere la service_role key. Esa clave
+// nunca debe estar en el frontend, así que la llamada se hace a una Edge
+// Function ('admin-update-password') que guarda esa clave del lado del
+// servidor. Ver el archivo admin-update-password/index.ts para el código
+// de la función y las instrucciones de despliegue.
+async function actualizarPasswordCliente(userId, email, password) {
+  try {
+    const { data, error } = await sb.functions.invoke('admin-update-password', {
+      body: { user_id: userId || null, email, password }
+    });
+    if (error) {
+      let detalle = error.message || 'Error desconocido';
+      try {
+        const body = await error.context.json();
+        if (body && body.error) detalle = body.error;
+      } catch (_) {}
+      return { ok: false, mensaje: detalle };
+    }
+    if (data && data.error) return { ok: false, mensaje: data.error };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, mensaje: err.message || 'Error de conexión' };
+  }
 }
 
 async function guardarCliente() {
@@ -1806,10 +1842,26 @@ async function guardarCliente() {
 
   if (editingClienteId) {
     // EDITAR cliente existente
+    const clienteActual = clientes.find(x => x.id === editingClienteId);
     const { error } = await sb.from('clientes').update(datos).eq('id', editingClienteId);
+    if (error) {
+      btn.textContent = 'Guardar cambios →'; btn.disabled = false;
+      toast('Error: '+error.message,'error');
+      return;
+    }
+
+    let mensajeFinal = 'Cliente actualizado ✓';
+    if (password) {
+      const resultado = await actualizarPasswordCliente(clienteActual ? clienteActual.user_id : null, email, password);
+      if (resultado.ok) {
+        mensajeFinal = 'Cliente y contraseña actualizados ✓';
+      } else {
+        mensajeFinal = 'Cliente actualizado, pero la contraseña NO se pudo cambiar: ' + resultado.mensaje;
+      }
+    }
+
     btn.textContent = 'Guardar cambios →'; btn.disabled = false;
-    if (error) { toast('Error: '+error.message,'error'); return; }
-    toast('Cliente actualizado ✓','success');
+    toast(mensajeFinal, password && mensajeFinal.includes('NO se pudo') ? 'error' : 'success');
     closeModal('modalCliente');
     const idx = clientes.findIndex(c => c.id === editingClienteId);
     if (idx !== -1) clientes[idx] = {...clientes[idx], ...datos};
