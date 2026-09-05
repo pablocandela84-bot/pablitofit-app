@@ -796,7 +796,7 @@
 ══════════════════════════════════════ -->
 <div id="loginScreen" class="screen active">
   <div class="login-box">
-    <div style="font-size:3rem;text-align:center;margin-bottom:1rem">💪</div>
+    <img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:80px;height:80px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 1rem" alt="PablitoFit">
     <div class="login-brand" style="text-align:center">PABLITO<span>FIT</span></div>
     <div class="login-sub" style="text-align:center">Plataforma de entrenamiento</div>
     <div class="login-field">
@@ -820,7 +820,7 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-brand">
-      <div style="display:flex;align-items:center;gap:10px"><div style="font-size:1.5rem">💪</div><div><div class="sidebar-brand-name">PABLITO<span>FIT</span></div><div class="sidebar-brand-sub">Panel Coach</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="sidebar-brand-name">PABLITO<span>FIT</span></div><div class="sidebar-brand-sub">Panel Coach</div></div></div>
     </div>
     <div class="sidebar-nav">
       <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
@@ -1044,7 +1044,7 @@
   <div class="cliente-topbar">
     <div style="display:flex;align-items:center;gap:10px">
       <button class="cliente-hamburger" onclick="abrirNavClienteMobile()" title="Menú">☰</button>
-      <div style="font-size:1.8rem">💪</div><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div>
+      <img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div>
     </div>
     <button class="btn" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)" onclick="logout()">Salir</button>
   </div>
@@ -1801,14 +1801,25 @@ async function guardarCliente() {
 
       // 2. Crear registro en tabla clientes
       const { error: dbError } = await sb.from('clientes').insert([datos]);
-      btn.textContent = 'Crear cliente →'; btn.disabled = false;
       
       if (dbError) {
+        btn.textContent = 'Crear cliente →'; btn.disabled = false;
         toast('Error: '+dbError.message,'error');
         return;
       }
+
+      // 3. Intentar login automático
+      const { error: loginError } = await sb.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (loginError && !loginError.message.includes('Email not confirmed')) {
+        console.warn('No se pudo hacer auto-login:', loginError.message);
+      }
       
-      toast('✅ Cliente creado automáticamente. Ya puede acceder con su email y contraseña','success');
+      btn.textContent = 'Crear cliente →'; btn.disabled = false;
+      toast('✅ Cliente creado. Ya puede acceder con su email y contraseña','success');
       closeModal('modalCliente');
       cargarClientes();
       poblarSelectores();
