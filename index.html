@@ -1752,6 +1752,7 @@ async function guardarCliente() {
   const password = document.getElementById('cPassword').value;
 
   if (!nombre || !email) { toast('Nombre y email son obligatorios','error'); return; }
+  if (!editingClienteId && !password) { toast('Contraseña es obligatoria para nuevo cliente','error'); return; }
 
   const datos = {
     nombre, email,
@@ -1769,25 +1770,53 @@ async function guardarCliente() {
   btn.textContent = '...'; btn.disabled = true;
 
   if (editingClienteId) {
+    // EDITAR cliente existente
     const { error } = await sb.from('clientes').update(datos).eq('id', editingClienteId);
     btn.textContent = 'Guardar cambios →'; btn.disabled = false;
     if (error) { toast('Error: '+error.message,'error'); return; }
     toast('Cliente actualizado ✓','success');
     closeModal('modalCliente');
-    // Actualizar cache local sin recargar todo
     const idx = clientes.findIndex(c => c.id === editingClienteId);
     if (idx !== -1) clientes[idx] = {...clientes[idx], ...datos};
     renderTablaClientes(clientes);
   } else {
-    const { error } = await sb.from('clientes').insert([datos]);
-    btn.textContent = 'Crear cliente →'; btn.disabled = false;
-    if (error) { toast('Error: '+error.message,'error'); return; }
-    toast('Cliente creado ✓ — Invítalo desde Supabase Auth','success');
-    closeModal('modalCliente');
-    // Recargar en background sin bloquear UI
-    cargarClientes();
-    poblarSelectores();
-    cargarDashboard();
+    // CREAR nuevo cliente
+    try {
+      // 1. Crear usuario en Supabase Auth
+      const { data: authData, error: authError } = await sb.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            nombre: nombre
+          }
+        }
+      });
+
+      if (authError) {
+        btn.textContent = 'Crear cliente →'; btn.disabled = false;
+        toast('Error creando usuario: '+authError.message,'error');
+        return;
+      }
+
+      // 2. Crear registro en tabla clientes
+      const { error: dbError } = await sb.from('clientes').insert([datos]);
+      btn.textContent = 'Crear cliente →'; btn.disabled = false;
+      
+      if (dbError) {
+        toast('Error: '+dbError.message,'error');
+        return;
+      }
+      
+      toast('✅ Cliente creado automáticamente. Ya puede acceder con su email y contraseña','success');
+      closeModal('modalCliente');
+      cargarClientes();
+      poblarSelectores();
+      cargarDashboard();
+    } catch (err) {
+      btn.textContent = 'Crear cliente →'; btn.disabled = false;
+      toast('Error: '+err.message,'error');
+    }
   }
 }
 
@@ -4551,14 +4580,12 @@ async function eliminarMensajeInbox(mensajeId) {
 
 // ── ABRIR/CERRAR PANEL FILTROS MOBILE ──
 function abrirFiltrosMensajes() {
-  console.log('📱 [DEBUG] Abriendo filtros...');
   document.getElementById('mensajesFiltrosPanel').classList.add('open');
   document.getElementById('mensajesFiltrosOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function cerrarFiltrosMensajes() {
-  console.log('📱 [DEBUG] Cerrando filtros...');
   document.getElementById('mensajesFiltrosPanel').classList.remove('open');
   document.getElementById('mensajesFiltrosOverlay').classList.remove('open');
   document.body.style.overflow = '';
@@ -4576,8 +4603,6 @@ function actualizarVistaFiltros() {
   if (headerDesktop) {
     headerDesktop.style.display = isMobile ? 'none' : 'flex';
   }
-  
-  console.log('📱 [DEBUG] isMobile:', isMobile, 'Width:', window.innerWidth);
 }
 
 // Ejecutar al cargar
