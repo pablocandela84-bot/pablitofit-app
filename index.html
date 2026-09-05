@@ -801,7 +801,7 @@
     <div class="login-sub" style="text-align:center">Plataforma de entrenamiento</div>
     <div class="login-field">
       <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email">
+      <input type="text" id="loginUsuario" placeholder="Usuario" autocomplete="username">
     </div>
     <div class="login-field">
       <label>Contraseña</label>
@@ -1128,6 +1128,7 @@
         <div class="form-section-title">Datos personales</div>
         <div class="form-grid">
           <div class="form-field"><label>Nombre completo *</label><input id="cNombre" placeholder="Nombre Apellido"></div>
+          <div class="form-field"><label>Usuario (para acceso) *</label><input id="cUsuario" placeholder="ej: juan.garcia" autocomplete="off"></div>
           <div class="form-field"><label>Email *</label><input id="cEmail" type="email" placeholder="email@ejemplo.com"></div>
           <div class="form-field"><label>Teléfono</label><input id="cTelefono" placeholder="+34 600 000 000"></div>
           <div class="form-field"><label>Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 8 caracteres"></div>
@@ -1376,21 +1377,53 @@ window.addEventListener('load', async () => {
 });
 
 async function login() {
-  const email = document.getElementById('loginEmail').value.trim();
+  const usuario = document.getElementById('loginUsuario').value.trim();
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
+  const btn = document.getElementById('btnLogin');
+  
   err.style.display = 'none';
-  document.getElementById('btnLogin').textContent = 'Entrando...';
+  btn.textContent = 'Entrando...';
+  btn.disabled = true;
 
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  document.getElementById('btnLogin').textContent = 'Entrar →';
+  try {
+    // 1. Buscar cliente por usuario
+    const { data: cliente, error: searchError } = await sb
+      .from('clientes')
+      .select('email')
+      .eq('usuario', usuario)
+      .single();
+    
+    if (searchError || !cliente) {
+      err.textContent = 'Usuario o contraseña incorrectos';
+      err.style.display = 'block';
+      btn.textContent = 'Entrar →';
+      btn.disabled = false;
+      return;
+    }
 
-  if (error) { err.style.display = 'block'; return; }
+    // 2. Login con el email encontrado
+    const email = cliente.email;
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    
+    btn.textContent = 'Entrar →';
+    btn.disabled = false;
 
-  currentUser = data.user;
-  // Guardar email en localStorage para restaurar sesión
-  localStorage.setItem('pf_user_email', currentUser.email);
-  await iniciarSesion();
+    if (error) { 
+      err.textContent = 'Usuario o contraseña incorrectos';
+      err.style.display = 'block'; 
+      return; 
+    }
+
+    currentUser = data.user;
+    localStorage.setItem('pf_user_email', currentUser.email);
+    await iniciarSesion();
+  } catch (err) {
+    btn.textContent = 'Entrar →';
+    btn.disabled = false;
+    document.getElementById('loginErr').textContent = 'Error: ' + err.message;
+    document.getElementById('loginErr').style.display = 'block';
+  }
 }
 
 async function iniciarSesion() {
@@ -1718,7 +1751,7 @@ function abrirNuevoCliente() {
   editingClienteId = null;
   document.getElementById('modalClienteTitulo').textContent = 'Nuevo cliente';
   document.getElementById('btnGuardarCliente').textContent = 'Crear cliente →';
-  ['cNombre','cEmail','cTelefono','cPassword','cPeso','cAltura','cNotas'].forEach(id => document.getElementById(id).value = '');
+  ['cNombre','cUsuario','cEmail','cTelefono','cPassword','cPeso','cAltura','cNotas'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('cPlan').value = '6meses';
   document.getElementById('cEstado').value = 'activo';
   document.getElementById('cFechaInicio').value = new Date().toISOString().split('T')[0];
@@ -1733,6 +1766,7 @@ function editarCliente(id) {
   document.getElementById('modalClienteTitulo').textContent = 'Editar cliente';
   document.getElementById('btnGuardarCliente').textContent = 'Guardar cambios →';
   document.getElementById('cNombre').value = c.nombre || '';
+  document.getElementById('cUsuario').value = c.usuario || '';
   document.getElementById('cEmail').value = c.email || '';
   document.getElementById('cTelefono').value = c.telefono || '';
   document.getElementById('cPassword').value = '';
@@ -1748,14 +1782,15 @@ function editarCliente(id) {
 
 async function guardarCliente() {
   const nombre = document.getElementById('cNombre').value.trim();
+  const usuario = document.getElementById('cUsuario').value.trim();
   const email = document.getElementById('cEmail').value.trim();
   const password = document.getElementById('cPassword').value;
 
-  if (!nombre || !email) { toast('Nombre y email son obligatorios','error'); return; }
+  if (!nombre || !usuario || !email) { toast('Nombre, usuario y email son obligatorios','error'); return; }
   if (!editingClienteId && !password) { toast('Contraseña es obligatoria para nuevo cliente','error'); return; }
 
   const datos = {
-    nombre, email,
+    nombre, usuario, email,
     telefono: document.getElementById('cTelefono').value.trim(),
     peso_inicial: parseFloat(document.getElementById('cPeso').value)||null,
     altura: parseFloat(document.getElementById('cAltura').value)||null,
