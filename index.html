@@ -1100,7 +1100,7 @@
       <div id="setPwdMsg" style="font-size:0.82rem;color:var(--gray);line-height:1.7;margin-bottom:1.5rem">Elige una contraseña para acceder a tu área de cliente.</div>
       <div style="margin-bottom:1rem">
         <label style="display:block;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Nueva contraseña</label>
-        <input type="password" id="newPassword" placeholder="Mínimo 8 caracteres" style="width:100%;border:1px solid var(--border);padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--navy);outline:none">
+        <input type="password" id="newPassword" placeholder="Mínimo 6 caracteres" style="width:100%;border:1px solid var(--border);padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--navy);outline:none">
       </div>
       <div style="margin-bottom:1.5rem">
         <label style="display:block;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Confirmar contraseña</label>
@@ -1131,7 +1131,7 @@
           <div class="form-field"><label>Usuario (para acceso) *</label><input id="cUsuario" placeholder="ej: juan.garcia" autocomplete="off"></div>
           <div class="form-field"><label>Email *</label><input id="cEmail" type="email" placeholder="email@ejemplo.com"></div>
           <div class="form-field"><label>Teléfono</label><input id="cTelefono" placeholder="+34 600 000 000"></div>
-          <div class="form-field"><label id="cPasswordLabel">Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password"></div>
+          <div class="form-field"><label id="cPasswordLabel">Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
           <div class="form-field"><label>Peso inicial (kg)</label><input id="cPeso" type="number" placeholder="75"></div>
           <div class="form-field"><label>Altura (cm)</label><input id="cAltura" type="number" placeholder="175"></div>
         </div>
@@ -1526,8 +1526,8 @@ async function confirmarPassword() {
   const err = document.getElementById('setPwdErr');
   err.style.display = 'none';
 
-  if (pwd1.length < 8) {
-    err.textContent = 'La contraseña debe tener al menos 8 caracteres';
+  if (pwd1.length < 6) {
+    err.textContent = 'La contraseña debe tener al menos 6 caracteres';
     err.style.display = 'block'; return;
   }
   if (pwd1 !== pwd2) {
@@ -1758,7 +1758,7 @@ function abrirNuevoCliente() {
   document.getElementById('cFechaInicio').value = new Date().toISOString().split('T')[0];
   document.getElementById('cObjetivo').value = 'hipertrofia';
   document.getElementById('cPasswordLabel').textContent = 'Contraseña acceso *';
-  document.getElementById('cPassword').placeholder = 'Mínimo 8 caracteres';
+  document.getElementById('cPassword').placeholder = 'Mínimo 6 caracteres';
   openModal('modalCliente');
 }
 
