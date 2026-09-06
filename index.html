@@ -2132,6 +2132,15 @@ function buildCalorRow(e, ei, semanaId, diaIdx) {
 // Cache local de rutinas en edición
 let rutinaCache = {};
 
+// Mientras una rutina recién creada todavía se está insertando en la BD,
+// se edita con un ID temporal ("temp-<timestamp>"). Este mapa guarda, por
+// cada ID temporal, la Promise que resuelve al ID real (UUID) una vez que
+// el INSERT termina. Así, si el usuario guarda (manual o automáticamente)
+// antes de que termine esa creación, esperamos al ID real en vez de
+// enviarlo a Postgres, que lo rechazaría con "invalid input syntax for
+// type uuid".
+let rutinaIdPendiente = {};
+
 function getRutinaDatos(semanaId) {
   if (!rutinaCache[semanaId]) {
     const el = document.getElementById('week-'+semanaId);
@@ -2192,6 +2201,11 @@ async function crearRutinaMes(clienteId) {
   const tempId = 'temp-' + Date.now();
   rutinaCache[tempId] = { dias: diasIniciales };
 
+  // Cualquiera que intente guardar con este ID temporal (autoguardado o el
+  // botón "Guardar") esperará a esta Promise en vez de fallar.
+  let resolverIdReal, rechazarIdReal;
+  rutinaIdPendiente[tempId] = new Promise((res, rej) => { resolverIdReal = res; rechazarIdReal = rej; });
+
   // Mostrar en UI al instante con ID temporal
   const cont = document.getElementById('clientePerfilContent') || document.getElementById('rutinasContent');
   const existingEmpty = cont?.querySelector('.empty-state');
@@ -2212,17 +2226,59 @@ async function crearRutinaMes(clienteId) {
     datos: { dias: diasIniciales }
   }]).select().single();
 
-  if (error) { toast('Error al guardar: '+error.message,'error'); return; }
+  if (error) {
+    toast('Error al guardar: '+error.message,'error');
+    rechazarIdReal(new Error(error.message));
+    delete rutinaIdPendiente[tempId];
+    return;
+  }
 
   // Reemplazar ID temporal por el real
   rutinaCache[data.id] = rutinaCache[tempId];
   delete rutinaCache[tempId];
 
-  // Actualizar el ID en el DOM silenciosamente
-  renderRutinaEditor(clienteId);
+  // Sustituir el ID temporal por el real directamente en el DOM (sin
+  // recargar/reconstruir el editor) para no perder nada que el usuario ya
+  // haya escrito mientras se creaba la rutina.
+  reemplazarIdRutinaEnDOM(tempId, data.id);
+
+  resolverIdReal(data.id);
+  delete rutinaIdPendiente[tempId];
+}
+
+// Sustituye, dentro del editor de rutina en pantalla, todas las apariciones
+// del ID temporal por el ID real (UUID) que acaba de asignar la BD: tanto
+// en los atributos "id" de los elementos como en los manejadores inline
+// (onclick/onchange) que lo llevan incrustado. No reconstruye el HTML, así
+// que los valores que el usuario ya haya escrito en los campos no se tocan.
+function reemplazarIdRutinaEnDOM(tempId, realId) {
+  const cont = document.getElementById('rutina-editor-container');
+  if (!cont) return;
+  cont.querySelectorAll(`[id*="${tempId}"]`).forEach(el => {
+    el.id = el.id.split(tempId).join(realId);
+  });
+  cont.querySelectorAll('[onclick],[onchange]').forEach(el => {
+    ['onclick', 'onchange'].forEach(attr => {
+      const val = el.getAttribute(attr);
+      if (val && val.includes(tempId)) el.setAttribute(attr, val.split(tempId).join(realId));
+    });
+  });
 }
 
 async function guardarRutina(rutinaId) {
+  // Si todavía es un ID temporal, la rutina puede seguir creándose en la BD.
+  // Esperamos a que se resuelva el ID real en vez de enviar "temp-..." a
+  // Postgres (columna de tipo uuid → error "invalid input syntax for type uuid").
+  if (typeof rutinaId === 'string' && rutinaId.startsWith('temp-')) {
+    const pendiente = rutinaIdPendiente[rutinaId];
+    if (!pendiente) return; // no hay nada pendiente ni real que guardar
+    try {
+      rutinaId = await pendiente;
+    } catch (e) {
+      toast('No se pudo guardar: la rutina no llegó a crearse en la base de datos', 'error');
+      return;
+    }
+  }
   if (!rutinaCache[rutinaId]) return;
   // Recoger datos del DOM
   DIAS.forEach((d, dIdx) => {
