@@ -568,6 +568,40 @@
     }
     .dia-checkin-done.visible { display: block; }
 
+
+    /* ── EDITAR GIF INLINE ── */
+    .gif-edit-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(13,27,62,0.7); z-index: 3001;
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .gif-edit-modal.open { display: flex; }
+    .gif-edit-box {
+      background: #fff; max-width: 460px; width: 100%;
+      border-radius: 12px; overflow: hidden;
+      animation: modalIn 0.2s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .gif-edit-header {
+      background: var(--navy); padding: 0.9rem 1.2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .gif-edit-preview {
+      padding: 1rem 1.2rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .gif-edit-preview img {
+      width: 60px; height: 60px; object-fit: cover;
+      border-radius: 8px; border: 2px solid var(--border);
+      display: none;
+    }
+    .gif-edit-preview img.visible { display: block; }
+    .gif-edit-body { padding: 0 1.2rem 1.2rem; }
+    .gif-edit-actions {
+      padding: 0.8rem 1.2rem; border-top: 1px solid var(--border);
+      display: flex; gap: 0.6rem; justify-content: flex-end;
+      background: #f8faff;
+    }
+
     /* ── PREVENIR SCROLL LATERAL ── */
     html, body { overflow-x: hidden; max-width: 100vw; }
     * { -webkit-tap-highlight-color: transparent; }
@@ -1104,6 +1138,30 @@
     </div>
     <img class="ex-gif-img" id="gifModalImg" src="" alt="Animación">
     <div class="ex-gif-info" id="gifModalInfo"></div>
+  </div>
+</div>
+
+<!-- EDITAR GIF MODAL -->
+<div class="gif-edit-modal" id="gifEditModal" onclick="cerrarGifEditModal()">
+  <div class="gif-edit-box" onclick="event.stopPropagation()">
+    <div class="gif-edit-header">
+      <div class="ex-gif-title" id="gifEditNombre" style="font-family:var(--display);font-size:0.8rem;font-weight:900;color:#fff"></div>
+      <button class="btn-icon" style="color:#fff;font-size:1rem" onclick="cerrarGifEditModal()">✕</button>
+    </div>
+    <div class="gif-edit-preview">
+      <img id="gifEditPreviewImg" src="" alt="Preview">
+      <div style="flex:1">
+        <div style="font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">URL del GIF</div>
+        <input id="gifEditUrl" class="exercise-input" style="width:100%" placeholder="https://res.cloudinary.com/drxegitdv/..."
+          oninput="previsualizarGif(this.value)">
+        <div style="font-size:0.65rem;color:var(--gray);margin-top:0.3rem">Pega la URL de Cloudinary y verás el preview</div>
+      </div>
+    </div>
+    <div class="gif-edit-actions">
+      <button class="btn btn-sm btn-danger" onclick="eliminarGifBanco()">Quitar GIF</button>
+      <button class="btn btn-sm" onclick="cerrarGifEditModal()">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarGifBanco()">Guardar GIF</button>
+    </div>
   </div>
 </div>
 
@@ -3064,17 +3122,22 @@ function renderBancoTab() {
     return;
   }
   const rows = filtrados.map(function(e) {
+    const safeName = (e.nombre||'').replace(/"/g,'&quot;');
+    const safeGif = (e.gif_url||'').replace(/"/g,'&quot;');
     const gifCell = e.gif_url
-      ? '<img class="gif-thumb" src="' + e.gif_url + '" onclick="verGif(this.dataset.n,this.dataset.g)" data-n="' + (e.nombre||'').replace(/"/g,'&quot;') + '" data-g="' + e.gif_url + '" title="Ver animación">'
-      : '<span style="font-size:0.65rem;color:var(--gray)">—</span>';
+      ? '<img class="gif-thumb" src="' + e.gif_url + '" onclick="verGif(this.dataset.n,this.dataset.g)" data-n="' + safeName + '" data-g="' + safeGif + '" title="Ver animación">'
+      : '<button class="btn btn-sm" style="font-size:0.6rem;padding:3px 8px;background:#f0f4ff;color:var(--blue);border:1px dashed var(--blue2)" data-id="' + e.id + '" data-n="' + safeName + '" onclick="editarGifBanco(this.dataset.id,this.dataset.n)">+ GIF</button>';
+    const editBtn = e.gif_url
+      ? '<button class="btn btn-sm" style="font-size:0.6rem;padding:3px 8px" data-id="' + e.id + '" data-n="' + safeName + '" onclick="editarGifBanco(this.dataset.id,this.dataset.n)">✏️</button> '
+      : '';
     return '<tr>'
       + '<td><strong>' + (e.nombre||'') + '</strong></td>'
       + '<td><span class="badge badge-blue">' + (e.grupo_muscular||'—') + '</span></td>'
       + '<td>' + gifCell + '</td>'
-      + '<td><button class="btn btn-sm btn-danger" data-id="' + e.id + '" onclick="eliminarDelBanco(this.dataset.id)">Borrar</button></td>'
+      + '<td>' + editBtn + '<button class="btn btn-sm btn-danger" data-id="' + e.id + '" onclick="eliminarDelBanco(this.dataset.id)">Borrar</button></td>'
       + '</tr>';
   }).join('');
-  lista.innerHTML = '<table><thead><tr><th>Ejercicio</th><th>Grupo</th><th>GIF</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
+  lista.innerHTML = '<table><thead><tr><th>Ejercicio</th><th>Grupo</th><th>GIF</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 function filtrarBanco(grupo) {
@@ -3627,6 +3690,61 @@ function limpiarChecklistsAntiguos() {
 }
 limpiarChecklistsAntiguos();
 
+
+
+// ── EDITAR GIF DEL BANCO ──
+let _gifEditId = null;
+
+function editarGifBanco(id, nombre) {
+  _gifEditId = id;
+  document.getElementById('gifEditNombre').textContent = nombre;
+  const ex = bancoDatos.find(function(e){ return String(e.id) === String(id); });
+  const url = ex?.gif_url || '';
+  document.getElementById('gifEditUrl').value = url;
+  previsualizarGif(url);
+  document.getElementById('gifEditModal').classList.add('open');
+  setTimeout(function(){ document.getElementById('gifEditUrl').focus(); }, 100);
+}
+
+function previsualizarGif(url) {
+  const img = document.getElementById('gifEditPreviewImg');
+  if (url && url.startsWith('http')) {
+    img.src = url;
+    img.classList.add('visible');
+  } else {
+    img.src = '';
+    img.classList.remove('visible');
+  }
+}
+
+function cerrarGifEditModal() {
+  document.getElementById('gifEditModal').classList.remove('open');
+  _gifEditId = null;
+}
+
+async function guardarGifBanco() {
+  if (!_gifEditId) return;
+  const url = document.getElementById('gifEditUrl').value.trim() || null;
+  const { error } = await sb.from('ejercicios_banco').update({ gif_url: url }).eq('id', _gifEditId);
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  const idx = bancoDatos.findIndex(function(e){ return String(e.id) === String(_gifEditId); });
+  if (idx !== -1) {
+    bancoDatos[idx].gif_url = url;
+    if (window._bancoDatosGlobal) {
+      const gi = window._bancoDatosGlobal.findIndex(function(e){ return String(e.id) === String(_gifEditId); });
+      if (gi !== -1) window._bancoDatosGlobal[gi].gif_url = url;
+    }
+  }
+  cerrarGifEditModal();
+  renderBancoTab();
+  toast('GIF guardado ✓', 'success');
+}
+
+async function eliminarGifBanco() {
+  if (!_gifEditId) return;
+  document.getElementById('gifEditUrl').value = '';
+  await guardarGifBanco();
+}
 
 // ── GIF EJERCICIOS ──
 function verGif(nombre, gifUrl, series, reps) {
