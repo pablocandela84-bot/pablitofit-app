@@ -720,6 +720,14 @@
     }
 
     /* ── BLOQUEAR SCROLL LATERAL VIA JS ── */
+
+    .ex-gif-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; }
+    .ex-gif-modal.open { display:flex; }
+    .ex-gif-box { background:#1a1a2e; border-radius:8px; padding:1.5rem; max-width:420px; width:90%; }
+    .ex-gif-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .ex-gif-title { color:#fff; font-family:var(--display); font-weight:700; font-size:1rem; }
+    .ex-gif-img { width:100%; border-radius:4px; }
+    .ex-gif-info { color:rgba(255,255,255,0.6); font-size:0.8rem; margin-top:0.8rem; text-align:center; }
   </style>
 </head>
 <body>
@@ -2603,6 +2611,7 @@ async function cargarMiRutina(clienteId) {
     return;
   }
 
+  await cargarBancoGlobal();
   const dias = rutina.datos.dias || [];
   cont.innerHTML = `
     <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between">
@@ -2642,7 +2651,7 @@ async function cargarMiRutina(clienteId) {
       </div>`;
     }).join('')}</div>`;
 
-  setTimeout(async () => { await cargarBancoGlobal(); initCheckinBar(clienteId); }, 100);
+  initCheckinBar(clienteId);
 }
 
 function mostrarMiRutina(idx) {
