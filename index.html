@@ -736,15 +736,15 @@
     <div class="login-brand" style="text-align:center">PABLITO<span>FIT</span></div>
     <div class="login-sub" style="text-align:center">Plataforma de entrenamiento</div>
     <div class="login-field">
-      <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email">
+      <label>Usuario</label>
+      <input type="text" id="loginEmail" placeholder="tu usuario" autocomplete="username">
     </div>
     <div class="login-field">
       <label>Contraseña</label>
       <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
     </div>
     <button class="btn-login" id="btnLogin">Entrar →</button>
-    <div class="login-err" id="loginErr">Email o contraseña incorrectos</div>
+    <div class="login-err" id="loginErr">Usuario o contraseña incorrectos</div>
   </div>
 </div>
 
@@ -1001,6 +1001,7 @@
         <div class="form-grid">
           <div class="form-field"><label>Nombre completo *</label><input id="cNombre" placeholder="Nombre Apellido"></div>
           <div class="form-field"><label>Email *</label><input id="cEmail" type="email" placeholder="email@ejemplo.com"></div>
+          <div class="form-field"><label>Usuario *</label><input id="cUsuario" placeholder="ej: rebeca123"></div>
           <div class="form-field"><label>Teléfono</label><input id="cTelefono" placeholder="+34 600 000 000"></div>
           <div class="form-field"><label>Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 8 caracteres"></div>
           <div class="form-field"><label>Peso inicial (kg)</label><input id="cPeso" type="number" placeholder="75"></div>
@@ -1285,11 +1286,16 @@ document.getElementById('loginPass').addEventListener('keydown', e => {
 document.getElementById('btnLogin').addEventListener('click', login);
 
 async function login() {
-  const email = document.getElementById('loginEmail').value.trim();
+  const usuarioInput = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
   err.style.display = 'none';
   document.getElementById('btnLogin').textContent = 'Entrando...';
+
+  // Buscar email por nombre de usuario en tabla clientes
+  let email = usuarioInput;
+  const { data: clienteRow } = await sb.from('clientes').select('email').eq('usuario', usuarioInput).maybeSingle();
+  if (clienteRow?.email) email = clienteRow.email;
 
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
   document.getElementById('btnLogin').textContent = 'Entrar →';
@@ -1565,7 +1571,7 @@ function abrirNuevoCliente() {
   editingClienteId = null;
   document.getElementById('modalClienteTitulo').textContent = 'Nuevo cliente';
   document.getElementById('btnGuardarCliente').textContent = 'Crear cliente →';
-  ['cNombre','cEmail','cTelefono','cPassword','cPeso','cAltura','cNotas'].forEach(id => document.getElementById(id).value = '');
+  ['cNombre','cEmail','cUsuario','cTelefono','cPassword','cPeso','cAltura','cNotas'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('cPlan').value = '6meses';
   document.getElementById('cEstado').value = 'activo';
   document.getElementById('cFechaInicio').value = new Date().toISOString().split('T')[0];
@@ -1581,6 +1587,7 @@ function editarCliente(id) {
   document.getElementById('btnGuardarCliente').textContent = 'Guardar cambios →';
   document.getElementById('cNombre').value = c.nombre || '';
   document.getElementById('cEmail').value = c.email || '';
+  document.getElementById('cUsuario').value = c.usuario || '';
   document.getElementById('cTelefono').value = c.telefono || '';
   document.getElementById('cPassword').value = '';
   document.getElementById('cPeso').value = c.peso_inicial || '';
@@ -1598,10 +1605,11 @@ async function guardarCliente() {
   const email = document.getElementById('cEmail').value.trim();
   const password = document.getElementById('cPassword').value;
 
-  if (!nombre || !email) { toast('Nombre y email son obligatorios','error'); return; }
+  if (!nombre || !email || !usuario) { toast('Nombre, email y usuario son obligatorios','error'); return; }
 
+  const usuario = document.getElementById('cUsuario').value.trim();
   const datos = {
-    nombre, email,
+    nombre, email, usuario,
     telefono: document.getElementById('cTelefono').value.trim(),
     peso_inicial: parseFloat(document.getElementById('cPeso').value)||null,
     altura: parseFloat(document.getElementById('cAltura').value)||null,
