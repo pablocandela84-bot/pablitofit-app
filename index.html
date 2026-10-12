@@ -37,16 +37,16 @@
     /* ── LAYOUT COACH ── */
     #coachScreen{flex-direction:row}
     .sidebar{width:240px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100}
-    .sidebar-brand{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}
+    .sidebar-brand{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08)}
     .sidebar-brand-name{font-family:var(--display);font-size:1rem;font-weight:900;letter-spacing:-0.5px;color:#fff}
     .sidebar-brand-name span{color:var(--blue2)}
     .sidebar-brand-sub{font-size:0.58rem;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;margin-top:3px}
-    .sidebar-nav{flex:1;min-height:0;padding:1rem 0;overflow-y:auto}
+    .sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto}
     .nav-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.5rem;font-size:0.78rem;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s;border-left:3px solid transparent}
     .nav-item:hover{color:#fff;background:rgba(255,255,255,0.04)}
     .nav-item.active{color:#fff;border-left-color:var(--blue2);background:rgba(79,142,255,0.08)}
     .nav-item .nav-icon{font-size:1rem;flex-shrink:0}
-    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0}
+    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08)}
     .sidebar-user{font-size:0.7rem;color:rgba(255,255,255,0.4)}
     .sidebar-user strong{color:rgba(255,255,255,0.8);display:block;margin-bottom:2px}
     .btn-logout{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:0.4rem 0.8rem;font-size:0.65rem;cursor:pointer;margin-top:0.6rem;transition:all 0.2s;width:100%;letter-spacing:1px;text-transform:uppercase;font-family:var(--body)}
@@ -72,11 +72,9 @@
     .card{background:var(--white);border:1px solid var(--border)}
     .card-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
     .card-title{font-family:var(--display);font-size:0.85rem;font-weight:900;letter-spacing:-0.3px}
-    .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .table-scroll table{min-width:100%}
     table{width:100%;border-collapse:collapse}
-    th{font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;text-align:left;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);background:#f8faff;white-space:nowrap}
-    td{padding:0.9rem 1.2rem;font-size:0.82rem;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}
+    th{font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;text-align:left;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border);background:#f8faff}
+    td{padding:0.9rem 1.2rem;font-size:0.82rem;border-bottom:1px solid var(--border);vertical-align:middle}
     tr:last-child td{border-bottom:none}
     tr:hover td{background:#f8faff}
     .badge{display:inline-block;padding:0.2rem 0.6rem;font-size:0.65rem;font-weight:600;letter-spacing:0.5px;border-radius:2px}
@@ -119,30 +117,6 @@
     .form-field textarea{resize:vertical;min-height:80px}
     .form-section{margin-bottom:1.5rem}
     .form-section-title{font-family:var(--display);font-size:0.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)}
-
-    /* ── PANEL FILTROS MOBILE ── */
-    .mensajes-filtros-panel{display:none;position:fixed;left:-280px;top:0;bottom:0;width:280px;background:var(--white);border-right:1px solid var(--border);z-index:1500;flex-direction:column;transition:left 0.3s ease;box-shadow:-2px 0 8px rgba(0,0,0,0.1)}
-    .mensajes-filtros-panel.open{left:0;display:flex}
-    .mensajes-filtros-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1400;transition:opacity 0.3s ease}
-    .mensajes-filtros-overlay.open{display:block}
-    .mensajes-filtros-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-    .mensajes-filtros-title{font-family:var(--display);font-size:0.85rem;font-weight:700}
-    .mensajes-filtros-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray);padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;transition:color 0.2s}
-    .mensajes-filtros-close:active{color:var(--navy)}
-    .mensajes-filtros-content{padding:1.5rem;overflow-y:auto;flex:1}
-    .mensajes-filtro-group{margin-bottom:1.5rem}
-    .mensajes-filtro-label{font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);font-weight:600;margin-bottom:0.6rem;display:block}
-    .mensajes-filtro-input{width:100%;border:1px solid var(--border);padding:0.75rem 0.9rem;font-family:var(--body);font-size:0.85rem;color:var(--navy);outline:none;border-radius:2px;box-sizing:border-box}
-    .mensajes-btn-filtros{display:none;background:none;border:none;padding:0.5rem;cursor:pointer;color:var(--gray);font-size:1.1rem;flex-shrink:0;transition:color 0.2s}
-    .mensajes-btn-filtros:active{color:var(--navy)}
-    @media (max-width:600px){
-      .mensajes-header-desktop{display:none !important}
-      .mensajes-btn-filtros{display:block !important}
-    }
-    @media (min-width:601px){
-      .mensajes-filtros-panel{display:none !important}
-      .mensajes-filtros-overlay{display:none !important}
-    }
 
     /* ── PERFIL CLIENTE ── */
     .client-header{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start;background:var(--navy);padding:2rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
@@ -203,26 +177,6 @@
     .cliente-nav{display:flex;gap:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;overflow-x:auto}
     .cliente-nav-item{padding:1rem 1.2rem;font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s}
     .cliente-nav-item.active{color:var(--blue);border-bottom-color:var(--blue)}
-    
-    /* ── PANEL LATERAL CLIENTE (MOBILE) ── */
-    .cliente-nav-panel{display:none;position:fixed;left:-280px;top:60px;bottom:0;width:280px;background:var(--white);border-right:1px solid var(--border);z-index:1500;flex-direction:column;transition:left 0.3s ease;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto}
-    .cliente-nav-panel.open{left:0;display:flex}
-    .cliente-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1400;top:60px}
-    .cliente-nav-overlay.open{display:block}
-    .cliente-nav-mobile{display:none;flex-direction:column;gap:0}
-    .cliente-nav-mobile .cliente-nav-item{padding:1rem 1.5rem;border-bottom:1px solid var(--border);border-left:3px solid transparent;font-size:0.75rem}
-    .cliente-nav-mobile .cliente-nav-item.active{border-left-color:var(--blue);background:rgba(26,63,160,0.04)}
-    .cliente-hamburger{display:none;background:none;border:none;cursor:pointer;color:#fff;font-size:1.2rem;padding:0.5rem}
-    @media (max-width:600px){
-      .cliente-nav{display:none}
-      .cliente-hamburger{display:block}
-      .cliente-nav-mobile{display:flex}
-    }
-    @media (min-width:601px){
-      .cliente-nav-panel{display:none !important}
-      .cliente-nav-overlay{display:none !important}
-    }
-
     .cliente-body{padding:2rem;max-width:900px;margin:0 auto;width:100%}
     .cliente-tab-content{display:none}
     .cliente-tab-content.active{display:block}
@@ -615,38 +569,13 @@
     .dia-checkin-done.visible { display: block; }
 
     /* ── PREVENIR SCROLL LATERAL ── */
-    html, body { 
-      overflow-x: hidden; 
-      max-width: 100vw; 
-      width: 100%;
-    }
-    * { 
-      -webkit-tap-highlight-color: transparent;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-    
-    /* Extra protection para móvil */
-    @media (max-width: 768px) {
-      html, body {
-        overflow-x: hidden !important;
-        width: 100vw !important;
-        position: relative !important;
-      }
-      body {
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-    }
+    html, body { overflow-x: hidden; max-width: 100vw; }
+    * { -webkit-tap-highlight-color: transparent; }
 
     @media(max-width:768px){
-      /* ── BLOQUEAR SCROLL HORIZONTAL ── */
-      body, html, .screen { overflow-x: hidden !important; width: 100vw; }
-      * { max-width: 100% !important; }
-      
       /* ── SIDEBAR → DRAWER LATERAL ── */
       .sidebar{
-        width:260px; height:100vh; height:100dvh;
+        width:260px; height:100vh;
         position:fixed; top:0; left:0; bottom:0;
         transform:translateX(-100%);
         transition:transform 0.3s cubic-bezier(0.76,0,0.24,1);
@@ -679,10 +608,10 @@
       .sidebar-overlay.open{display:block}
 
       /* ── MAIN: sin margen lateral ── */
-      .main-content{margin-left:0 !important; padding-bottom:0; min-height:100vh; overflow-x: hidden}
+      .main-content{margin-left:0; padding-bottom:0; min-height:100vh}
       .topbar{padding:0.8rem 1rem; position:sticky; top:0; z-index:100}
       .topbar-title{font-size:0.85rem}
-      .page-body{padding:1rem; overflow-x: hidden}
+      .page-body{padding:1rem}
       
       /* Botón hamburguesa en topbar */
       .hamburger{display:flex}
@@ -727,42 +656,20 @@
       .client-tab{padding:0.7rem 1rem; font-size:0.62rem; white-space:nowrap}
 
       /* ── PORTAL CLIENTE ── */
-      #clienteScreen{padding-bottom:0; overflow-x: hidden}
+      #clienteScreen{padding-bottom:0}
       .cliente-topbar{padding:0.8rem 1rem}
       .cliente-brand{font-size:0.8rem}
-      .cliente-nav{padding:0 0.5rem; gap:0; overflow-x: auto; -webkit-overflow-scrolling: touch}
-      .cliente-nav-item{padding:0.8rem 0.8rem; font-size:0.62rem; white-space: nowrap; flex-shrink: 0}
-      .cliente-body{padding:0.8rem; padding-bottom:1rem; overflow-x: hidden}
+      .cliente-nav{padding:0 0.5rem; gap:0}
+      .cliente-nav-item{padding:0.8rem 0.8rem; font-size:0.62rem}
+      .cliente-body{padding:0.8rem; padding-bottom:1rem}
 
       /* ── RUTINA CLIENTE ── */
       .rutina-dia-header{padding:0.8rem 1rem}
       .rutina-dia-name{font-size:0.8rem}
-      .rutina-dia-body{padding:0 1rem 0.8rem; overflow-x: hidden}
-      .ex-check-row{padding:0.5rem 0; display: flex; gap: 0.5rem; overflow-x: hidden}
-      .ex-check-name{font-size:0.78rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis}
+      .rutina-dia-body{padding:0 1rem 0.8rem}
+      .ex-check-row{padding:0.5rem 0}
+      .ex-check-name{font-size:0.78rem}
       .ex-check-info{font-size:0.65rem}
-
-      /* ── SELECTS ANCHO FIJO → RESPONSIVE ── */
-      #rutinasClienteSelect,
-      #nutriClienteSelect,
-      #nutriPlanClienteSelect,
-      #progresoClienteSelect,
-      .search-box {
-        width: 100% !important;
-        max-width: 100% !important;
-      }
-
-      /* ── INPUTS ANCHO FIJO → RESPONSIVE ── */
-      .exercise-input {
-        width: 100% !important;
-        max-width: 100% !important;
-      }
-
-      /* ── BARRA DE CHECKIN ── */
-      .checkin-bar-progress {
-        width: 100% !important;
-        max-width: 100% !important;
-      }
 
       /* ── LOGIN ── */
       .login-box{padding:2rem 1.5rem; max-width:100%; margin:1rem}
@@ -775,12 +682,7 @@
 
       /* ── CARD HEADERS ── */
       .card-header{padding:0.8rem 1rem; flex-wrap:wrap; gap:0.5rem}
-      .search-box{width:100% !important}
-      
-      /* ── ASEGURAR QUE NINGÚN ELEMENTO DESBORDA ── */
-      .page-body > *, .cliente-body > * {
-        overflow-x: hidden !important;
-      }
+      .search-box{width:100%}
     }
 
     /* ── BLOQUEAR SCROLL LATERAL VIA JS ── */
@@ -801,13 +703,13 @@
     <div class="login-sub" style="text-align:center">Plataforma de entrenamiento</div>
     <div class="login-field">
       <label>Email</label>
-      <input type="text" id="loginUsuario" placeholder="Usuario" autocomplete="username">
+      <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email">
     </div>
     <div class="login-field">
       <label>Contraseña</label>
       <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <button class="btn-login" id="btnLogin" onclick="login()">Entrar →</button>
+    <button class="btn-login" id="btnLogin">Entrar →</button>
     <div class="login-err" id="loginErr">Email o contraseña incorrectos</div>
   </div>
 </div>
@@ -826,10 +728,8 @@
       <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
       <div class="nav-item" onclick="showTab('clientes')"><span class="nav-icon">👥</span>Clientes</div>
       <div class="nav-item" onclick="showTab('rutinas')"><span class="nav-icon">💪</span>Rutinas</div>
-      <div class="nav-item" onclick="showTab('progreso-hoy')"><span class="nav-icon">📊</span>Progreso Hoy</div>
       <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">✅</span>Hábitos</div>
       <div class="nav-item" onclick="showTab('progreso')"><span class="nav-icon">📈</span>Progreso</div>
-      <div class="nav-item" onclick="showTab('mensajes-inbox')"><span class="nav-icon">💬</span>Mensajes</div>
       <div class="nav-item" onclick="showTab('pagos')"><span class="nav-icon">💳</span>Pagos</div>
       <div class="nav-item" onclick="showTab('banco')"><span class="nav-icon">📚</span>Banco</div>
     </div>
@@ -916,17 +816,7 @@
         </div>
       </div>
 
-      <!-- TAB: PROGRESO HOY -->
-      <div id="tab-progreso-hoy" class="tab-content">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">📊 Progreso de clientes - Hoy</div>
-          </div>
-          <div id="progresoHoyContent"><div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">Cargando progreso del día...</div></div></div>
-        </div>
-      </div>
-
-      <!-- TAB: PROGRESO (individual) -->
+      <!-- TAB: PROGRESO -->
       <div id="tab-progreso" class="tab-content">
         <div class="card">
           <div class="card-header"><div class="card-title">Seguimiento de progreso</div>
@@ -959,69 +849,32 @@
           </div>
           <div id="bancoLista"><div class="loading-inline"><div class="spinner"></div>Cargando...</div></div>
           <!-- Formulario añadir nuevo ejercicio -->
-          <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:0.8rem;flex-wrap:wrap;align-items:flex-end;background:#f8faff">
-            <div style="flex:1;min-width:200px">
-              <label style="display:block;font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Nombre del ejercicio</label>
-              <input id="bancoNuevoNombreTab" class="exercise-input" style="width:100%" placeholder="Ej: Press banca, Sentadilla...">
+          <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);background:#f8faff">
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:0.6rem;margin-bottom:0.6rem">
+              <div>
+                <label style="display:block;font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.3rem">Nombre *</label>
+                <input id="bancoNuevoNombreTab" class="exercise-input" style="width:100%" placeholder="Ej: Press banca...">
+              </div>
+              <div>
+                <label style="display:block;font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.3rem">Grupo</label>
+                <select id="bancoNuevoGrupoTab" class="exercise-input" style="background:white;width:100%">
+                  <option value="Pecho">Pecho</option>
+                  <option value="Espalda">Espalda</option>
+                  <option value="Hombros">Hombros</option>
+                  <option value="Pierna">Pierna</option>
+                  <option value="Glúteo">Glúteo</option>
+                  <option value="Bíceps">Bíceps</option>
+                  <option value="Tríceps">Tríceps</option>
+                  <option value="Core">Core</option>
+                  <option value="Calentamiento">Calentamiento</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label style="display:block;font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Grupo muscular</label>
-              <select id="bancoNuevoGrupoTab" class="exercise-input" style="background:white">
-                <option value="Pecho">Pecho</option>
-                <option value="Espalda">Espalda</option>
-                <option value="Hombros">Hombros</option>
-                <option value="Pierna">Pierna</option>
-                <option value="Glúteo">Glúteo</option>
-                <option value="Bíceps">Bíceps</option>
-                <option value="Tríceps">Tríceps</option>
-                <option value="Core">Core</option>
-                <option value="Calentamiento">Calentamiento</option>
-              </select>
-            </div>
-            <button class="btn btn-primary" onclick="guardarNuevoAlBancoTab()">+ Añadir al banco</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB: MENSAJES INBOX -->
-      <div id="tab-mensajes-inbox" class="tab-content">
-        <!-- PANEL FILTROS MOBILE -->
-        <div class="mensajes-filtros-overlay" id="mensajesFiltrosOverlay" onclick="cerrarFiltrosMensajes()"></div>
-        <div class="mensajes-filtros-panel" id="mensajesFiltrosPanel">
-          <div class="mensajes-filtros-header">
-            <div class="mensajes-filtros-title">🔍 Filtros</div>
-            <button class="mensajes-filtros-close" onclick="cerrarFiltrosMensajes()">✕</button>
-          </div>
-          <div class="mensajes-filtros-content">
-            <div class="mensajes-filtro-group">
-              <label class="mensajes-filtro-label">Cliente</label>
-              <select id="mensajesClienteFiltro" class="mensajes-filtro-input" onchange="filtrarMensajesPorCliente()">
-                <option value="">Todos los clientes</option>
-              </select>
-            </div>
-            <div class="mensajes-filtro-group">
-              <label class="mensajes-filtro-label">Búsqueda</label>
-              <input class="mensajes-filtro-input" id="searchMensajes" placeholder="Buscar en mensajes..." oninput="filtrarMensajesPorTexto()">
+            <div style="display:flex;gap:0.6rem;align-items:center">
+              <input id="bancoNuevoGifTab" class="exercise-input" style="flex:1" placeholder="🎬 URL GIF Cloudinary (opcional)">
+              <button class="btn btn-primary" onclick="guardarNuevoAlBancoTab()">+ Añadir</button>
             </div>
           </div>
-        </div>
-
-        <!-- CARD CON MENSAJES -->
-        <div class="card">
-          <div class="card-header">
-            <div style="display:flex;align-items:center;gap:0.8rem;width:100%">
-              <button class="mensajes-btn-filtros" onclick="abrirFiltrosMensajes()" title="Filtros">⚙️</button>
-              <div class="card-title">📬 Mensajes de clientes</div>
-            </div>
-            <!-- HEADER DESKTOP CON FILTROS -->
-            <div class="mensajes-header-desktop" style="display:flex;gap:0.8rem">
-              <select id="mensajesClienteFiltroDesktop" class="search-box" style="width:200px" onchange="filtrarMensajesPorCliente()">
-                <option value="">Todos los clientes</option>
-              </select>
-              <input class="search-box" id="searchMensajesDesktop" placeholder="Buscar en mensajes..." oninput="filtrarMensajesPorTexto()" style="flex:1;max-width:300px">
-            </div>
-          </div>
-          <div id="mensajesInboxContent"><div class="loading"><div class="spinner"></div>Cargando mensajes...</div></div>
         </div>
       </div>
 
@@ -1042,26 +895,11 @@
 ══════════════════════════════════════ -->
 <div id="clienteScreen" class="screen">
   <div class="cliente-topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="cliente-hamburger" onclick="abrirNavClienteMobile()" title="Menú">☰</button>
-      <img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div>
+    <div>
+      <div style="display:flex;align-items:center;gap:10px"><img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div></div>
     </div>
     <button class="btn" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)" onclick="logout()">Salir</button>
   </div>
-  
-  <!-- PANEL LATERAL MOBILE -->
-  <div class="cliente-nav-overlay" id="clienteNavOverlay" onclick="cerrarNavClienteMobile()"></div>
-  <div class="cliente-nav-panel" id="clienteNavPanel">
-    <div class="cliente-nav-mobile" style="flex:1">
-      <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina');cerrarNavClienteMobile()">💪 Mi Rutina</div>
-      <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta');cerrarNavClienteMobile()">✅ Mis Hábitos</div>
-      <div class="cliente-nav-item" onclick="showClienteTab('mi-progreso');cerrarNavClienteMobile()">📈 Mi Progreso</div>
-      <div class="cliente-nav-item" onclick="showClienteTab('mi-plan');cerrarNavClienteMobile()">📋 Mi Plan</div>
-      <div class="cliente-nav-item" onclick="showClienteTab('mensajes');cerrarNavClienteMobile()">💬 Mensajes</div>
-    </div>
-  </div>
-  
-  <!-- NAVEGACIÓN HORIZONTAL DESKTOP -->
   <div class="cliente-nav">
     <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina')">💪 Mi Rutina</div>
     <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta')">✅ Mis Hábitos</div>
@@ -1100,7 +938,7 @@
       <div id="setPwdMsg" style="font-size:0.82rem;color:var(--gray);line-height:1.7;margin-bottom:1.5rem">Elige una contraseña para acceder a tu área de cliente.</div>
       <div style="margin-bottom:1rem">
         <label style="display:block;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Nueva contraseña</label>
-        <input type="password" id="newPassword" placeholder="Mínimo 6 caracteres" style="width:100%;border:1px solid var(--border);padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--navy);outline:none">
+        <input type="password" id="newPassword" placeholder="Mínimo 8 caracteres" style="width:100%;border:1px solid var(--border);padding:0.85rem 1rem;font-family:var(--body);font-size:0.9rem;color:var(--navy);outline:none">
       </div>
       <div style="margin-bottom:1.5rem">
         <label style="display:block;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Confirmar contraseña</label>
@@ -1128,10 +966,9 @@
         <div class="form-section-title">Datos personales</div>
         <div class="form-grid">
           <div class="form-field"><label>Nombre completo *</label><input id="cNombre" placeholder="Nombre Apellido"></div>
-          <div class="form-field"><label>Usuario (para acceso) *</label><input id="cUsuario" placeholder="ej: juan.garcia" autocomplete="off"></div>
           <div class="form-field"><label>Email *</label><input id="cEmail" type="email" placeholder="email@ejemplo.com"></div>
           <div class="form-field"><label>Teléfono</label><input id="cTelefono" placeholder="+34 600 000 000"></div>
-          <div class="form-field"><label id="cPasswordLabel">Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
+          <div class="form-field"><label>Contraseña acceso *</label><input id="cPassword" type="password" placeholder="Mínimo 8 caracteres"></div>
           <div class="form-field"><label>Peso inicial (kg)</label><input id="cPeso" type="number" placeholder="75"></div>
           <div class="form-field"><label>Altura (cm)</label><input id="cAltura" type="number" placeholder="175"></div>
         </div>
@@ -1235,21 +1072,38 @@
       <button class="banco-filter" onclick="filtrarBancoModalGrupo('Calentamiento')">Calentamiento</button>
     </div>
     <div class="banco-list" id="bancoModalLista"></div>
-    <div class="banco-footer">
-      <input class="banco-new-input" id="bancoNuevoNombre" placeholder="Nombre del nuevo ejercicio...">
-      <select class="banco-grupo-select" id="bancoNuevoGrupo">
-        <option value="Pecho">Pecho</option>
-        <option value="Espalda">Espalda</option>
-        <option value="Hombros">Hombros</option>
-        <option value="Pierna">Pierna</option>
-        <option value="Glúteo">Glúteo</option>
-        <option value="Bíceps">Bíceps</option>
-        <option value="Tríceps">Tríceps</option>
-        <option value="Core">Core</option>
-        <option value="Calentamiento">Calentamiento</option>
-      </select>
-      <button class="btn btn-primary btn-sm" onclick="guardarNuevoAlBanco()">+ Guardar</button>
+    <div class="banco-footer" style="flex-direction:column;gap:0.5rem;padding:0.8rem 1rem">
+      <div style="display:flex;gap:0.5rem;width:100%">
+        <input class="banco-new-input" id="bancoNuevoNombre" placeholder="Nombre del ejercicio..." style="flex:1">
+        <select class="banco-grupo-select" id="bancoNuevoGrupo">
+          <option value="Pecho">Pecho</option>
+          <option value="Espalda">Espalda</option>
+          <option value="Hombros">Hombros</option>
+          <option value="Pierna">Pierna</option>
+          <option value="Glúteo">Glúteo</option>
+          <option value="Bíceps">Bíceps</option>
+          <option value="Tríceps">Tríceps</option>
+          <option value="Core">Core</option>
+          <option value="Calentamiento">Calentamiento</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:0.5rem;width:100%">
+        <input class="banco-new-input" id="bancoNuevoGif" placeholder="🎬 URL GIF (opcional)..." style="flex:1;font-size:0.75rem">
+        <button class="btn btn-primary btn-sm" onclick="guardarNuevoAlBanco()">+ Guardar</button>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- GIF MODAL -->
+<div class="ex-gif-modal" id="gifModal" onclick="cerrarGifModal()">
+  <div class="ex-gif-box" onclick="event.stopPropagation()">
+    <div class="ex-gif-header">
+      <div class="ex-gif-title" id="gifModalTitle">Ejercicio</div>
+      <button class="btn-icon" style="color:#fff;font-size:1rem" onclick="cerrarGifModal()">✕</button>
+    </div>
+    <img class="ex-gif-img" id="gifModalImg" src="" alt="Animación">
+    <div class="ex-gif-info" id="gifModalInfo"></div>
   </div>
 </div>
 
@@ -1311,7 +1165,7 @@ const sb = createClient(
 // ══════════════════════════════════════
 //  ESTADO GLOBAL
 // ══════════════════════════════════════
-const COACH_EMAIL = 'pablocandela84@gmail.com'; // ← tu email real
+const COACH_EMAIL = 'pablocandela84@gmail.com'; // ← cambia por tu email real
 let currentUser = null;
 let currentClienteId = null;
 let clientes = [];
@@ -1366,115 +1220,42 @@ function fechaVencimiento(fechaInicio, plan) {
 // ══════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════
-window.addEventListener('load', async () => {
-  // Agregar listener Enter en campo de contraseña
-  const loginPass = document.getElementById('loginPass');
-  if (loginPass) {
-    loginPass.addEventListener('keydown', e => {
-      if (e.key === 'Enter') login();
-    });
-  }
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
 });
 
+document.getElementById('btnLogin').addEventListener('click', login);
+
 async function login() {
-  const usuario = document.getElementById('loginUsuario').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
-  const btn = document.getElementById('btnLogin');
-  
   err.style.display = 'none';
-  btn.textContent = 'Entrando...';
-  btn.disabled = true;
+  document.getElementById('btnLogin').textContent = 'Entrando...';
 
-  try {
-    // 1. Buscar cliente por usuario
-    const { data: cliente, error: searchError } = await sb
-      .from('clientes')
-      .select('email')
-      .eq('usuario', usuario)
-      .single();
-    
-    let email = null;
-    
-    if (cliente && cliente.email) {
-      // Si encontró el usuario en clientes
-      email = cliente.email;
-    } else {
-      // Fallback: asumir que es un email o usuario del coach
-      email = usuario;
-    }
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  document.getElementById('btnLogin').textContent = 'Entrar →';
 
-    // 2. Login con el email encontrado (o el usuario si es coach)
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-    
-    btn.textContent = 'Entrar →';
-    btn.disabled = false;
+  if (error) { err.style.display = 'block'; return; }
 
-    if (error) { 
-      err.textContent = 'Usuario o contraseña incorrectos';
-      err.style.display = 'block'; 
-      return; 
-    }
-
-    currentUser = data.user;
-    localStorage.setItem('pf_user_email', currentUser.email);
-    await iniciarSesion();
-  } catch (err) {
-    btn.textContent = 'Entrar →';
-    btn.disabled = false;
-    document.getElementById('loginErr').textContent = 'Error: ' + err.message;
-    document.getElementById('loginErr').style.display = 'block';
-  }
+  currentUser = data.user;
+  // Guardar email en localStorage para restaurar sesión
+  localStorage.setItem('pf_user_email', currentUser.email);
+  await iniciarSesion();
 }
 
 async function iniciarSesion() {
   const email = currentUser.email;
-  
-  if (email.toLowerCase() === COACH_EMAIL.toLowerCase()) {
-    // Es COACH - mostrar panel de coach
-    console.log('👨‍💼 Usuario es COACH:', email);
+  if (email === COACH_EMAIL) {
+    // Es coach
     document.getElementById('sidebarEmail').textContent = email;
     showScreen('coachScreen');
     await cargarDashboard();
+    await poblarSelectores();
   } else {
-    // Es CLIENTE - mostrar portal de cliente
-    console.log('👤 Usuario es CLIENTE:', email);
-    await vincularClienteConUser(email, currentUser.id);
+    // Es cliente
     showScreen('clienteScreen');
     await cargarPortalCliente();
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-// VINCULAR user_id CON cliente
-// ══════════════════════════════════════════════════════════════
-async function vincularClienteConUser(email, userId) {
-  try {
-    // Buscar cliente por email
-    const { data: cliente, error: searchError } = await sb
-      .from('clientes')
-      .select('id')
-      .eq('email', email)
-      .single();
-    
-    if (searchError || !cliente) {
-      console.log('Cliente no encontrado por email:', email);
-      return;
-    }
-    
-    // Actualizar user_id en tabla clientes
-    const { error: updateError } = await sb
-      .from('clientes')
-      .update({ user_id: userId })
-      .eq('id', cliente.id);
-    
-    if (updateError) {
-      console.error('Error actualizando user_id:', updateError);
-    } else {
-      console.log('✓ Cliente vinculado con user_id:', cliente.id);
-    }
-  } catch (error) {
-    console.error('Error en vincularClienteConUser:', error);
   }
 }
 
@@ -1526,8 +1307,8 @@ async function confirmarPassword() {
   const err = document.getElementById('setPwdErr');
   err.style.display = 'none';
 
-  if (pwd1.length < 6) {
-    err.textContent = 'La contraseña debe tener al menos 6 caracteres';
+  if (pwd1.length < 8) {
+    err.textContent = 'La contraseña debe tener al menos 8 caracteres';
     err.style.display = 'block'; return;
   }
   if (pwd1 !== pwd2) {
@@ -1564,7 +1345,7 @@ async function confirmarPassword() {
 const tabTitles = {
   dashboard:'Dashboard', clientes:'Clientes',
   rutinas:'Rutinas', nutricion:'Nutrición',
-  progreso:'Progreso', 'mensajes-inbox':'Mensajes', pagos:'Pagos', banco:'Banco de Ejercicios'
+  progreso:'Progreso', pagos:'Pagos', banco:'Banco de Ejercicios'
 };
 const tabActions = {
   clientes: () => `<button class="btn btn-primary" onclick="abrirNuevoCliente()">+ Nuevo cliente</button>`
@@ -1593,15 +1374,7 @@ function showTab(tab) {
   if(window.innerWidth <= 768) closeSidebar();
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  
-  const tabEl = document.getElementById('tab-'+tab);
-  if (tabEl) {
-    tabEl.classList.add('active');
-  } else {
-    console.warn('Tab no encontrado:', tab);
-    return;
-  }
-  
+  document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => {
     if (n.textContent.toLowerCase().includes(tab.substring(0,4))) n.classList.add('active');
   });
@@ -1610,81 +1383,63 @@ function showTab(tab) {
   if (tab === 'clientes') cargarClientes();
   if (tab === 'pagos') cargarPagos();
   if (tab === 'banco') cargarBanco();
-  if (tab === 'rutinas') poblarSelectores();
-  if (tab === 'progreso-hoy') cargarProgresoHoy();
-  if (tab === 'nutricion') { cargarHabitosResumen(); poblarSelectores(); }
-  if (tab === 'mensajes-inbox') cargarMensajesInbox();
+  if (tab === 'nutricion') cargarHabitosResumen();
 }
 
 // ══════════════════════════════════════
 //  COACH: DASHBOARD
 // ══════════════════════════════════════
 async function cargarDashboard() {
-  try {
-    console.log('📥 Cargando clientes desde Supabase...');
-    
-    // Carga en paralelo para mayor velocidad
-    const [{ data, error }] = await Promise.all([
-      sb.from('clientes').select('*').order('created_at', {ascending:false})
-    ]);
-    
-    if (error) {
-      console.error('❌ Error Supabase:', error);
-      document.getElementById('dashboardList').innerHTML = `<div style="color:red;padding:1rem"><strong>❌ Error:</strong> ${error.message}</div>`;
-      return;
-    }
-    
-    clientes = data || [];
-    console.log('✅ Clientes cargados:', clientes.length);
+  // Carga en paralelo para mayor velocidad
+  const [{ data }] = await Promise.all([
+    sb.from('clientes').select('*').order('created_at', {ascending:false})
+  ]);
+  clientes = data || [];
 
-    const activos = clientes.filter(c => c.estado === 'activo');
-    const plan6 = clientes.filter(c => c.plan === '6meses');
-    const plan12 = clientes.filter(c => c.plan === '12meses');
-    const hoy = new Date();
-    const finMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
-    const vencen = clientes.filter(c => {
-      const v = fechaVencimiento(c.fecha_inicio, c.plan);
-      return v && v >= hoy && v <= finMes;
-    });
+  const activos = clientes.filter(c => c.estado === 'activo');
+  const plan6 = clientes.filter(c => c.plan === '6meses');
+  const plan12 = clientes.filter(c => c.plan === '12meses');
+  const hoy = new Date();
+  const finMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
+  const vencen = clientes.filter(c => {
+    const v = fechaVencimiento(c.fecha_inicio, c.plan);
+    return v && v >= hoy && v <= finMes;
+  });
 
-    document.getElementById('statTotal').textContent = activos.length;
-    document.getElementById('statPlan6').textContent = plan6.length;
-    document.getElementById('statPlan12').textContent = plan12.length;
-    document.getElementById('statVence').textContent = vencen.length;
+  document.getElementById('statTotal').textContent = activos.length;
+  document.getElementById('statPlan6').textContent = plan6.length;
+  document.getElementById('statPlan12').textContent = plan12.length;
+  document.getElementById('statVence').textContent = vencen.length;
 
-    const list = document.getElementById('dashboardList');
-    if (!clientes.length) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Aún no tienes clientes. Crea el primero desde la sección Clientes.</div></div>`;
-      return;
-    }
-    const isMob = window.innerWidth <= 768;
-    if (isMob) {
-      list.innerHTML = `<div style="padding:0.8rem">${clientes.slice(0,6).map(c => `
-        <div class="cliente-card" onclick="showTab('clientes');setTimeout(()=>verCliente('${c.id}'),100)">
-          <div class="cliente-card-info">
-            <div class="cliente-card-name">${c.nombre}</div>
-            <div class="cliente-card-email">${c.email}</div>
-            <div class="cliente-card-meta">${badgePlan(c.plan)} ${badgeEstado(c.estado)}</div>
-          </div>
-          <span style="color:var(--gray);font-size:1.2rem">›</span>
-        </div>`).join('')}</div>`;
-    } else {
-      list.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
-        <tbody>${clientes.slice(0,8).map(c => {
-          const v = fechaVencimiento(c.fecha_inicio, c.plan);
-          return `<tr>
-            <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
-            <td>${badgePlan(c.plan)}</td>
-            <td>${badgeEstado(c.estado)}</td>
-            <td>${fmtFecha(c.fecha_inicio)}</td>
-            <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
-            <td><button class="btn btn-sm btn-secondary" onclick="verCliente('${c.id}')">Ver perfil</button></td>
-          </tr>`;
-        }).join('')}</tbody></table></div>`;
-    }
-  } catch (err) {
-    console.error('❌ Error en cargarDashboard:', err);
-    document.getElementById('dashboardList').innerHTML = `<div style="color:red;padding:1rem"><strong>❌ Error:</strong> ${err.message}</div>`;
+  const list = document.getElementById('dashboardList');
+  if (!clientes.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Aún no tienes clientes. Crea el primero desde la sección Clientes.</div></div>`;
+    return;
+  }
+  const isMob = window.innerWidth <= 768;
+  if (isMob) {
+    list.innerHTML = `<div style="padding:0.8rem">${clientes.slice(0,6).map(c => `
+      <div class="cliente-card" onclick="showTab('clientes');setTimeout(()=>verCliente('${c.id}'),100)">
+        <div class="cliente-card-info">
+          <div class="cliente-card-name">${c.nombre}</div>
+          <div class="cliente-card-email">${c.email}</div>
+          <div class="cliente-card-meta">${badgePlan(c.plan)} ${badgeEstado(c.estado)}</div>
+        </div>
+        <span style="color:var(--gray);font-size:1.2rem">›</span>
+      </div>`).join('')}</div>`;
+  } else {
+    list.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
+      <tbody>${clientes.slice(0,8).map(c => {
+        const v = fechaVencimiento(c.fecha_inicio, c.plan);
+        return `<tr>
+          <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
+          <td>${badgePlan(c.plan)}</td>
+          <td>${badgeEstado(c.estado)}</td>
+          <td>${fmtFecha(c.fecha_inicio)}</td>
+          <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
+          <td><button class="btn btn-sm btn-secondary" onclick="verCliente('${c.id}')">Ver perfil</button></td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
   }
 }
 
@@ -1732,7 +1487,7 @@ function renderTablaClientes(data) {
         </div>
       </div>`).join('')}</div>`;
   } else {
-    container.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Acciones</th></tr></thead>
+    container.innerHTML = `<table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Plan</th><th>Estado</th><th>Inicio</th><th>Acciones</th></tr></thead>
       <tbody>${data.map(c => `<tr>
         <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
         <td style="color:var(--gray)">${c.telefono||'—'}</td>
@@ -1744,7 +1499,7 @@ function renderTablaClientes(data) {
           <button class="btn btn-sm btn-secondary" onclick="editarCliente('${c.id}')">Editar</button>
           <button class="btn btn-sm btn-danger" onclick="eliminarCliente('${c.id}','${c.nombre}')">Borrar</button>
         </td>
-      </tr>`).join('')}</tbody></table></div>`;
+      </tr>`).join('')}</tbody></table>`;
   }
 }
 
@@ -1752,13 +1507,11 @@ function abrirNuevoCliente() {
   editingClienteId = null;
   document.getElementById('modalClienteTitulo').textContent = 'Nuevo cliente';
   document.getElementById('btnGuardarCliente').textContent = 'Crear cliente →';
-  ['cNombre','cUsuario','cEmail','cTelefono','cPassword','cPeso','cAltura','cNotas'].forEach(id => document.getElementById(id).value = '');
+  ['cNombre','cEmail','cTelefono','cPassword','cPeso','cAltura','cNotas'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('cPlan').value = '6meses';
   document.getElementById('cEstado').value = 'activo';
   document.getElementById('cFechaInicio').value = new Date().toISOString().split('T')[0];
   document.getElementById('cObjetivo').value = 'hipertrofia';
-  document.getElementById('cPasswordLabel').textContent = 'Contraseña acceso *';
-  document.getElementById('cPassword').placeholder = 'Mínimo 6 caracteres';
   openModal('modalCliente');
 }
 
@@ -1769,7 +1522,6 @@ function editarCliente(id) {
   document.getElementById('modalClienteTitulo').textContent = 'Editar cliente';
   document.getElementById('btnGuardarCliente').textContent = 'Guardar cambios →';
   document.getElementById('cNombre').value = c.nombre || '';
-  document.getElementById('cUsuario').value = c.usuario || '';
   document.getElementById('cEmail').value = c.email || '';
   document.getElementById('cTelefono').value = c.telefono || '';
   document.getElementById('cPassword').value = '';
@@ -1780,53 +1532,18 @@ function editarCliente(id) {
   document.getElementById('cFechaInicio').value = c.fecha_inicio || '';
   document.getElementById('cObjetivo').value = c.objetivo || 'hipertrofia';
   document.getElementById('cNotas').value = c.notas || '';
-  document.getElementById('cPasswordLabel').textContent = 'Nueva contraseña (opcional)';
-  document.getElementById('cPassword').placeholder = 'Dejar en blanco para no cambiarla';
   openModal('modalCliente');
-}
-
-// ══════════════════════════════════════════════════════════════
-// CAMBIAR CONTRASEÑA DE UN CLIENTE (vía Edge Function admin-update-password)
-// ══════════════════════════════════════════════════════════════
-// El cliente supabase-js del navegador solo puede cambiar la contraseña
-// del usuario que está actualmente logueado (auth.updateUser). Para que el
-// coach pueda cambiar la contraseña de OTRO usuario (un cliente) hace falta
-// la Admin API de Supabase, que requiere la service_role key. Esa clave
-// nunca debe estar en el frontend, así que la llamada se hace a una Edge
-// Function ('admin-update-password') que guarda esa clave del lado del
-// servidor. Ver el archivo admin-update-password/index.ts para el código
-// de la función y las instrucciones de despliegue.
-async function actualizarPasswordCliente(userId, email, password) {
-  try {
-    const { data, error } = await sb.functions.invoke('admin-update-password', {
-      body: { user_id: userId || null, email, password }
-    });
-    if (error) {
-      let detalle = error.message || 'Error desconocido';
-      try {
-        const body = await error.context.json();
-        if (body && body.error) detalle = body.error;
-      } catch (_) {}
-      return { ok: false, mensaje: detalle };
-    }
-    if (data && data.error) return { ok: false, mensaje: data.error };
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, mensaje: err.message || 'Error de conexión' };
-  }
 }
 
 async function guardarCliente() {
   const nombre = document.getElementById('cNombre').value.trim();
-  const usuario = document.getElementById('cUsuario').value.trim();
   const email = document.getElementById('cEmail').value.trim();
   const password = document.getElementById('cPassword').value;
 
-  if (!nombre || !usuario || !email) { toast('Nombre, usuario y email son obligatorios','error'); return; }
-  if (!editingClienteId && !password) { toast('Contraseña es obligatoria para nuevo cliente','error'); return; }
+  if (!nombre || !email) { toast('Nombre y email son obligatorios','error'); return; }
 
   const datos = {
-    nombre, usuario, email,
+    nombre, email,
     telefono: document.getElementById('cTelefono').value.trim(),
     peso_inicial: parseFloat(document.getElementById('cPeso').value)||null,
     altura: parseFloat(document.getElementById('cAltura').value)||null,
@@ -1841,80 +1558,25 @@ async function guardarCliente() {
   btn.textContent = '...'; btn.disabled = true;
 
   if (editingClienteId) {
-    // EDITAR cliente existente
-    const clienteActual = clientes.find(x => x.id === editingClienteId);
     const { error } = await sb.from('clientes').update(datos).eq('id', editingClienteId);
-    if (error) {
-      btn.textContent = 'Guardar cambios →'; btn.disabled = false;
-      toast('Error: '+error.message,'error');
-      return;
-    }
-
-    let mensajeFinal = 'Cliente actualizado ✓';
-    if (password) {
-      const resultado = await actualizarPasswordCliente(clienteActual ? clienteActual.user_id : null, email, password);
-      if (resultado.ok) {
-        mensajeFinal = 'Cliente y contraseña actualizados ✓';
-      } else {
-        mensajeFinal = 'Cliente actualizado, pero la contraseña NO se pudo cambiar: ' + resultado.mensaje;
-      }
-    }
-
     btn.textContent = 'Guardar cambios →'; btn.disabled = false;
-    toast(mensajeFinal, password && mensajeFinal.includes('NO se pudo') ? 'error' : 'success');
+    if (error) { toast('Error: '+error.message,'error'); return; }
+    toast('Cliente actualizado ✓','success');
     closeModal('modalCliente');
+    // Actualizar cache local sin recargar todo
     const idx = clientes.findIndex(c => c.id === editingClienteId);
     if (idx !== -1) clientes[idx] = {...clientes[idx], ...datos};
     renderTablaClientes(clientes);
   } else {
-    // CREAR nuevo cliente
-    try {
-      // 1. Crear usuario en Supabase Auth
-      const { data: authData, error: authError } = await sb.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            nombre: nombre
-          }
-        }
-      });
-
-      if (authError) {
-        btn.textContent = 'Crear cliente →'; btn.disabled = false;
-        toast('Error creando usuario: '+authError.message,'error');
-        return;
-      }
-
-      // 2. Crear registro en tabla clientes
-      const { error: dbError } = await sb.from('clientes').insert([datos]);
-      
-      if (dbError) {
-        btn.textContent = 'Crear cliente →'; btn.disabled = false;
-        toast('Error: '+dbError.message,'error');
-        return;
-      }
-
-      // 3. Intentar login automático
-      const { error: loginError } = await sb.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-      if (loginError && !loginError.message.includes('Email not confirmed')) {
-        console.warn('No se pudo hacer auto-login:', loginError.message);
-      }
-      
-      btn.textContent = 'Crear cliente →'; btn.disabled = false;
-      toast('✅ Cliente creado. Ya puede acceder con su email y contraseña','success');
-      closeModal('modalCliente');
-      cargarClientes();
-      poblarSelectores();
-      cargarDashboard();
-    } catch (err) {
-      btn.textContent = 'Crear cliente →'; btn.disabled = false;
-      toast('Error: '+err.message,'error');
-    }
+    const { error } = await sb.from('clientes').insert([datos]);
+    btn.textContent = 'Crear cliente →'; btn.disabled = false;
+    if (error) { toast('Error: '+error.message,'error'); return; }
+    toast('Cliente creado ✓ — Invítalo desde Supabase Auth','success');
+    closeModal('modalCliente');
+    // Recargar en background sin bloquear UI
+    cargarClientes();
+    poblarSelectores();
+    cargarDashboard();
   }
 }
 
@@ -2132,15 +1794,6 @@ function buildCalorRow(e, ei, semanaId, diaIdx) {
 // Cache local de rutinas en edición
 let rutinaCache = {};
 
-// Mientras una rutina recién creada todavía se está insertando en la BD,
-// se edita con un ID temporal ("temp-<timestamp>"). Este mapa guarda, por
-// cada ID temporal, la Promise que resuelve al ID real (UUID) una vez que
-// el INSERT termina. Así, si el usuario guarda (manual o automáticamente)
-// antes de que termine esa creación, esperamos al ID real en vez de
-// enviarlo a Postgres, que lo rechazaría con "invalid input syntax for
-// type uuid".
-let rutinaIdPendiente = {};
-
 function getRutinaDatos(semanaId) {
   if (!rutinaCache[semanaId]) {
     const el = document.getElementById('week-'+semanaId);
@@ -2201,11 +1854,6 @@ async function crearRutinaMes(clienteId) {
   const tempId = 'temp-' + Date.now();
   rutinaCache[tempId] = { dias: diasIniciales };
 
-  // Cualquiera que intente guardar con este ID temporal (autoguardado o el
-  // botón "Guardar") esperará a esta Promise en vez de fallar.
-  let resolverIdReal, rechazarIdReal;
-  rutinaIdPendiente[tempId] = new Promise((res, rej) => { resolverIdReal = res; rechazarIdReal = rej; });
-
   // Mostrar en UI al instante con ID temporal
   const cont = document.getElementById('clientePerfilContent') || document.getElementById('rutinasContent');
   const existingEmpty = cont?.querySelector('.empty-state');
@@ -2226,59 +1874,17 @@ async function crearRutinaMes(clienteId) {
     datos: { dias: diasIniciales }
   }]).select().single();
 
-  if (error) {
-    toast('Error al guardar: '+error.message,'error');
-    rechazarIdReal(new Error(error.message));
-    delete rutinaIdPendiente[tempId];
-    return;
-  }
+  if (error) { toast('Error al guardar: '+error.message,'error'); return; }
 
   // Reemplazar ID temporal por el real
   rutinaCache[data.id] = rutinaCache[tempId];
   delete rutinaCache[tempId];
 
-  // Sustituir el ID temporal por el real directamente en el DOM (sin
-  // recargar/reconstruir el editor) para no perder nada que el usuario ya
-  // haya escrito mientras se creaba la rutina.
-  reemplazarIdRutinaEnDOM(tempId, data.id);
-
-  resolverIdReal(data.id);
-  delete rutinaIdPendiente[tempId];
-}
-
-// Sustituye, dentro del editor de rutina en pantalla, todas las apariciones
-// del ID temporal por el ID real (UUID) que acaba de asignar la BD: tanto
-// en los atributos "id" de los elementos como en los manejadores inline
-// (onclick/onchange) que lo llevan incrustado. No reconstruye el HTML, así
-// que los valores que el usuario ya haya escrito en los campos no se tocan.
-function reemplazarIdRutinaEnDOM(tempId, realId) {
-  const cont = document.getElementById('rutina-editor-container');
-  if (!cont) return;
-  cont.querySelectorAll(`[id*="${tempId}"]`).forEach(el => {
-    el.id = el.id.split(tempId).join(realId);
-  });
-  cont.querySelectorAll('[onclick],[onchange]').forEach(el => {
-    ['onclick', 'onchange'].forEach(attr => {
-      const val = el.getAttribute(attr);
-      if (val && val.includes(tempId)) el.setAttribute(attr, val.split(tempId).join(realId));
-    });
-  });
+  // Actualizar el ID en el DOM silenciosamente
+  renderRutinaEditor(clienteId);
 }
 
 async function guardarRutina(rutinaId) {
-  // Si todavía es un ID temporal, la rutina puede seguir creándose en la BD.
-  // Esperamos a que se resuelva el ID real en vez de enviar "temp-..." a
-  // Postgres (columna de tipo uuid → error "invalid input syntax for type uuid").
-  if (typeof rutinaId === 'string' && rutinaId.startsWith('temp-')) {
-    const pendiente = rutinaIdPendiente[rutinaId];
-    if (!pendiente) return; // no hay nada pendiente ni real que guardar
-    try {
-      rutinaId = await pendiente;
-    } catch (e) {
-      toast('No se pudo guardar: la rutina no llegó a crearse en la base de datos', 'error');
-      return;
-    }
-  }
   if (!rutinaCache[rutinaId]) return;
   // Recoger datos del DOM
   DIAS.forEach((d, dIdx) => {
@@ -2636,14 +2242,14 @@ async function renderProgresoPanel(clienteId) {
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title">Historial de check-ins</div></div>
-      ${entradas.length ? `<div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
+      ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
         ${entradas.map(e => `<tr>
           <td>${fmtFecha(e.fecha)}</td>
           <td><strong>${e.peso||'—'} kg</strong></td>
           <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
           <td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso('${e.id}','${clienteId}')">Borrar</button></td>
         </tr>`).join('')}
-      </tbody></table></div>` : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros de progreso.</div></div>`}
+      </tbody></table>` : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros de progreso.</div></div>`}
     </div>`;
 }
 
@@ -2732,106 +2338,6 @@ async function guardarMensaje() {
 }
 
 // ══════════════════════════════════════
-//  COACH: PROGRESO HOY
-// ══════════════════════════════════════
-async function cargarProgresoHoy() {
-  const cont = document.getElementById('progresoHoyContent');
-  if (!cont) {
-    console.error('Elemento progresoHoyContent no encontrado');
-    return;
-  }
-  
-  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando progreso...</div>';
-  
-  try {
-    const hoy = new Date().toISOString().split('T')[0];
-    
-    // Obtener todos los clientes
-    const { data: clientes } = await sb.from('clientes').select('*').order('fecha_inicio');
-    if (!clientes || !clientes.length) {
-      cont.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">No hay clientes.</div></div>';
-      return;
-    }
-    
-    let html = `<div style="display:grid; gap:2rem;">`;
-    
-    for (const cliente of clientes) {
-      // Ejercicios completados hoy
-      const { data: ejercicios } = await sb
-        .from('progreso_ejercicios_diarios')
-        .select('*')
-        .eq('cliente_id', cliente.id)
-        .eq('fecha', hoy)
-        .eq('completado', true);
-      
-      // Hábitos completados hoy
-      const { data: habitos } = await sb
-        .from('progreso_habitos_diarios')
-        .select('*')
-        .eq('cliente_id', cliente.id)
-        .eq('fecha', hoy)
-        .eq('completado', true);
-      
-      // Total de ejercicios de hoy
-      const { data: todosEjercicios } = await sb
-        .from('progreso_ejercicios_diarios')
-        .select('id')
-        .eq('cliente_id', cliente.id)
-        .eq('fecha', hoy);
-      
-      const ejerciciosTotal = todosEjercicios?.length || 0;
-      const ejerciciosCompletos = ejercicios?.length || 0;
-      const ejerciciosPct = ejerciciosTotal > 0 ? Math.round((ejerciciosCompletos / ejerciciosTotal) * 100) : 0;
-      
-      const habitosTotal = 6;
-      const habitosCompletos = habitos?.length || 0;
-      const habitosPct = Math.round((habitosCompletos / habitosTotal) * 100);
-      
-      // Renderizar cliente
-      html += `
-        <div style="border:1px solid var(--border); border-radius:0.8rem; padding:1.5rem; background:var(--white);">
-          <div style="font-family:var(--display); font-size:1.2rem; font-weight:900; color:var(--navy); margin-bottom:1rem;">${cliente.nombre}</div>
-          
-          <!-- Ejercicios -->
-          <div style="margin-bottom:1.5rem;">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
-              <span style="font-size:1.2rem;">💪</span>
-              <span style="font-weight:600; color:var(--navy);">Ejercicios: ${ejerciciosCompletos}/${ejerciciosTotal}</span>
-              <span style="font-size:0.8rem; color:var(--gray); margin-left:auto;">${ejerciciosPct}%</span>
-            </div>
-            ${ejercicios && ejercicios.length > 0 ? `
-              <div style="padding-left:1.5rem; font-size:0.9rem;">
-                ${ejercicios.map(ex => `<div style="color:var(--gray); margin-bottom:0.4rem;">✅ ${ex.ejercicio_nombre}</div>`).join('')}
-              </div>
-            ` : '<div style="color:var(--gray); font-size:0.9rem; padding-left:1.5rem;">Sin ejercicios completados</div>'}
-          </div>
-          
-          <!-- Hábitos -->
-          <div>
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">
-              <span style="font-size:1.2rem;">✅</span>
-              <span style="font-weight:600; color:var(--navy);">Hábitos: ${habitosCompletos}/${habitosTotal}</span>
-              <span style="font-size:0.8rem; color:var(--gray); margin-left:auto;">${habitosPct}%</span>
-            </div>
-            ${habitos && habitos.length > 0 ? `
-              <div style="padding-left:1.5rem; font-size:0.9rem;">
-                ${habitos.map(h => `<div style="color:var(--gray); margin-bottom:0.4rem;">✓ ${h.habito_nombre}</div>`).join('')}
-              </div>
-            ` : '<div style="color:var(--gray); font-size:0.9rem; padding-left:1.5rem;">Sin hábitos completados</div>'}
-          </div>
-        </div>
-      `;
-    }
-    
-    html += `</div>`;
-    cont.innerHTML = html;
-  } catch (error) {
-    console.error('Error en cargarProgresoHoy:', error);
-    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-text">Error cargando progreso: ${error.message}</div></div>`;
-  }
-}
-
-// ══════════════════════════════════════
 //  COACH: PAGOS
 // ══════════════════════════════════════
 async function cargarPagos() {
@@ -2839,7 +2345,7 @@ async function cargarPagos() {
   const cont = document.getElementById('pagosContent');
   if (!data || !data.length) { cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💳</div><div class="empty-state-text">No hay clientes aún.</div></div>`; return; }
   const hoy = new Date();
-  cont.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
+  cont.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
     <tbody>${data.map(c => {
       const v = fechaVencimiento(c.fecha_inicio, c.plan);
       const diasRestantes = v ? Math.ceil((v - hoy) / 86400000) : null;
@@ -2856,7 +2362,7 @@ async function cargarPagos() {
         <td>${badgeEstado(c.estado)}</td>
         <td>${situacion}</td>
       </tr>`;
-    }).join('')}</tbody></table></div>`;
+    }).join('')}</tbody></table>`;
 }
 
 // ══════════════════════════════════════
@@ -2866,10 +2372,8 @@ async function poblarSelectores() {
   const { data } = await sb.from('clientes').select('id,nombre').order('nombre');
   ['rutinasClienteSelect','nutriClienteSelect','nutriPlanClienteSelect','progresoClienteSelect'].forEach(id => {
     const sel = document.getElementById(id);
-    if (sel) {
-      sel.innerHTML = '<option value="">Selecciona cliente...</option>' +
-        (data||[]).map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
-    }
+    sel.innerHTML = '<option value="">Selecciona cliente...</option>' +
+      (data||[]).map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
   });
 }
 
@@ -2963,127 +2467,22 @@ async function cargarProgresoCliente() {
   const id = document.getElementById('progresoClienteSelect').value;
   if (!id) return;
   progresoClienteId = id;
-  
+  // Usar mock para tab separado
+  const { data } = await sb.from('progreso').select('*').eq('cliente_id', id).order('fecha', {ascending:false});
+  const entradas = data || [];
   const cont = document.getElementById('progresoContent');
-  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando progreso...</div>';
-  
-  try {
-    // Obtener todas las fechas con progreso
-    const { data: ejerciciosData } = await sb
-      .from('progreso_ejercicios_diarios')
-      .select('fecha')
-      .eq('cliente_id', id)
-      .order('fecha', { ascending: false });
-    
-    const { data: habitosData } = await sb
-      .from('progreso_habitos_diarios')
-      .select('fecha')
-      .eq('cliente_id', id)
-      .order('fecha', { ascending: false });
-    
-    // Obtener notas desde tabla progreso antigua
-    const { data: notasData } = await sb
-      .from('progreso')
-      .select('*')
-      .eq('cliente_id', id)
-      .order('fecha', { ascending: false });
-    
-    // Agrupar fechas únicas
-    const fechasSet = new Set();
-    ejerciciosData?.forEach(e => fechasSet.add(e.fecha));
-    habitosData?.forEach(h => fechasSet.add(h.fecha));
-    
-    const fechas = Array.from(fechasSet).sort().reverse();
-    
-    if (fechas.length === 0) {
-      cont.innerHTML = `
-        <div style="padding:1rem;display:flex;gap:0.8rem">
-          <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
-        </div>
-        <div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>
-      `;
-      return;
-    }
-    
-    let html = `
-      <div style="padding:1rem;display:flex;gap:0.8rem;margin-bottom:1rem">
-        <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
-      </div>
-      <div style="display:grid; gap:2rem;">
-    `;
-    
-    for (const fecha of fechas) {
-      // Ejercicios del día
-      const { data: ejercicios } = await sb
-        .from('progreso_ejercicios_diarios')
-        .select('*')
-        .eq('cliente_id', id)
-        .eq('fecha', fecha)
-        .eq('completado', true);
-      
-      // Hábitos del día
-      const { data: habitos } = await sb
-        .from('progreso_habitos_diarios')
-        .select('*')
-        .eq('cliente_id', id)
-        .eq('fecha', fecha)
-        .eq('completado', true);
-      
-      // Notas del día
-      const notasDia = notasData?.find(n => n.fecha === fecha);
-      
-      html += `
-        <div style="border:1px solid var(--border); border-radius:0.8rem; padding:1.5rem; background:var(--white);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
-            <div style="font-family:var(--display); font-size:1.1rem; font-weight:900; color:var(--navy);">${fmtFecha(new Date(fecha))}</div>
-            <button class="btn btn-sm btn-danger" onclick="eliminarProgresoTab('${notasDia?.id || ''}')">Borrar</button>
-          </div>
-          
-          <!-- Notas -->
-          ${notasDia?.notas ? `
-            <div style="margin-bottom:1.5rem; padding:1rem; background:#f5f5f5; border-radius:0.5rem;">
-              <div style="font-size:0.85rem; font-weight:600; color:var(--navy); margin-bottom:0.5rem;">📝 Notas:</div>
-              <div style="color:var(--gray); font-size:0.9rem;">${notasDia.notas}</div>
-            </div>
-          ` : ''}
-          
-          <!-- Ejercicios -->
-          <div style="margin-bottom:1.5rem;">
-            <div style="font-size:0.9rem; font-weight:600; color:var(--navy); margin-bottom:0.8rem;">💪 Ejercicios completados:</div>
-            ${ejercicios && ejercicios.length > 0 ? `
-              <div style="display:grid; gap:0.5rem;">
-                ${ejercicios.map(ex => `
-                  <div style="padding:0.8rem; background:#f9f9f9; border-left:3px solid var(--blue); border-radius:0.4rem;">
-                    <div style="font-weight:600; color:var(--navy);">✅ ${ex.ejercicio_nombre}</div>
-                  </div>
-                `).join('')}
-              </div>
-            ` : '<div style="color:var(--gray); font-size:0.9rem;">Sin ejercicios completados</div>'}
-          </div>
-          
-          <!-- Hábitos -->
-          <div>
-            <div style="font-size:0.9rem; font-weight:600; color:var(--navy); margin-bottom:0.8rem;">✅ Hábitos completados:</div>
-            ${habitos && habitos.length > 0 ? `
-              <div style="display:grid; gap:0.5rem;">
-                ${habitos.map(h => `
-                  <div style="padding:0.8rem; background:#f9f9f9; border-left:3px solid var(--blue); border-radius:0.4rem;">
-                    <div style="font-weight:600; color:var(--navy);">✓ ${h.habito_nombre}</div>
-                  </div>
-                `).join('')}
-              </div>
-            ` : '<div style="color:var(--gray); font-size:0.9rem;">Sin hábitos completados</div>'}
-          </div>
-        </div>
-      `;
-    }
-    
-    html += `</div>`;
-    cont.innerHTML = html;
-  } catch (error) {
-    console.error('Error:', error);
-    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-text">Error cargando progreso</div></div>`;
-  }
+  cont.innerHTML = `
+    <div style="padding:1rem;display:flex;gap:0.8rem">
+      <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
+    </div>
+    ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
+      ${entradas.map(e => `<tr>
+        <td>${fmtFecha(e.fecha)}</td>
+        <td><strong>${e.peso||'—'} kg</strong></td>
+        <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="eliminarProgresoTab('${e.id}')">Borrar</button></td>
+      </tr>`).join('')}
+    </tbody></table>` : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>'}`;
 }
 
 async function eliminarProgresoTab(id) {
@@ -3097,7 +2496,7 @@ async function eliminarProgresoTab(id) {
 // ══════════════════════════════════════
 async function cargarPortalCliente() {
   // Buscar cliente por email del usuario logueado
-  const { data: clienteData } = await sb.from('clientes').select('*').eq('user_id', currentUser.id).single();
+  const { data: clienteData } = await sb.from('clientes').select('*').eq('email', currentUser.email).single();
 
   if (!clienteData) {
     document.getElementById('clienteNombreTop').textContent = currentUser.email;
@@ -3114,135 +2513,12 @@ async function cargarPortalCliente() {
   await cargarMiProgreso(cliente.id);
   await cargarMiPlan(cliente);
   await cargarMisMensajes(cliente.id);
-  
-  // ← RESTAURAR PROGRESO GUARDADO (Ejercicios + Hábitos de hoy)
-  await cargarProgresoGuardado(cliente.id);
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// CARGAR PROGRESO GUARDADO (Ejercicios + Hábitos) - CON FECHA PERSONALIZADA
-// ══════════════════════════════════════════════════════════════════════════════
-async function cargarProgresoGuardado(clienteId, fechaPersonalizada = null) {
-  if (!currentUser) return;
-  
-  // 1. Buscar el cliente por user_id para obtener su id real
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  if (!cliente) return;
-  
-  const clienteRealId = cliente.id;
-  // ← Usar fecha personalizada o hoy
-  const fecha = fechaPersonalizada || new Date().toISOString().split('T')[0];
-  
-  // 2. Cargar solo ejercicios COMPLETADOS de la fecha especificada
-  const { data: ejerciciosData } = await sb
-    .from('progreso_ejercicios_diarios')
-    .select('*')
-    .eq('cliente_id', clienteRealId)
-    .eq('fecha', fecha)
-    .eq('completado', true);
-  
-  if (ejerciciosData && ejerciciosData.length > 0) {
-    ejerciciosData.forEach(ex => {
-      const rowEl = document.getElementById(ex.ejercicio_id);
-      if (rowEl) {
-        rowEl.classList.add('done');
-        const tick = rowEl.querySelector('.ex-check-tick');
-        if (tick) tick.style.display = 'block';
-        const checkbox = rowEl.querySelector('.ex-checkbox');
-        if (checkbox) {
-          checkbox.style.background = 'var(--blue)';
-          checkbox.style.borderColor = 'var(--blue)';
-        }
-      }
-    });
-    document.querySelectorAll('.rutina-dia').forEach((dia, idx) => {
-      actualizarProgressDia(idx);
-    });
-  }
-  
-  // 3. Cargar pesos desde cargas_ejercicios (tabla separada)
-  const { data: cargasData } = await sb
-    .from('cargas_ejercicios')
-    .select('*')
-    .eq('cliente_id', clienteRealId);
-  
-  if (cargasData && cargasData.length > 0) {
-    cargasData.forEach(carga => {
-      // El nombre del ejercicio está en carga.ejercicio_nombre
-      // Necesito encontrar el input por nombre
-      const inputs = document.querySelectorAll('.peso-input');
-      inputs.forEach(input => {
-        const row = input.closest('.ex-check-row');
-        const nameEl = row?.querySelector('.ex-check-name');
-        if (nameEl && nameEl.textContent === carga.ejercicio_nombre) {
-          input.value = carga.peso;
-        }
-      });
-    });
-  }
-  
-  // 4. Cargar hábitos COMPLETADOS de la fecha especificada
-  const { data: habitosData } = await sb
-    .from('progreso_habitos_diarios')
-    .select('*')
-    .eq('cliente_id', clienteRealId)
-    .eq('fecha', fecha)
-    .eq('completado', true);
-  
-  if (habitosData && habitosData.length > 0) {
-    habitosData.forEach(habito => {
-      const habitoEl = document.querySelector(`.habito-item[data-id="${habito.habito_id}"]`);
-      if (habitoEl) {
-        habitoEl.classList.add('done');
-        const check = habitoEl.querySelector('.habito-check');
-        if (check) check.textContent = '✓';
-      }
-    });
-    actualizarBarraHabitos(clienteRealId);
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-// ACTUALIZAR BARRA DE HÁBITOS
-// ══════════════════════════════════════════════════════════════
-async function actualizarBarraHabitos(clienteId) {
-  if (!currentUser) return;
-  
-  // Buscar cliente por user_id para obtener su id real
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  if (!cliente) return;
-  
-  const hoy = new Date().toISOString().split('T')[0];
-  
-  const { count } = await sb.from('progreso_habitos_diarios').select('id', { count: 'exact' }).eq('cliente_id', cliente.id).eq('fecha', hoy).eq('completado', true);
-  
-  const hechos = count || 0;
-  const total = 6;
-  const pct = Math.round((hechos / total) * 100);
-  
-  const fill = document.getElementById('habitosProgressFill');
-  if (fill) fill.style.width = pct + '%';
-  
-  const txt = document.querySelector('.habitos-progress-text');
-  if (txt) txt.textContent = hechos + '/' + total + ' hábitos';
 }
 
 function showClienteTab(tab) {
   document.querySelectorAll('.cliente-nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.cliente-tab-content').forEach(t => t.classList.remove('active'));
-  
-  // Marcar como active el item que fue clickeado
-  if (event && event.currentTarget) {
-    event.currentTarget.classList.add('active');
-  } else {
-    // Si no hay event, marcar todos los items que coincidan con el tab
-    document.querySelectorAll('.cliente-nav-item').forEach(item => {
-      if (item.textContent.toLowerCase().includes(tab.split('-')[1] || tab)) {
-        item.classList.add('active');
-      }
-    });
-  }
-  
+  event.currentTarget.classList.add('active');
   document.getElementById('cliente-'+tab).classList.add('active');
   // Mostrar/ocultar checkin bar según tab
   const bar = document.getElementById('checkinBar');
@@ -3261,21 +2537,8 @@ async function cargarMiRutina(clienteId) {
     return;
   }
 
-  // ← SELECTOR DE FECHA
-  const hoy = new Date();
-  let fechaSeleccionada = localStorage.getItem('fechaSeleccionada') || hoy.toISOString().split('T')[0];
-  
   const dias = rutina.datos.dias || [];
   cont.innerHTML = `
-    <!-- SELECTOR DE FECHA -->
-    <div style="background:var(--white);border-bottom:1px solid var(--border);padding:1rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch">
-      <label style="font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--gray);flex-shrink:0">Día:</label>
-      <input type="date" id="rutina-fecha-selector" value="${fechaSeleccionada}" 
-        style="border:1px solid var(--border);padding:0.5rem;font-size:0.85rem;border-radius:4px;cursor:pointer"
-        onchange="cambiarFechaRutina(this.value, '${clienteId}')">
-      <button onclick="irAlDiaActual()" style="background:var(--blue);color:#fff;border:none;padding:0.5rem 1rem;border-radius:4px;font-size:0.7rem;cursor:pointer;text-transform:uppercase;flex-shrink:0;white-space:nowrap">Hoy</button>
-    </div>
-
     <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:4px">RUTINA MENSUAL</div>
@@ -3313,43 +2576,7 @@ async function cargarMiRutina(clienteId) {
       </div>`;
     }).join('')}</div>`;
 
-  // ← CARGAR PROGRESO de la fecha seleccionada
-  setTimeout(async () => {
-    await cargarProgresoGuardado(clienteId, fechaSeleccionada);
-    initCheckinBar(clienteId);
-  }, 100);
-}
-
-// ── CAMBIAR FECHA SELECCIONADA ──
-async function cambiarFechaRutina(fecha, clienteId) {
-  localStorage.setItem('fechaSeleccionada', fecha);
-  
-  // Desmarcar todos
-  document.querySelectorAll('.ex-check-row.done').forEach(el => {
-    el.classList.remove('done');
-    const checkbox = el.querySelector('.ex-checkbox');
-    if (checkbox) {
-      checkbox.style.background = '';
-      checkbox.style.borderColor = '';
-    }
-    const tick = el.querySelector('.ex-check-tick');
-    if (tick) tick.style.display = 'none';
-  });
-  
-  // Cargar progreso de la nueva fecha
-  await cargarProgresoGuardado(clienteId, fecha);
-  actualizarCheckinBar();
-}
-
-// ── IR AL DÍA ACTUAL ──
-function irAlDiaActual() {
-  const hoy = new Date().toISOString().split('T')[0];
-  document.getElementById('rutina-fecha-selector').value = hoy;
-  const clienteId = (async () => {
-    const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-    return cliente?.id;
-  })();
-  clienteId.then(id => cambiarFechaRutina(hoy, id));
+  setTimeout(async () => { await cargarBancoGlobal(); initCheckinBar(clienteId); }, 100);
 }
 
 function mostrarMiRutina(idx) {
@@ -3404,28 +2631,29 @@ function buildClienteExRow(e, key, rutinaId, diaIdx) {
   if (!e.nombre) return '';
   const pesoKey = 'peso_' + key;
   const pesoGuardado = window._cargasCliente?.[e.nombre] || '';
-  return `<div class="ex-check-row" id="exrow-${key}" data-dia="${diaIdx}" data-rutina="${rutinaId||''}">
-    <div class="ex-checkbox" onclick="event.stopPropagation();marcarEjercicio(this)">
-      <span class="ex-check-tick" style="display:none;color:#fff;font-size:0.75rem;font-weight:700;pointer-events:none">✓</span>
-    </div>
-    <div style="flex:1;min-width:0">
-      <span class="ex-check-name">${e.nombre}</span>
-      <div style="font-size:0.68rem;color:var(--gray);margin-top:1px">${e.series||''}${e.series&&e.reps?' × ':''}${e.reps||''} ${e.descanso?'· '+e.descanso:''}</div>
-    </div>
-    <div class="peso-input-wrap">
-      <input class="peso-input" 
-        id="${pesoKey}"
-        placeholder="kg" 
-        value="${pesoGuardado}"
-        onclick="event.stopPropagation()"
-        onchange="event.stopPropagation();guardarCargaEjercicio('${e.nombre}', this.value, '${rutinaId||''}', ${diaIdx||0})"
-        title="Peso usado en este ejercicio">
-      <span class="peso-label">kg</span>
-    </div>
-  </div>`;
+  const banco = window._bancoDatosGlobal || [];
+  const bancoEx = banco.find(function(b){ return b.nombre === e.nombre; });
+  const gifUrl = bancoEx?.gif_url || '';
+  const gifBtn = gifUrl
+    ? '<button class="ex-gif-btn" onclick="event.stopPropagation();verGif(this.dataset.n,this.dataset.g)" data-n="' + e.nombre.replace(/"/g,'&quot;') + '" data-g="' + gifUrl + '" title="Ver animación">&#9654;</button>'
+    : '';
+  return '<div class="ex-check-row" id="exrow-' + key + '" data-dia="' + diaIdx + '" data-rutina="' + (rutinaId||'') + '">'
+    + '<div class="ex-checkbox" onclick="event.stopPropagation();marcarEjercicio(this)">'
+    + '<span class="ex-check-tick" style="display:none;color:#fff;font-size:0.75rem;font-weight:700;pointer-events:none">&#10003;</span>'
+    + '</div>'
+    + '<div style="flex:1;min-width:0">'
+    + '<span class="ex-check-name">' + e.nombre + '</span>'
+    + '<div style="font-size:0.68rem;color:var(--gray);margin-top:1px">' + (e.series||'') + (e.series&&e.reps?' &times; ':'') + (e.reps||'') + (e.descanso?' &middot; '+e.descanso:'') + '</div>'
+    + '</div>'
+    + gifBtn
+    + '<div class="peso-input-wrap">'
+    + '<input class="peso-input" id="' + pesoKey + '" placeholder="kg" value="' + pesoGuardado + '" onclick="event.stopPropagation()" onchange="event.stopPropagation();guardarCargaEjercicio(this.dataset.n,this.value,this.dataset.r,parseInt(this.dataset.d))" data-n="' + e.nombre.replace(/"/g,'&quot;') + '" data-r="' + (rutinaId||'') + '" data-d="' + (diaIdx||0) + '" title="Peso usado en este ejercicio">'
+    + '<span class="peso-label">kg</span>'
+    + '</div>'
+    + '</div>';
 }
 
-async function marcarEjercicio(checkboxEl) {
+function marcarEjercicio(checkboxEl) {
   const row = checkboxEl.closest('.ex-check-row');
   const tick = checkboxEl.querySelector('.ex-check-tick');
   const isDone = row.classList.toggle('done');
@@ -3433,39 +2661,18 @@ async function marcarEjercicio(checkboxEl) {
   checkboxEl.style.background = isDone ? 'var(--blue)' : '';
   checkboxEl.style.borderColor = isDone ? 'var(--blue)' : '';
 
+  // Guardar en localStorage
   const exId = row.id;
   const rutinaId = row.dataset.rutina || '';
+  const storageKey = 'checklist_' + rutinaId + '_' + new Date().toISOString().split('T')[0];
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  if (isDone) saved[exId] = true;
+  else delete saved[exId];
+  localStorage.setItem(storageKey, JSON.stringify(saved));
+
+  // Actualizar progreso del día
   const diaIdx = row.dataset.dia;
-  // ← USAR FECHA SELECCIONADA, no siempre hoy
-  const fecha = localStorage.getItem('fechaSeleccionada') || new Date().toISOString().split('T')[0];
-  const ejercicioNombre = row.querySelector('.ex-check-name')?.textContent || '';
-  
-  if (!currentUser) {
-    toast('Error: Usuario no autenticado', 'error');
-    return;
-  }
-  
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  if (!cliente) { toast('Error: Cliente no encontrado', 'error'); return; }
-
-  try {
-    if (isDone) {
-      const { data: existing } = await sb.from('progreso_ejercicios_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', fecha).eq('ejercicio_id', exId).maybeSingle();
-      if (existing) {
-        await sb.from('progreso_ejercicios_diarios').update({ completado: true, updated_at: new Date().toISOString() }).eq('id', existing.id);
-      } else {
-        await sb.from('progreso_ejercicios_diarios').insert([{ cliente_id: cliente.id, rutina_id: rutinaId || null, fecha: fecha, dia_idx: diaIdx || 0, ejercicio_id: exId, ejercicio_nombre: ejercicioNombre, completado: true }]);
-      }
-    } else {
-      await sb.from('progreso_ejercicios_diarios').update({ completado: false, updated_at: new Date().toISOString() }).eq('cliente_id', cliente.id).eq('fecha', fecha).eq('ejercicio_id', exId);
-    }
-  } catch (error) {
-    console.error('Error al guardar ejercicio:', error);
-    toast('Error al guardar: ' + error.message, 'error');
-  }
-
-  const diaIdx_num = parseInt(diaIdx);
-  if (!isNaN(diaIdx_num)) actualizarProgressDia(diaIdx_num);
+  if (diaIdx !== undefined) actualizarProgressDia(diaIdx);
   actualizarCheckinBar();
 }
 
@@ -3512,37 +2719,16 @@ async function cargarMiDieta(clienteId) {
   const { data } = await sb.from('planes_nutricionales').select('*').eq('cliente_id', clienteId).order('semana', {ascending:true});
   const planes = data || [];
 
-  // ── Checklist de hábitos diarios CON SELECTOR DE FECHA ──
-  const hoy = new Date().toISOString().split('T')[0];
-  let fechaSeleccionada = localStorage.getItem('fechaSeleccionadaHabitos') || hoy;
-  
-  const hoyRaw = new Date(fechaSeleccionada).toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
-  const hoyFormato = hoyRaw.replace(/\b[a-záéíóúñ]/g, c => c.toUpperCase());
-  const hoyKey = fechaSeleccionada;
-  
-  // Cargar hábitos de Supabase para la fecha seleccionada
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  const habitosGuardados = {};
-  
-  if (cliente) {
-    const { data: habitosDB } = await sb
-      .from('progreso_habitos_diarios')
-      .select('habito_id')
-      .eq('cliente_id', cliente.id)
-      .eq('fecha', hoyKey)
-      .eq('completado', true);
-    
-    if (habitosDB) {
-      habitosDB.forEach(h => {
-        habitosGuardados[h.habito_id] = true;
-      });
-    }
-  }
+  // ── Checklist de hábitos diarios ──
+  const hoyRaw = new Date().toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+  const hoy = hoyRaw.replace(/\b[a-záéíóúñ]/g, c => c.toUpperCase());
+  const hoyKey = new Date().toISOString().split('T')[0];
+  const habitosGuardados = JSON.parse(localStorage.getItem('habitos_' + hoyKey) || '{}');
 
   const HABITOS = [
     { id:'comidas',    icon:'🍽️', texto:'He completado todas mis comidas' },
     { id:'agua',       icon:'💧', texto:'He bebido 2L de agua' },
-    { id:'pasos',      icon:'🚶', texto:'He dado 10.000 pasos hoy' },
+    { id:'pasos',      icon:'🚶', texto:'He dado 8.000 pasos hoy' },
     { id:'sueno',      icon:'😴', texto:'He dormido +7 horas' },
     { id:'suplementos',icon:'💊', texto:'He tomado mis suplementos' },
     { id:'entreno',    icon:'💪', texto:'He completado mi entrenamiento' },
@@ -3553,23 +2739,14 @@ async function cargarMiDieta(clienteId) {
   const pct = Math.round((hechos / totalHabitos) * 100);
 
   const habitosHtml = `
-    <!-- SELECTOR DE FECHA PARA HÁBITOS -->
-    <div style="background:var(--white);border-bottom:1px solid var(--border);padding:1rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch">
-      <label style="font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--gray);flex-shrink:0">Día:</label>
-      <input type="date" id="habitos-fecha-selector" value="${fechaSeleccionada}" 
-        style="border:1px solid var(--border);padding:0.5rem;font-size:0.85rem;border-radius:4px;cursor:pointer"
-        onchange="cambiarFechaHabitos(this.value, '${clienteId}')">
-      <button onclick="irAlDiaActualHabitos()" style="background:var(--blue);color:#fff;border:none;padding:0.5rem 1rem;border-radius:4px;font-size:0.7rem;cursor:pointer;text-transform:uppercase;flex-shrink:0;white-space:nowrap">Hoy</button>
-    </div>
-
     <div class="habitos-section">
       <div class="habitos-header">
         <div class="habitos-title">✅ Hábitos del día</div>
-        <div class="habitos-fecha">${hoyFormato}</div>
+        <div class="habitos-fecha">${hoy}</div>
       </div>
       <div class="habitos-grid">
         ${HABITOS.map(h => `
-          <div class="habito-item${habitosGuardados[h.id] ? ' done' : ''}" data-id="${h.id}" onclick="toggleHabito('${h.id}', '${hoyKey}', this)">
+          <div class="habito-item${habitosGuardados[h.id] ? ' done' : ''}" onclick="toggleHabito('${h.id}', '${hoyKey}', this)">
             <span class="habito-icon">${h.icon}</span>
             <span class="habito-text">${h.texto}</span>
             <div class="habito-check" style="margin-left:auto">${habitosGuardados[h.id] ? '✓' : ''}</div>
@@ -3603,60 +2780,26 @@ async function cargarMiDieta(clienteId) {
   mostrarMiPlanNutri(planes.length - 1);
 }
 
-// ── CAMBIAR FECHA SELECCIONADA HÁBITOS ──
-async function cambiarFechaHabitos(fecha, clienteId) {
-  localStorage.setItem('fechaSeleccionadaHabitos', fecha);
-  
-  // Desmarcar todos los hábitos
-  document.querySelectorAll('.habito-item.done').forEach(el => {
-    el.classList.remove('done');
-    const check = el.querySelector('.habito-check');
-    if (check) check.textContent = '';
-  });
-  
-  // Cargar hábitos de la nueva fecha
-  await cargarMiDieta(clienteId);
-}
+function toggleHabito(id, fechaKey, el) {
+  const guardados = JSON.parse(localStorage.getItem('habitos_' + fechaKey) || '{}');
+  const ahora = !guardados[id];
+  guardados[id] = ahora;
+  localStorage.setItem('habitos_' + fechaKey, JSON.stringify(guardados));
 
-// ── IR AL DÍA ACTUAL (HÁBITOS) ──
-async function irAlDiaActualHabitos() {
-  const hoy = new Date().toISOString().split('T')[0];
-  document.getElementById('habitos-fecha-selector').value = hoy;
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  if (cliente) {
-    await cambiarFechaHabitos(hoy, cliente.id);
-  }
-}
-
-async function toggleHabito(id, fechaKey, el) {
-  // ← USAR FECHA SELECCIONADA, no siempre hoy
-  const ahora = !el.classList.contains('done');
-  
   el.classList.toggle('done', ahora);
   const check = el.querySelector('.habito-check');
   if (check) check.textContent = ahora ? '✓' : '';
 
-  if (!currentUser) { toast('Error: Usuario no autenticado', 'error'); return; }
-  
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  if (!cliente) { toast('Error: Cliente no encontrado', 'error'); return; }
-
-  try {
-    const { data: existing } = await sb.from('progreso_habitos_diarios').select('id').eq('cliente_id', cliente.id).eq('fecha', fechaKey).eq('habito_id', id).maybeSingle();
-    
-    if (existing) {
-      await sb.from('progreso_habitos_diarios').update({ completado: ahora, updated_at: new Date().toISOString() }).eq('id', existing.id);
-    } else if (ahora) {
-      await sb.from('progreso_habitos_diarios').insert([{ cliente_id: cliente.id, fecha: fechaKey, habito_id: id, habito_nombre: el.textContent || id, completado: true }]);
-    }
-  } catch (error) {
-    console.error('Error al guardar hábito:', error);
-    toast('Error al guardar: ' + error.message, 'error');
-  }
-
-  actualizarBarraHabitos(cliente.id);
+  // Actualizar barra
   const total = 6;
-  const hechos = document.querySelectorAll('.habito-item.done').length;
+  const hechos = Object.values(guardados).filter(Boolean).length;
+  const pct = Math.round((hechos / total) * 100);
+  const fill = document.getElementById('habitosProgressFill');
+  if (fill) fill.style.width = pct + '%';
+  const txt = document.querySelector('.habitos-progress-text');
+  if (txt) txt.textContent = hechos + '/' + total + ' hábitos';
+
+  // Confetti si completa todo
   if (hechos === 6) toast('🎉 ¡Todos los hábitos completados! Brutal.', 'success');
 }
 
@@ -3692,8 +2835,8 @@ async function cargarMiProgreso(clienteId) {
       </div>
     </div>
     ${entradas.length ? `<div class="card"><div class="card-header"><div class="card-title">Historial</div></div>
-      <div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Peso</th><th>Nota del coach</th></tr></thead>
-      <tbody>${entradas.reverse().map(e => `<tr><td>${fmtFecha(e.fecha)}</td><td><strong>${e.peso||'—'} kg</strong></td><td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td></tr>`).join('')}</tbody></table></div></div>`
+      <table><thead><tr><th>Fecha</th><th>Peso</th><th>Nota del coach</th></tr></thead>
+      <tbody>${entradas.reverse().map(e => `<tr><td>${fmtFecha(e.fecha)}</td><td><strong>${e.peso||'—'} kg</strong></td><td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td></tr>`).join('')}</tbody></table></div>`
     : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Tu coach irá registrando tu progreso aquí.</div></div>`}`;
 }
 
@@ -3745,94 +2888,12 @@ async function cargarMisMensajes(clienteId) {
   const cont = document.getElementById('cliente-mensajes');
   const { data } = await sb.from('mensajes').select('*').eq('cliente_id', clienteId).order('created_at', {ascending:false});
   const msgs = data || [];
-  
-  cont.innerHTML = `
-    <!-- FORMULARIO PARA ENVIAR MENSAJES -->
-    <div style="background:var(--white);border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;border-radius:4px">
-      <div style="font-family:var(--display);font-size:0.9rem;font-weight:700;margin-bottom:1rem">✉️ Enviar mensaje al coach</div>
-      <textarea id="clienteMensajeTexto" 
-        placeholder="Cuéntale tu duda, sugerencia o pregunta sobre tu rutina..." 
-        style="width:100%;min-height:100px;border:1px solid var(--border);padding:0.8rem;font-family:var(--body);font-size:0.85rem;border-radius:4px;resize:vertical;margin-bottom:0.8rem"
-      ></textarea>
-      <div style="display:flex;gap:0.8rem">
-        <button onclick="enviarMensajeCliente()" 
-          style="flex:1;background:var(--blue);color:#fff;border:none;padding:0.8rem;border-radius:4px;font-weight:600;cursor:pointer;font-size:0.8rem;text-transform:uppercase">
-          Enviar mensaje
-        </button>
-        <button onclick="limpiarMensajeCliente()" 
-          style="background:var(--border);color:var(--navy);border:none;padding:0.8rem 1.5rem;border-radius:4px;cursor:pointer;font-size:0.8rem;text-transform:uppercase">
-          Limpiar
-        </button>
-      </div>
-    </div>
-
-    <!-- MENSAJES RECIBIDOS -->
-    <div style="font-family:var(--display);font-size:0.85rem;font-weight:700;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">
-      📬 Mensajes de tu coach (${msgs.length})
-    </div>
-    ${msgs.length
-      ? msgs.map(m => `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem;border-radius:2px">
-          <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.5rem">📌 ${fmtFecha(m.created_at)} · De tu coach</div>
-          <div style="font-size:0.88rem;line-height:1.8;color:var(--navy)">${m.texto}</div>
-        </div>`).join('')
-      : `<div class="empty-state" style="padding:2rem"><div class="empty-state-icon">💬</div><div class="empty-state-text">Tu coach aún no ha enviado mensajes. ¡Envíale una pregunta!</div></div>`
-    }
-  `;
-}
-
-// ── ENVIAR MENSAJE DESDE CLIENTE ──
-async function enviarMensajeCliente() {
-  const textarea = document.getElementById('clienteMensajeTexto');
-  const texto = textarea.value.trim();
-  
-  if (!texto) {
-    toast('Escribe un mensaje antes de enviar', 'error');
-    return;
-  }
-  
-  if (!currentUser) {
-    toast('Error: No estás autenticado', 'error');
-    return;
-  }
-  
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-  console.log('👤 [DEBUG CLIENTE] Cliente encontrado:', cliente);
-  if (!cliente) {
-    toast('Error: Cliente no encontrado', 'error');
-    return;
-  }
-  
-  try {
-    console.log('📤 [DEBUG CLIENTE] Enviando mensaje...', {cliente_id: cliente.id, texto});
-    // Guardar mensaje en tabla mensajes_clientes (nueva tabla para mensajes DE clientes)
-    const { data: msgData, error } = await sb.from('mensajes_clientes').insert([{
-      cliente_id: cliente.id,
-      texto: texto,
-      leido: false,
-      created_at: new Date().toISOString()
-    }]).select();
-    
-    console.log('📬 [DEBUG CLIENTE] Respuesta Supabase:', {data: msgData, error});
-    
-    if (error) throw error;
-    
-    // Limpiar textarea
-    textarea.value = '';
-    
-    toast('✅ Mensaje enviado a tu coach', 'success');
-    
-    // Recargar mensajes para mostrar el que acaba de enviarse
-    await cargarMisMensajes(cliente.id);
-    
-  } catch (error) {
-    console.error('❌ [DEBUG CLIENTE] Error al enviar mensaje:', error);
-    toast('Error al enviar: ' + error.message, 'error');
-  }
-}
-
-// ── LIMPIAR TEXTAREA ──
-function limpiarMensajeCliente() {
-  document.getElementById('clienteMensajeTexto').value = '';
+  cont.innerHTML = msgs.length
+    ? msgs.map(m => `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem">
+        <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.5rem">📌 ${fmtFecha(m.created_at)} · De tu coach</div>
+        <div style="font-size:0.88rem;line-height:1.8;color:var(--navy)">${m.texto}</div>
+      </div>`).join('')
+    : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No hay mensajes de tu coach aún.</div></div>`;
 }
 
 // Bloquear scroll lateral en móvil
@@ -4002,12 +3063,18 @@ function renderBancoTab() {
     lista.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-text">No hay ejercicios aún. Añade el primero con el botón de arriba.</div></div>`;
     return;
   }
-  lista.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Ejercicio</th><th>Grupo muscular</th><th>Acciones</th></tr></thead>
-    <tbody>${filtrados.map(e => `<tr>
-      <td><strong>${e.nombre}</strong></td>
-      <td><span class="badge badge-blue">${e.grupo_muscular||'—'}</span></td>
-      <td><button class="btn btn-sm btn-danger" onclick="eliminarDelBanco('${e.id}')">Borrar</button></td>
-    </tr>`).join('')}</tbody></table></div>`;
+  const rows = filtrados.map(function(e) {
+    const gifCell = e.gif_url
+      ? '<img class="gif-thumb" src="' + e.gif_url + '" onclick="verGif(this.dataset.n,this.dataset.g)" data-n="' + (e.nombre||'').replace(/"/g,'&quot;') + '" data-g="' + e.gif_url + '" title="Ver animación">'
+      : '<span style="font-size:0.65rem;color:var(--gray)">—</span>';
+    return '<tr>'
+      + '<td><strong>' + (e.nombre||'') + '</strong></td>'
+      + '<td><span class="badge badge-blue">' + (e.grupo_muscular||'—') + '</span></td>'
+      + '<td>' + gifCell + '</td>'
+      + '<td><button class="btn btn-sm btn-danger" data-id="' + e.id + '" onclick="eliminarDelBanco(this.dataset.id)">Borrar</button></td>'
+      + '</tr>';
+  }).join('');
+  lista.innerHTML = '<table><thead><tr><th>Ejercicio</th><th>Grupo</th><th>GIF</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 function filtrarBanco(grupo) {
@@ -4022,25 +3089,35 @@ function abrirBancoNuevo() {
   document.getElementById('bancoNuevoNombreTab')?.focus();
 }
 
-async function _guardarAlBanco(nombre, grupo, inputEl) {
+async function _guardarAlBanco(nombre, grupo, gifUrl, inputEl) {
   if (!nombre) { toast('Escribe el nombre del ejercicio','error'); return; }
-  const tmpItem = { id: 'tmp-'+Date.now(), nombre, grupo_muscular: grupo };
+  const gif = gifUrl || null;
+  const tmpItem = { id: 'tmp-'+Date.now(), nombre, grupo_muscular: grupo, gif_url: gif };
   bancoDatos.push(tmpItem);
+  if (window._bancoDatosGlobal) window._bancoDatosGlobal.push(tmpItem);
   renderBancoTab();
   if (document.getElementById('bancoModalLista')) renderBancoModal();
   if (inputEl) inputEl.value = '';
-  toast(`"${nombre}" añadido al banco ✓`, 'success');
-  const { data, error } = await sb.from('ejercicios_banco').insert([{ nombre, grupo_muscular: grupo }]).select().single();
+  toast('"' + nombre + '" añadido al banco ✓', 'success');
+  const { data, error } = await sb.from('ejercicios_banco').insert([{ nombre, grupo_muscular: grupo, gif_url: gif }]).select().single();
   if (error) { toast('Error: '+error.message,'error'); return; }
-  const idx = bancoDatos.findIndex(e => e.id === tmpItem.id);
-  if (idx !== -1) bancoDatos[idx] = data;
+  const idx = bancoDatos.findIndex(function(e){ return e.id === tmpItem.id; });
+  if (idx !== -1) {
+    bancoDatos[idx] = data;
+    if (window._bancoDatosGlobal) {
+      const gi = window._bancoDatosGlobal.findIndex(function(e){ return e.id === tmpItem.id; });
+      if (gi !== -1) window._bancoDatosGlobal[gi] = data;
+    }
+  }
 }
 
 async function guardarNuevoAlBancoTab() {
   const input = document.getElementById('bancoNuevoNombreTab');
   const nombre = (input?.value || '').trim();
   const grupo = document.getElementById('bancoNuevoGrupoTab')?.value || 'Pecho';
-  await _guardarAlBanco(nombre, grupo, input);
+  const gif = (document.getElementById('bancoNuevoGifTab')?.value || '').trim() || null;
+  await _guardarAlBanco(nombre, grupo, gif, input);
+  const g = document.getElementById('bancoNuevoGifTab'); if (g) g.value = '';
 }
 
 async function guardarNuevoAlBanco() {
@@ -4048,7 +3125,9 @@ async function guardarNuevoAlBanco() {
   const input = document.getElementById('bancoNuevoNombre');
   const nombre = (input?.value || '').trim();
   const grupo = document.getElementById('bancoNuevoGrupo')?.value || 'Pecho';
-  await _guardarAlBanco(nombre, grupo, input);
+  const gif = (document.getElementById('bancoNuevoGif')?.value || '').trim() || null;
+  await _guardarAlBanco(nombre, grupo, gif, input);
+  const g = document.getElementById('bancoNuevoGif'); if (g) g.value = '';
 }
 
 async function eliminarDelBanco(id) {
@@ -4202,43 +3281,40 @@ async function cargarCargasCliente(clienteId, rutinaId) {
 async function guardarCargaEjercicio(nombre, peso, rutinaId, diaIdx) {
   if (!nombre) return;
   
+  // Guardar en localStorage como backup inmediato
   guardarPesoLocal(nombre, peso, rutinaId);
+
+  // Actualizar cache local
   window._cargasCliente[nombre] = peso;
 
-  if (!currentUser) return;
+  // Buscar el cliente_id del usuario actual
+  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  if (!cliente) return;
 
-  try {
-    const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
-    if (!cliente) return;
-
-    const existingId = window._cargasClienteIds[nombre];
-    
-    if (existingId) {
-      const { error } = await sb.from('cargas_ejercicios').update({ 
-        peso, 
-        updated_at: new Date().toISOString() 
-      }).eq('id', existingId);
-      
+  const existingId = window._cargasClienteIds[nombre];
+  
+  if (existingId) {
+    // Actualizar
+    sb.from('cargas_ejercicios').update({ 
+      peso, 
+      updated_at: new Date().toISOString() 
+    }).eq('id', existingId).then(({ error }) => {
       if (!error) mostrarPesoGuardado(nombre);
-      else console.error('Error actualizar peso:', error);
-    } else {
-      const { data, error } = await sb.from('cargas_ejercicios').insert([{
-        cliente_id: cliente.id,
-        rutina_id: rutinaId || null,
-        dia_idx: diaIdx || 0,
-        ejercicio_nombre: nombre,
-        peso
-      }]).select().single();
-      
+    });
+  } else {
+    // Insertar nuevo
+    sb.from('cargas_ejercicios').insert([{
+      cliente_id: cliente.id,
+      rutina_id: rutinaId,
+      dia_idx: diaIdx,
+      ejercicio_nombre: nombre,
+      peso
+    }]).select().single().then(({ data, error }) => {
       if (!error && data) {
         window._cargasClienteIds[nombre] = data.id;
         mostrarPesoGuardado(nombre);
-      } else {
-        console.error('Error insertar peso:', error);
       }
-    }
-  } catch (error) {
-    console.error('Error guardar carga:', error);
+    });
   }
 }
 
@@ -4261,7 +3337,7 @@ function mostrarPesoGuardado(nombre) {
 const HABITOS_NOMBRES = {
   comidas: '🍽️ Comidas completadas',
   agua: '💧 2L de agua',
-  pasos: '🚶 10.000 pasos',
+  pasos: '🚶 8.000 pasos',
   sueno: '😴 +7h de sueño',
   suplementos: '💊 Suplementos',
   entreno: '💪 Entrenamiento'
@@ -4337,7 +3413,7 @@ async function cargarHabitosResumen() {
       + '</tr>';
   }).join('');
 
-  cont.innerHTML = '<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  cont.innerHTML = '<table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 function seleccionarNutriCliente(id, nombre) {
@@ -4454,7 +3530,7 @@ async function hacerCheckinDia(diaIdx, rutinaId, diaNombre, tituloEjercicio) {
   const sensacion = sensaciones[0]; // Por defecto muy bien
 
   // Guardar en Supabase
-  const { data: cliente } = await sb.from('clientes').select('id').eq('user_id', currentUser.id).single();
+  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
   if (!cliente) { toast('Error al identificar cliente', 'error'); return; }
 
   const hoy = new Date().toISOString().split('T')[0];
@@ -4551,252 +3627,26 @@ function limpiarChecklistsAntiguos() {
 }
 limpiarChecklistsAntiguos();
 
-// ══════════════════════════════════════
-//  COACH: MENSAJES INBOX (Centralizados)
-// ══════════════════════════════════════
-let mensajesInboxData = [];
-let mensajesInboxFiltroCliente = '';
-let mensajesInboxFiltroBusqueda = '';
 
-async function cargarMensajesInbox() {
-  const cont = document.getElementById('mensajesInboxContent');
-  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando mensajes...</div>';
-  
-  console.log('🔍 [DEBUG] Iniciando cargarMensajesInbox...');
-  
-  // Obtener todos los mensajes DE LOS CLIENTES (tabla mensajes_clientes)
-  const { data: mensajes, error: errorMensajes } = await sb.from('mensajes_clientes').select('*').order('created_at', {ascending:false});
-  console.log('📨 [DEBUG] Mensajes obtenidos:', mensajes, 'Error:', errorMensajes);
-  
-  const { data: clientes, error: errorClientes } = await sb.from('clientes').select('id, nombre, email');
-  console.log('👥 [DEBUG] Clientes obtenidos:', clientes?.length, 'Error:', errorClientes);
-  
-  // Mapear cliente_id a cliente para luego filtrar/mostrar
-  const clientesMap = {};
-  if (clientes) clientes.forEach(c => clientesMap[c.id] = c);
-  
-  mensajesInboxData = (mensajes || []).map(m => ({
-    ...m,
-    cliente: clientesMap[m.cliente_id] || { nombre: 'Cliente desconocido', email: '' }
-  }));
-  
-  console.log('📦 [DEBUG] Datos procesados:', mensajesInboxData.length, 'mensajes');
-  
-  // Poblar select de filtro (MOBILE)
-  const selectClientesMobile = document.getElementById('mensajesClienteFiltro');
-  if (selectClientesMobile) {
-    const clientesUnicos = [...new Set(mensajesInboxData.map(m => m.cliente_id))];
-    const options = '<option value="">Todos los clientes</option>' + 
-      clientesUnicos.map(cid => {
-        const cli = clientesMap[cid];
-        return `<option value="${cid}">${cli?.nombre || 'Desconocido'}</option>`;
-      }).join('');
-    selectClientesMobile.innerHTML = options;
-    selectClientesMobile.value = mensajesInboxFiltroCliente;
-  }
-  
-  // Poblar select de filtro (DESKTOP)
-  const selectClientesDesktop = document.getElementById('mensajesClienteFiltroDesktop');
-  if (selectClientesDesktop) {
-    const clientesUnicos = [...new Set(mensajesInboxData.map(m => m.cliente_id))];
-    const options = '<option value="">Todos los clientes</option>' + 
-      clientesUnicos.map(cid => {
-        const cli = clientesMap[cid];
-        return `<option value="${cid}">${cli?.nombre || 'Desconocido'}</option>`;
-      }).join('');
-    selectClientesDesktop.innerHTML = options;
-    selectClientesDesktop.value = mensajesInboxFiltroCliente;
-  }
-  
-  renderMensajesInbox();
+// ── GIF EJERCICIOS ──
+function verGif(nombre, gifUrl, series, reps) {
+  series = series || ''; reps = reps || '';
+  document.getElementById('gifModalTitle').textContent = nombre;
+  document.getElementById('gifModalImg').src = gifUrl;
+  const info = series && reps ? series + ' series × ' + reps + ' reps' : '';
+  document.getElementById('gifModalInfo').textContent = info;
+  document.getElementById('gifModalInfo').style.display = info ? '' : 'none';
+  document.getElementById('gifModal').classList.add('open');
 }
-
-function filtrarMensajesPorCliente() {
-  // Obtener valor de cualquiera de los dos selects (mobile o desktop)
-  const selectMobile = document.getElementById('mensajesClienteFiltro');
-  const selectDesktop = document.getElementById('mensajesClienteFiltroDesktop');
-  
-  mensajesInboxFiltroCliente = selectMobile?.value || selectDesktop?.value || '';
-  
-  // Sincronizar ambos selects
-  if (selectMobile) selectMobile.value = mensajesInboxFiltroCliente;
-  if (selectDesktop) selectDesktop.value = mensajesInboxFiltroCliente;
-  
-  renderMensajesInbox();
+function cerrarGifModal() {
+  document.getElementById('gifModal').classList.remove('open');
+  setTimeout(function(){ document.getElementById('gifModalImg').src = ''; }, 300);
 }
-
-function filtrarMensajesPorTexto() {
-  // Obtener valor de cualquiera de los dos inputs (mobile o desktop)
-  const inputMobile = document.getElementById('searchMensajes');
-  const inputDesktop = document.getElementById('searchMensajesDesktop');
-  
-  mensajesInboxFiltroBusqueda = inputMobile?.value || inputDesktop?.value || '';
-  
-  // Sincronizar ambos inputs
-  if (inputMobile) inputMobile.value = mensajesInboxFiltroBusqueda;
-  if (inputDesktop) inputDesktop.value = mensajesInboxFiltroBusqueda;
-  
-  renderMensajesInbox();
+async function cargarBancoGlobal() {
+  if (window._bancoDatosGlobal && window._bancoDatosGlobal.length) return;
+  const { data } = await sb.from('ejercicios_banco').select('nombre,gif_url');
+  window._bancoDatosGlobal = data || [];
 }
-
-function renderMensajesInbox() {
-  const cont = document.getElementById('mensajesInboxContent');
-  
-  // Filtrar
-  let filtrados = mensajesInboxData;
-  if (mensajesInboxFiltroCliente) {
-    filtrados = filtrados.filter(m => m.cliente_id == mensajesInboxFiltroCliente);
-  }
-  if (mensajesInboxFiltroBusqueda) {
-    const busqueda = mensajesInboxFiltroBusqueda.toLowerCase();
-    filtrados = filtrados.filter(m => 
-      (m.texto && m.texto.toLowerCase().includes(busqueda)) ||
-      (m.cliente && m.cliente.nombre && m.cliente.nombre.toLowerCase().includes(busqueda))
-    );
-  }
-  
-  if (!filtrados.length) {
-    cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">${mensajesInboxData.length === 0 ? 'No hay mensajes aún' : 'No se encontraron mensajes con ese criterio'}</div></div>`;
-    return;
-  }
-  
-  const html = filtrados.map(m => `
-    <div style="background:var(--white);border:1px solid var(--border);border-left:4px solid var(--blue);padding:1.2rem 1.5rem;margin-bottom:1rem;border-radius:2px">
-      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.6rem">
-        <div>
-          <div style="font-family:var(--display);font-size:0.9rem;font-weight:700;color:var(--navy)">${m.cliente?.nombre || 'Cliente desconocido'}</div>
-          <div style="font-size:0.65rem;color:var(--gray);letter-spacing:1px">${m.cliente?.email || ''}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.4rem">📅 ${fmtFecha(m.created_at)}</div>
-          <button class="btn btn-sm btn-primary" onclick="irAlClienteMensaje('${m.cliente_id}')">Ver cliente →</button>
-        </div>
-      </div>
-      <div style="font-size:0.85rem;line-height:1.7;color:var(--navy);margin:0.8rem 0;padding:0.8rem;background:var(--bg);border-radius:2px;border-left:2px solid var(--blue2)">
-        ${m.texto || '(Sin contenido)'}
-      </div>
-      <div style="display:flex;gap:0.5rem">
-        <button class="btn btn-sm btn-secondary" onclick="copiarMensaje('${m.id}')">📋 Copiar</button>
-        <button class="btn btn-sm btn-danger" onclick="eliminarMensajeInbox('${m.id}')">🗑️ Borrar</button>
-      </div>
-    </div>
-  `).join('');
-  
-  cont.innerHTML = html;
-}
-
-function irAlClienteMensaje(clienteId) {
-  // Navegar a la pestaña de clientes y buscar el cliente
-  showTab('clientes');
-  setTimeout(() => {
-    const rows = document.querySelectorAll('#clientesTable tr');
-    rows.forEach(row => {
-      if (row.dataset?.clienteId === clienteId) {
-        row.click();
-      }
-    });
-  }, 300);
-}
-
-function copiarMensaje(mensajeId) {
-  const msg = mensajesInboxData.find(m => m.id === mensajeId);
-  if (msg && msg.texto) {
-    navigator.clipboard.writeText(msg.texto).then(() => {
-      toast('✓ Mensaje copiado', 'success');
-    });
-  }
-}
-
-async function eliminarMensajeInbox(mensajeId) {
-  if (!confirm('¿Eliminar este mensaje?')) return;
-  
-  try {
-    // Borrar en DB (tabla mensajes_clientes)
-    const { error } = await sb.from('mensajes_clientes').delete().eq('id', mensajeId);
-    
-    if (error) {
-      console.error('❌ Error al eliminar:', error);
-      toast('Error al eliminar el mensaje', 'error');
-      return;
-    }
-    
-    // Si se eliminó exitosamente, actualizar la lista
-    mensajesInboxData = mensajesInboxData.filter(m => m.id !== mensajeId);
-    renderMensajesInbox();
-    toast('✓ Mensaje eliminado', 'success');
-    console.log('✓ Mensaje eliminado correctamente');
-    
-  } catch (err) {
-    console.error('❌ Error:', err);
-    toast('Error al eliminar', 'error');
-  }
-}
-
-// ── ABRIR/CERRAR PANEL FILTROS MOBILE ──
-function abrirFiltrosMensajes() {
-  document.getElementById('mensajesFiltrosPanel').classList.add('open');
-  document.getElementById('mensajesFiltrosOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function cerrarFiltrosMensajes() {
-  document.getElementById('mensajesFiltrosPanel').classList.remove('open');
-  document.getElementById('mensajesFiltrosOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Verificar tamaño en tiempo real
-function actualizarVistaFiltros() {
-  const isMobile = window.innerWidth <= 600;
-  const btn = document.querySelector('.mensajes-btn-filtros');
-  const headerDesktop = document.querySelector('.mensajes-header-desktop');
-  
-  if (btn) {
-    btn.style.display = isMobile ? 'block' : 'none';
-  }
-  if (headerDesktop) {
-    headerDesktop.style.display = isMobile ? 'none' : 'flex';
-  }
-}
-
-// Ejecutar al cargar
-window.addEventListener('load', actualizarVistaFiltros);
-// Ejecutar al redimensionar
-window.addEventListener('resize', actualizarVistaFiltros);
-
-// ══════════════════════════════════════
-//  CLIENTE: PANEL LATERAL MOBILE
-// ══════════════════════════════════════
-function abrirNavClienteMobile() {
-  console.log('📱 [CLIENTE] Abriendo menú...');
-  document.getElementById('clienteNavPanel').classList.add('open');
-  document.getElementById('clienteNavOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function cerrarNavClienteMobile() {
-  console.log('📱 [CLIENTE] Cerrando menú...');
-  document.getElementById('clienteNavPanel').classList.remove('open');
-  document.getElementById('clienteNavOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Sincronizar items activos en navegación del cliente
-const origShowClienteTab = typeof showClienteTab === 'function' ? showClienteTab : null;
-window.showClienteTab = function(tab) {
-  if (origShowClienteTab) origShowClienteTab(tab);
-  
-  // Actualizar items activos en navegación
-  document.querySelectorAll('.cliente-nav-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  
-  document.querySelectorAll('.cliente-nav-item').forEach(item => {
-    if (item.textContent.toLowerCase().includes(tab.split('-')[1] || tab)) {
-      item.classList.add('active');
-    }
-  });
-};
 
 </script>
 </body>
