@@ -1960,6 +1960,19 @@ async function crearRutinaMes(clienteId) {
 
 async function guardarRutina(rutinaId) {
   if (!rutinaCache[rutinaId]) return;
+  // Si aún tiene ID temporal, esperar hasta 3s a que llegue el ID real de Supabase
+  if (String(rutinaId).startsWith('temp-')) {
+    toast('Guardando... espera un momento','');
+    let intentos = 0;
+    while (String(rutinaId).startsWith('temp-') && intentos < 30) {
+      await new Promise(function(r){ setTimeout(r, 100); });
+      // Buscar si el tempId fue reemplazado en rutinaCache
+      const realId = Object.keys(rutinaCache).find(function(k){ return !k.startsWith('temp-'); });
+      if (realId) { rutinaId = realId; break; }
+      intentos++;
+    }
+    if (String(rutinaId).startsWith('temp-')) { toast('Aún guardando en base de datos, inténtalo en un momento','error'); return; }
+  }
   // Recoger datos del DOM
   DIAS.forEach((d, dIdx) => {
     ['ejercicios','calor'].forEach(tipo => {
