@@ -1057,14 +1057,14 @@
 <div class="modal-overlay" id="modalProgreso">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">Registrar progreso</div>
+      <div class="modal-title" id="modalProgresoTitle">Registrar progreso</div>
       <button class="btn-icon" onclick="closeModal('modalProgreso')">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-field"><label>Mes</label><select id="pMes"></select></div>
+        <div class="form-field" id="pMesWrap"><label>Mes</label><select id="pMes"></select></div>
         <div class="form-field"><label>Peso (kg)</label><input id="pPeso" type="number" step="0.1" placeholder="75.5"></div>
-        <div class="form-field form-full"><label>Notas del coach</label><textarea id="pNotas" placeholder="Evolución observada, cambios, comentarios..."></textarea></div>
+        <div class="form-field form-full" id="pNotasWrap"><label>Nota del coach</label><textarea id="pNotas" placeholder="Evolución observada, cambios, comentarios..."></textarea></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1238,6 +1238,7 @@ let currentClienteId = null;
 let clientes = [];
 let editingClienteId = null;
 let progresoClienteId = null;
+let progresoModoCliente = false;
 let mensajeClienteId = null;
 
 // ══════════════════════════════════════
@@ -2310,34 +2311,71 @@ async function eliminarNutri(id) {
 // ══════════════════════════════════════
 async function renderProgresoPanel(clienteId) {
   const cont = document.getElementById('clientePerfilContent');
-  cont.innerHTML = `<div class="loading"><div class="spinner"></div>Cargando...</div>`;
-  const { data } = await sb.from('progreso').select('*').eq('cliente_id', clienteId).order('fecha', {ascending:false});
+  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+  const { data } = await sb.from('progreso').select('*').eq('cliente_id', clienteId).order('fecha', {ascending:true});
   const entradas = data || [];
 
-  let primer = entradas.length ? entradas[entradas.length-1] : null;
-  let ultimo = entradas.length ? entradas[0] : null;
-  let delta = (primer && ultimo && primer.id !== ultimo.id && ultimo.peso && primer.peso) ? (ultimo.peso - primer.peso).toFixed(1) : null;
+  const primer = entradas[0];
+  const ultimo = entradas[entradas.length-1];
+  const delta = (primer && ultimo && primer.id !== ultimo.id && primer.peso && ultimo.peso)
+    ? (ultimo.peso - primer.peso).toFixed(1) : null;
+  const deltaPos = delta !== null && parseFloat(delta) > 0;
+  const deltaColor = delta !== null ? (parseFloat(delta) <= 0 ? '#22c55e' : '#ef4444') : '';
 
-  cont.innerHTML = `
-    <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem">
-      <button class="btn btn-primary" onclick="abrirProgreso('${clienteId}')">+ Registrar check-in</button>
-    </div>
-    <div class="progreso-grid">
-      <div class="progreso-card"><div class="progreso-val">${entradas.length}</div><div class="progreso-label">Check-ins totales</div></div>
-      <div class="progreso-card"><div class="progreso-val">${ultimo?.peso||'—'} <span style="font-size:1rem">kg</span></div><div class="progreso-label">Último peso</div>${delta !== null ? `<div class="progreso-delta ${delta>0?'delta-up':'delta-down'}">${delta>0?'+':''}${delta} kg total</div>` : ''}</div>
-      <div class="progreso-card"><div class="progreso-val">${primer?.peso||'—'} <span style="font-size:1rem">kg</span></div><div class="progreso-label">Peso inicial registrado</div></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><div class="card-title">Historial de check-ins</div></div>
-      ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
-        ${entradas.map(e => `<tr>
-          <td>${fmtFecha(e.fecha)}</td>
-          <td><strong>${e.peso||'—'} kg</strong></td>
-          <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
-          <td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso('${e.id}','${clienteId}')">Borrar</button></td>
-        </tr>`).join('')}
-      </tbody></table>` : `<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros de progreso.</div></div>`}
-    </div>`;
+  // Gráfica SVG profesional
+  let graficaHtml = '';
+  if (entradas.length > 1) {
+    const pesos = entradas.map(function(e){ return parseFloat(e.peso)||0; });
+    const etqs  = entradas.map(function(e){ return (e.etiqueta||'').replace(/\s\d{4}/,''); });
+    const minP = Math.min.apply(null, pesos);
+    const maxP = Math.max.apply(null, pesos);
+    const rango = maxP - minP || 1;
+    const W = 400, H = 120, padX = 28, padTop = 14, padBot = 28;
+    const cx = function(i){ return padX + (i / (pesos.length-1)) * (W - padX*2); };
+    const cy = function(p){ return padTop + (1 - (p - minP) / rango) * (H - padTop - padBot); };
+    const areaPath = 'M' + pesos.map(function(p,i){ return cx(i)+','+cy(p); }).join(' L ')
+      + ' L'+cx(pesos.length-1)+','+(H-padBot)+' L'+cx(0)+','+(H-padBot)+' Z';
+    const linePath = 'M' + pesos.map(function(p,i){ return cx(i)+','+cy(p); }).join(' L ');
+    const circles = pesos.map(function(p,i){
+      return '<circle cx="'+cx(i)+'" cy="'+cy(p)+'" r="5" fill="var(--blue)" stroke="#fff" stroke-width="2"><title>'+etqs[i]+': '+p+' kg</title></circle>';
+    }).join('');
+    const xLabels = [0, Math.floor((pesos.length-1)/2), pesos.length-1]
+      .filter(function(v,i,a){ return a.indexOf(v)===i; })
+      .map(function(i){ return '<text x="'+cx(i)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--gray)">'+etqs[i]+'</text>'; }).join('');
+    const refLines = [minP, maxP].map(function(p){
+      return '<line x1="'+padX+'" y1="'+cy(p)+'" x2="'+(W-padX)+'" y2="'+cy(p)+'" stroke="var(--border)" stroke-dasharray="3,3" stroke-width="1"/>'
+        + '<text x="'+(padX-4)+'" y="'+(cy(p)+3)+'" text-anchor="end" font-size="8" fill="var(--gray)">'+p+'</text>';
+    }).join('');
+    graficaHtml = '<div style="background:var(--white);border:1px solid var(--border);padding:1.2rem 1.2rem 0.6rem;margin-bottom:1.5rem">'
+      + '<div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem">Evolución del peso</div>'
+      + '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block;overflow:visible">'
+      + '<defs><linearGradient id="pgradient2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--blue)" stop-opacity="0.15"/><stop offset="100%" stop-color="var(--blue)" stop-opacity="0"/></linearGradient></defs>'
+      + '<path d="'+areaPath+'" fill="url(#pgradient2)"/>'
+      + refLines
+      + '<path d="'+linePath+'" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+      + circles + xLabels + '</svg></div>';
+  }
+
+  const statsHtml = '<div class="progreso-grid" style="margin-bottom:1.2rem">'
+    + '<div class="progreso-card"><div class="progreso-val">'+(primer?.peso||'—')+'<span style="font-size:1rem"> kg</span></div><div class="progreso-label">Peso inicial</div></div>'
+    + '<div class="progreso-card"><div class="progreso-val">'+(ultimo?.peso||'—')+'<span style="font-size:1rem"> kg</span></div><div class="progreso-label">Peso actual</div></div>'
+    + '<div class="progreso-card"><div class="progreso-val" style="color:'+(delta!==null?deltaColor:'inherit')+'">'+(delta!==null?(deltaPos?'+':'')+delta:'—')+'<span style="font-size:1rem"> kg</span></div><div class="progreso-label">Cambio total</div></div>'
+    + '</div>';
+
+  const histHtml = '<div class="card"><div class="card-header"><div class="card-title">Historial mensual</div></div>'
+    + (entradas.length
+      ? '<table><thead><tr><th>Mes</th><th>Peso</th><th>Nota</th><th></th></tr></thead><tbody>'
+        + entradas.slice().reverse().map(function(e){
+            return '<tr><td>'+(e.etiqueta||fmtFecha(e.fecha))+'</td><td><strong>'+(e.peso||'—')+' kg</strong></td>'
+              + '<td style="color:var(--gray);font-size:0.78rem">'+(e.notas||'—')+'</td>'
+              + '<td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso(\''+e.id+'\',\''+clienteId+'\')">×</button></td></tr>';
+          }).join('')
+        + '</tbody></table>'
+      : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros.</div></div>')
+    + '</div>';
+
+  cont.innerHTML = '<div style="margin-bottom:1.2rem"><button class="btn btn-primary" onclick="abrirProgreso(\''+clienteId+'\')">+ Añadir peso</button></div>'
+    + statsHtml + graficaHtml + histHtml;
 }
 
 async function eliminarProgreso(id, clienteId) {
@@ -2381,11 +2419,9 @@ async function eliminarMensaje(id, clienteId) {
 // ══════════════════════════════════════
 //  MODAL PROGRESO & MENSAJES
 // ══════════════════════════════════════
-function abrirProgreso(clienteId) {
-  progresoClienteId = clienteId;
-  // Generar opciones de mes desde fecha_inicio del cliente
-  const c = clientes.find(function(x){ return x.id === clienteId; });
-  const inicio = c && c.fecha_inicio ? new Date(c.fecha_inicio) : new Date();
+function _rellenarMesesProgreso(clienteId) {
+  const c = clientes ? clientes.find(function(x){ return x.id === clienteId; }) : null;
+  const inicio = c && c.fecha_inicio ? new Date(c.fecha_inicio) : new Date(new Date().getFullYear(), 0, 1);
   const hoy = new Date();
   const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const sel = document.getElementById('pMes');
@@ -2400,8 +2436,39 @@ function abrirProgreso(clienteId) {
     sel.appendChild(opt);
     d.setMonth(d.getMonth()+1);
   }
-  // Seleccionar mes actual por defecto
   sel.value = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01';
+}
+
+// Abre modal desde panel COACH
+function abrirProgreso(clienteId) {
+  progresoClienteId = clienteId;
+  progresoModoCliente = false;
+  document.getElementById('modalProgresoTitle').textContent = 'Registrar progreso';
+  document.getElementById('pMesWrap').style.display = '';
+  document.getElementById('pNotasWrap').style.display = '';
+  _rellenarMesesProgreso(clienteId);
+  document.getElementById('pPeso').value = '';
+  document.getElementById('pNotas').value = '';
+  openModal('modalProgreso');
+}
+
+// Abre modal desde portal CLIENTE (solo peso, mes actual fijo)
+function abrirProgresoCliente(clienteId) {
+  progresoClienteId = clienteId;
+  progresoModoCliente = true;
+  document.getElementById('modalProgresoTitle').textContent = 'Registrar mi peso';
+  document.getElementById('pMesWrap').style.display = 'none';
+  document.getElementById('pNotasWrap').style.display = 'none';
+  // Poner mes actual fijo
+  const hoy = new Date();
+  const sel = document.getElementById('pMes');
+  sel.innerHTML = '';
+  const val = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-01';
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const opt = document.createElement('option');
+  opt.value = val;
+  opt.textContent = meses[hoy.getMonth()] + ' ' + hoy.getFullYear();
+  sel.appendChild(opt);
   document.getElementById('pPeso').value = '';
   document.getElementById('pNotas').value = '';
   openModal('modalProgreso');
@@ -2411,20 +2478,28 @@ async function guardarProgreso() {
   const btnP = document.querySelector('#modalProgreso .btn-primary');
   if (btnP) { btnP.textContent = '...'; btnP.disabled = true; }
   const selMes = document.getElementById('pMes');
-  const mesVal = selMes.value; // formato YYYY-MM-01
+  const mesVal = selMes.value;
   const mesLabel = selMes.options[selMes.selectedIndex]?.textContent || '';
+  const pesoVal = parseFloat(document.getElementById('pPeso').value);
+  if (!pesoVal) { toast('Introduce un peso válido','error'); if(btnP){btnP.textContent='Guardar →';btnP.disabled=false;} return; }
+  // Borrar entrada existente del mismo mes si hay
+  await sb.from('progreso').delete().eq('cliente_id', progresoClienteId).eq('fecha', mesVal);
   const { error } = await sb.from('progreso').insert([{
     cliente_id: progresoClienteId,
     fecha: mesVal,
     etiqueta: mesLabel,
-    peso: parseFloat(document.getElementById('pPeso').value)||null,
-    notas: document.getElementById('pNotas').value.trim()
+    peso: pesoVal,
+    notas: progresoModoCliente ? '' : document.getElementById('pNotas').value.trim()
   }]);
   if (btnP) { btnP.textContent = 'Guardar →'; btnP.disabled = false; }
   if (error) { toast('Error: '+error.message,'error'); return; }
-  toast('✓ Guardado','success');
+  toast('✓ Peso guardado','success');
   closeModal('modalProgreso');
-  renderProgresoPanel(progresoClienteId);
+  if (progresoModoCliente) {
+    cargarMiProgreso(progresoClienteId);
+  } else {
+    renderProgresoPanel(progresoClienteId);
+  }
 }
 
 function abrirMensaje(clienteId) {
@@ -2614,6 +2689,7 @@ async function cargarPortalCliente() {
   }
 
   const cliente = clienteData;
+  window._clienteIdActual = cliente.id;
   document.getElementById('clienteNombreTop').textContent = cliente.nombre.split(' ')[0];
 
   // Cargar rutina
@@ -2632,6 +2708,10 @@ function showClienteTab(tab) {
   // Mostrar/ocultar checkin bar según tab
   const bar = document.getElementById('checkinBar');
   if (bar) bar.style.display = tab === 'mi-rutina' ? '' : 'none';
+  // Recargar progreso al abrir el tab
+  if (tab === 'mi-progreso' && window._clienteIdActual) {
+    cargarMiProgreso(window._clienteIdActual);
+  }
 }
 
 async function cargarMiRutina(clienteId) {
@@ -2937,54 +3017,90 @@ async function cargarMiProgreso(clienteId) {
   const ultimo = entradas[entradas.length-1];
   const delta = (primer && ultimo && primer.id !== ultimo.id && primer.peso && ultimo.peso)
     ? (ultimo.peso - primer.peso).toFixed(1) : null;
+  const deltaPos = delta !== null && parseFloat(delta) > 0;
   const deltaColor = delta !== null ? (parseFloat(delta) <= 0 ? '#22c55e' : '#ef4444') : '';
 
-  // Mini gráfica de barras SVG
+  // ── Gráfica SVG profesional ──────────────────────────────────
   let graficaHtml = '';
   if (entradas.length > 1) {
-    const pesos = entradas.map(function(e){ return e.peso||0; });
+    const pesos = entradas.map(function(e){ return parseFloat(e.peso)||0; });
+    const etqs  = entradas.map(function(e){ return (e.etiqueta||'').replace(/\s\d{4}/,''); }); // "Oct"
     const minP = Math.min.apply(null, pesos);
     const maxP = Math.max.apply(null, pesos);
     const rango = maxP - minP || 1;
-    const W = 300, H = 80, pad = 20;
-    const pts = pesos.map(function(p, i){
-      const x = pad + (i / (pesos.length-1)) * (W - pad*2);
-      const y = H - pad - ((p - minP) / rango) * (H - pad*2);
-      return x + ',' + y;
-    }).join(' ');
-    graficaHtml = '<div style="background:var(--white);border:1px solid var(--border);padding:1.2rem;margin-bottom:1.5rem">'
-      + '<div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem">Evolución del peso</div>'
-      + '<svg viewBox="0 0 300 80" style="width:100%;display:block">'
-      + '<polyline points="' + pts + '" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linejoin="round"/>'
-      + pesos.map(function(p, i){
-          const x = pad + (i / (pesos.length-1)) * (W - pad*2);
-          const y = H - pad - ((p - minP) / rango) * (H - pad*2);
-          return '<circle cx="' + x + '" cy="' + y + '" r="4" fill="var(--blue)"/>';
-        }).join('')
+    const W = 400, H = 120, padX = 28, padTop = 14, padBot = 28;
+    const cx = function(i){ return padX + (i / (pesos.length-1)) * (W - padX*2); };
+    const cy = function(p){ return padTop + (1 - (p - minP) / rango) * (H - padTop - padBot); };
+
+    // Zona rellena bajo la línea
+    const areaPath = 'M' + pesos.map(function(p,i){ return cx(i)+','+cy(p); }).join(' L ')
+      + ' L'+cx(pesos.length-1)+','+(H-padBot)+' L'+cx(0)+','+(H-padBot)+' Z';
+
+    // Línea
+    const linePath = 'M' + pesos.map(function(p,i){ return cx(i)+','+cy(p); }).join(' L ');
+
+    // Puntos + tooltips nativos
+    const circles = pesos.map(function(p,i){
+      return '<circle cx="'+cx(i)+'" cy="'+cy(p)+'" r="5" fill="var(--blue)" stroke="#fff" stroke-width="2">'
+        + '<title>'+etqs[i]+': '+p+' kg</title></circle>';
+    }).join('');
+
+    // Etiquetas eje X (solo primero, mitad y último)
+    const xLabels = [0, Math.floor((pesos.length-1)/2), pesos.length-1]
+      .filter(function(v,i,a){ return a.indexOf(v)===i; })
+      .map(function(i){
+        return '<text x="'+cx(i)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--gray)">'+etqs[i]+'</text>';
+      }).join('');
+
+    // Líneas de referencia
+    const refLines = [minP, maxP].map(function(p){
+      return '<line x1="'+padX+'" y1="'+cy(p)+'" x2="'+(W-padX)+'" y2="'+cy(p)+'" stroke="var(--border)" stroke-dasharray="3,3" stroke-width="1"/>'
+        + '<text x="'+(padX-4)+'" y="'+(cy(p)+3)+'" text-anchor="end" font-size="8" fill="var(--gray)">'+p+'</text>';
+    }).join('');
+
+    graficaHtml = '<div style="background:var(--white);border:1px solid var(--border);padding:1.2rem 1.2rem 0.6rem;margin-bottom:1.5rem">'
+      + '<div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem">Evolución del peso</div>'
+      + '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block;overflow:visible">'
+      + '<defs><linearGradient id="pgradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--blue)" stop-opacity="0.15"/><stop offset="100%" stop-color="var(--blue)" stop-opacity="0"/></linearGradient></defs>'
+      + '<path d="'+areaPath+'" fill="url(#pgradient)"/>'
+      + refLines
+      + '<path d="'+linePath+'" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+      + circles
+      + xLabels
       + '</svg></div>';
   }
 
-  cont.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr' + (delta !== null ? ' 1fr' : '') + ';gap:1rem;margin-bottom:1.5rem">'
-    + '<div style="background:var(--white);border:1px solid var(--border);padding:1.2rem;text-align:center">'
-    + '<div style="font-family:var(--display);font-size:2rem;font-weight:900">' + (primer?.peso||'—') + ' <span style="font-size:1rem">kg</span></div>'
-    + '<div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Peso inicial</div></div>'
-    + '<div style="background:var(--white);border:1px solid var(--border);padding:1.2rem;text-align:center">'
-    + '<div style="font-family:var(--display);font-size:2rem;font-weight:900">' + (ultimo?.peso||'—') + ' <span style="font-size:1rem">kg</span></div>'
-    + '<div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Peso actual</div></div>'
-    + (delta !== null ? '<div style="background:var(--white);border:1px solid var(--border);padding:1.2rem;text-align:center">'
-    + '<div style="font-family:var(--display);font-size:2rem;font-weight:900;color:' + deltaColor + '">' + (parseFloat(delta)>0?'+':'') + delta + ' <span style="font-size:1rem">kg</span></div>'
-    + '<div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Cambio total</div></div>' : '')
-    + '</div>'
-    + graficaHtml
-    + (entradas.length
-      ? '<div class="card"><div class="card-header"><div class="card-title">Historial mes a mes</div></div>'
-        + '<table><thead><tr><th>Mes</th><th>Peso</th><th>Nota del coach</th></tr></thead><tbody>'
-        + entradas.slice().reverse().map(function(e){
-            const etiq = e.etiqueta || fmtFecha(e.fecha);
-            return '<tr><td><strong>' + etiq + '</strong></td><td><strong>' + (e.peso||'—') + ' kg</strong></td><td style="color:var(--gray);font-size:0.78rem">' + (e.notas||'—') + '</td></tr>';
-          }).join('')
-        + '</tbody></table></div>'
-      : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Tu coach irá registrando tu progreso aquí.</div></div>');
+  // ── Stats ────────────────────────────────────────────────────
+  const statsHtml = '<div style="display:grid;grid-template-columns:1fr 1fr'+(delta!==null?' 1fr':'')+';gap:0.8rem;margin-bottom:1.2rem">'
+    + '<div style="background:var(--white);border:1px solid var(--border);padding:1.1rem;text-align:center">'
+    + '<div style="font-family:var(--display);font-size:1.8rem;font-weight:900;letter-spacing:-1px">'+(primer?.peso||'—')+' <span style="font-size:0.9rem;font-weight:400">kg</span></div>'
+    + '<div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px">Peso inicial</div></div>'
+    + '<div style="background:var(--white);border:1px solid var(--border);padding:1.1rem;text-align:center">'
+    + '<div style="font-family:var(--display);font-size:1.8rem;font-weight:900;letter-spacing:-1px">'+(ultimo?.peso||'—')+' <span style="font-size:0.9rem;font-weight:400">kg</span></div>'
+    + '<div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px">Peso actual</div></div>'
+    + (delta!==null ? '<div style="background:var(--white);border:1px solid var(--border);padding:1.1rem;text-align:center">'
+    + '<div style="font-family:var(--display);font-size:1.8rem;font-weight:900;letter-spacing:-1px;color:'+deltaColor+'">'+(deltaPos?'+':'')+delta+' <span style="font-size:0.9rem;font-weight:400">kg</span></div>'
+    + '<div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px">Cambio total</div></div>' : '')
+    + '</div>';
+
+  // ── Historial ─────────────────────────────────────────────────
+  const historialHtml = entradas.length
+    ? '<div class="card"><div class="card-header"><div class="card-title">Historial mensual</div></div>'
+      + '<table><thead><tr><th>Mes</th><th>Peso</th><th>Nota del coach</th></tr></thead><tbody>'
+      + entradas.slice().reverse().map(function(e){
+          const etiq = e.etiqueta || fmtFecha(e.fecha);
+          const notaHtml = e.notas ? '<span style="color:var(--gray);font-size:0.78rem">'+e.notas+'</span>' : '<span style="color:var(--border)">—</span>';
+          return '<tr><td>'+etiq+'</td><td><strong>'+(e.peso||'—')+' kg</strong></td><td>'+notaHtml+'</td></tr>';
+        }).join('')
+      + '</tbody></table></div>'
+    : '';
+
+  // ── Botón registrar ───────────────────────────────────────────
+  const btnHtml = '<div style="margin-bottom:1.2rem;display:flex;justify-content:flex-end">'
+    + '<button class="btn btn-primary" onclick="abrirProgresoCliente(\''+clienteId+'\')">+ Registrar mi peso</button></div>';
+
+  cont.innerHTML = btnHtml + statsHtml + graficaHtml + historialHtml
+    + (!entradas.length ? '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">Registra tu primer peso con el botón de arriba.<br>Podrás ver tu evolución mes a mes.</div></div>' : '');
 }
 
 async function cargarMiPlan(cliente) {
