@@ -2851,19 +2851,44 @@ function marcarEjercicio(checkboxEl) {
   checkboxEl.style.background = isDone ? 'var(--blue)' : '';
   checkboxEl.style.borderColor = isDone ? 'var(--blue)' : '';
 
-  // Guardar en localStorage
   const exId = row.id;
   const rutinaId = row.dataset.rutina || '';
+  const nombre = row.querySelector('.ex-check-name')?.textContent || exId;
+  const diaIdx = row.dataset.dia;
+
+  // Guardar en localStorage (backup inmediato)
   const storageKey = 'checklist_' + rutinaId + '_' + new Date().toISOString().split('T')[0];
   const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
   if (isDone) saved[exId] = true;
   else delete saved[exId];
   localStorage.setItem(storageKey, JSON.stringify(saved));
 
-  // Actualizar progreso del día
-  const diaIdx = row.dataset.dia;
+  // Guardar en Supabase
+  guardarCompletadoSupabase(nombre, isDone, rutinaId, diaIdx !== undefined ? parseInt(diaIdx) : 0);
+
   if (diaIdx !== undefined) actualizarProgressDia(diaIdx);
   actualizarCheckinBar();
+}
+
+async function guardarCompletadoSupabase(nombre, completado, rutinaId, diaIdx) {
+  if (!currentUser) return;
+  const { data: cliente } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  if (!cliente) return;
+  const existingId = window._cargasClienteIds[nombre];
+  if (existingId) {
+    sb.from('cargas_ejercicios').update({ completado }).eq('id', existingId);
+  } else {
+    sb.from('cargas_ejercicios').insert([{
+      cliente_id: cliente.id,
+      rutina_id: rutinaId,
+      dia_idx: diaIdx,
+      ejercicio_nombre: nombre,
+      peso: window._cargasCliente[nombre] || null,
+      completado
+    }]).select().single().then(({ data, error }) => {
+      if (!error && data) window._cargasClienteIds[nombre] = data.id;
+    });
+  }
 }
 
 function actualizarProgressDia(diaIdx) {
@@ -3531,7 +3556,7 @@ async function cargarCargasCliente(clienteId, rutinaId) {
     window._cargasClienteIds[c.ejercicio_nombre] = c.id;
   });
 
-  // Actualizar inputs ya renderizados
+  // Restaurar pesos e inputs
   Object.entries(window._cargasCliente).forEach(([nombre, peso]) => {
     document.querySelectorAll('.peso-input').forEach(input => {
       const row = input.closest('.ex-check-row');
@@ -3542,7 +3567,25 @@ async function cargarCargasCliente(clienteId, rutinaId) {
     });
   });
 
-  // Restaurar también los pesos guardados localmente (por si Supabase falla)
+  // Restaurar ejercicios completados desde Supabase
+  (data || []).forEach(c => {
+    if (!c.completado) return;
+    // Buscar la fila por nombre del ejercicio
+    document.querySelectorAll('.ex-check-row').forEach(row => {
+      const nameEl = row.querySelector('.ex-check-name');
+      if (nameEl && nameEl.textContent === c.ejercicio_nombre) {
+        row.classList.add('done');
+        const tick = row.querySelector('.ex-check-tick');
+        const checkbox = row.querySelector('.ex-checkbox');
+        if (tick) tick.style.display = 'block';
+        if (checkbox) { checkbox.style.background = 'var(--blue)'; checkbox.style.borderColor = 'var(--blue)'; }
+      }
+    });
+  });
+  [0,1,2,3,4,5,6].forEach(i => actualizarProgressDia(i));
+  actualizarCheckinBar();
+
+  // Backup local
   restaurarPesosLocal(rutinaId);
 }
 
