@@ -36,23 +36,33 @@
 
     /* ── LAYOUT COACH ── */
     #coachScreen{flex-direction:row}
-    .sidebar{width:240px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100}
-    .sidebar-brand{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .sidebar{width:240px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width 0.25s cubic-bezier(0.76,0,0.24,1)}
+    .sidebar.collapsed{width:60px}
+    .sidebar-brand{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.08);overflow:hidden;white-space:nowrap}
     .sidebar-brand-name{font-family:var(--display);font-size:1rem;font-weight:900;letter-spacing:-0.5px;color:#fff}
     .sidebar-brand-name span{color:var(--blue2)}
     .sidebar-brand-sub{font-size:0.58rem;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;margin-top:3px}
-    .sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto}
-    .nav-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.5rem;font-size:0.78rem;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s;border-left:3px solid transparent}
+    .sidebar-brand-text{transition:opacity 0.2s;white-space:nowrap}
+    .sidebar.collapsed .sidebar-brand-text{opacity:0;pointer-events:none}
+    .sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto;overflow-x:hidden}
+    .nav-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.5rem;font-size:0.78rem;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;white-space:nowrap;overflow:hidden}
     .nav-item:hover{color:#fff;background:rgba(255,255,255,0.04)}
     .nav-item.active{color:#fff;border-left-color:var(--blue2);background:rgba(79,142,255,0.08)}
     .nav-item .nav-icon{font-size:1rem;flex-shrink:0}
-    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08)}
+    .nav-item .nav-label{transition:opacity 0.2s}
+    .sidebar.collapsed .nav-label{opacity:0;width:0}
+    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08);overflow:hidden}
+    .sidebar-footer-inner{transition:opacity 0.2s;white-space:nowrap}
+    .sidebar.collapsed .sidebar-footer-inner{opacity:0;pointer-events:none}
     .sidebar-user{font-size:0.7rem;color:rgba(255,255,255,0.4)}
     .sidebar-user strong{color:rgba(255,255,255,0.8);display:block;margin-bottom:2px}
     .btn-logout{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:0.4rem 0.8rem;font-size:0.65rem;cursor:pointer;margin-top:0.6rem;transition:all 0.2s;width:100%;letter-spacing:1px;text-transform:uppercase;font-family:var(--body)}
     .btn-logout:hover{border-color:var(--red);color:var(--red)}
+    .sidebar-collapse-btn{position:absolute;top:1.2rem;right:-12px;width:24px;height:24px;background:var(--navy);border:1px solid rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.5);font-size:0.7rem;transition:all 0.2s;z-index:101}
+    .sidebar-collapse-btn:hover{color:#fff;border-color:var(--blue2)}
+    .main-content{transition:margin-left 0.25s cubic-bezier(0.76,0,0.24,1)}
 
-    .main-content{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .main-content{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left 0.25s cubic-bezier(0.76,0,0.24,1)}
     .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
     .topbar-title{font-family:var(--display);font-size:1rem;font-weight:900;letter-spacing:-0.5px}
     .topbar-actions{display:flex;gap:0.8rem}
@@ -762,22 +772,28 @@
 <div id="coachScreen" class="screen">
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" id="coachSidebar">
+    <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleSidebarCollapse()" title="Colapsar menú">‹</button>
     <div class="sidebar-brand">
-      <div style="display:flex;align-items:center;gap:10px"><img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="sidebar-brand-name">PABLITO<span>FIT</span></div><div class="sidebar-brand-sub">Panel Coach</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit">
+        <div class="sidebar-brand-text"><div class="sidebar-brand-name">PABLITO<span>FIT</span></div><div class="sidebar-brand-sub">Panel Coach</div></div>
+      </div>
     </div>
     <div class="sidebar-nav">
-      <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
-      <div class="nav-item" onclick="showTab('clientes')"><span class="nav-icon">👥</span>Clientes</div>
-      <div class="nav-item" onclick="showTab('rutinas')"><span class="nav-icon">💪</span>Rutinas</div>
-      <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">✅</span>Hábitos</div>
-      <div class="nav-item" onclick="showTab('progreso')"><span class="nav-icon">📈</span>Progreso</div>
-      <div class="nav-item" onclick="showTab('pagos')"><span class="nav-icon">💳</span>Pagos</div>
-      <div class="nav-item" onclick="showTab('banco')"><span class="nav-icon">📚</span>Banco</div>
+      <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" onclick="showTab('clientes')"><span class="nav-icon">👥</span><span class="nav-label">Clientes</span></div>
+      <div class="nav-item" onclick="showTab('rutinas')"><span class="nav-icon">💪</span><span class="nav-label">Rutinas</span></div>
+      <div class="nav-item" onclick="showTab('nutricion')"><span class="nav-icon">✅</span><span class="nav-label">Hábitos</span></div>
+      <div class="nav-item" onclick="showTab('progreso')"><span class="nav-icon">📈</span><span class="nav-label">Progreso</span></div>
+      <div class="nav-item" onclick="showTab('pagos')"><span class="nav-icon">💳</span><span class="nav-label">Pagos</span></div>
+      <div class="nav-item" onclick="showTab('banco')"><span class="nav-icon">📚</span><span class="nav-label">Banco</span></div>
     </div>
     <div class="sidebar-footer">
-      <div class="sidebar-user"><strong id="sidebarEmail">—</strong>Coach</div>
-      <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+      <div class="sidebar-footer-inner">
+        <div class="sidebar-user"><strong id="sidebarEmail">—</strong>Coach</div>
+        <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+      </div>
     </div>
   </div>
 
@@ -1070,6 +1086,39 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modalProgreso')">Cancelar</button>
       <button class="btn btn-primary" onclick="guardarProgreso()">Guardar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Copiar rutina -->
+<div class="modal-overlay" id="modalCopiarRutina">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Copiar rutina</div>
+      <button class="btn-icon" onclick="closeModal('modalCopiarRutina')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field form-full">
+          <label>Cliente destino</label>
+          <select id="copiarRutinaCliente"></select>
+        </div>
+        <div class="form-field">
+          <label>Mes destino</label>
+          <select id="copiarRutinaMes"></select>
+        </div>
+        <div class="form-field">
+          <label>Fase</label>
+          <select id="copiarRutinaFase">
+            <option>Acumulación</option><option>Intensificación</option><option>Pico</option><option>Descarga</option>
+          </select>
+        </div>
+      </div>
+      <p style="font-size:0.72rem;color:var(--gray);margin-top:0.8rem">Se copiará la estructura completa de ejercicios. Si el cliente destino ya tiene una rutina ese mes, se añadirá como rutina adicional.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalCopiarRutina')">Cancelar</button>
+      <button class="btn btn-primary" onclick="ejecutarCopiarRutina()">Copiar →</button>
     </div>
   </div>
 </div>
@@ -1440,6 +1489,28 @@ function closeSidebar() {
   document.body.style.overflow = '';
 }
 
+function toggleSidebarCollapse() {
+  const sidebar = document.getElementById('coachSidebar');
+  const main = document.querySelector('.main-content');
+  const btn = document.getElementById('sidebarCollapseBtn');
+  const collapsed = sidebar.classList.toggle('collapsed');
+  main.style.marginLeft = collapsed ? '60px' : '240px';
+  btn.textContent = collapsed ? '›' : '‹';
+  try { localStorage.setItem('sidebar_collapsed', collapsed ? '1' : '0'); } catch(e){}
+}
+
+// Restaurar estado del sidebar al cargar
+window.addEventListener('load', function() {
+  try {
+    if (localStorage.getItem('sidebar_collapsed') === '1' && window.innerWidth > 768) {
+      const sidebar = document.getElementById('coachSidebar');
+      const main = document.querySelector('.main-content');
+      const btn = document.getElementById('sidebarCollapseBtn');
+      if (sidebar) { sidebar.classList.add('collapsed'); main.style.marginLeft = '60px'; btn.textContent = '›'; }
+    }
+  } catch(e){}
+});
+
 // Cerrar al cambiar de tab en móvil
 const origShowTab = showTab;
 
@@ -1796,6 +1867,7 @@ function buildRutinaEditor(r) {
       </div>
       <div style="display:flex;gap:0.5rem">
         <button class="btn btn-primary btn-sm" onclick="guardarRutina('${r.id}')">💾 Guardar</button>
+        <button class="btn btn-secondary btn-sm" onclick="abrirCopiarRutina('${r.id}')">📋 Copiar</button>
         <button class="btn btn-danger btn-sm" onclick="eliminarRutina('${r.id}','${r.cliente_id}')">Borrar</button>
       </div>
     </div>
@@ -2016,6 +2088,75 @@ async function eliminarRutina(id, clienteId) {
 // Compatibilidad con referencias antiguas
 async function crearSemana(clienteId) { await crearRutinaMes(clienteId); }
 async function eliminarSemana(id) { await eliminarRutina(id, currentClienteId); }
+
+// ── COPIAR RUTINA ──────────────────────────────────────────────
+let _copiarRutinaId = null;
+
+function abrirCopiarRutina(rutinaId) {
+  _copiarRutinaId = rutinaId;
+
+  // Poblar selector de clientes
+  const selCliente = document.getElementById('copiarRutinaCliente');
+  selCliente.innerHTML = (clientes || []).map(c =>
+    `<option value="${c.id}">${c.nombre}</option>`
+  ).join('');
+
+  // Poblar selector de meses (próximos 12 meses + mes actual)
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const hoy = new Date();
+  const selMes = document.getElementById('copiarRutinaMes');
+  selMes.innerHTML = '';
+  for (let i = 0; i < 13; i++) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
+    const label = meses[d.getMonth()] + ' ' + d.getFullYear();
+    const opt = document.createElement('option');
+    opt.value = label;
+    opt.textContent = label;
+    selMes.appendChild(opt);
+  }
+  // Seleccionar mes siguiente por defecto
+  if (selMes.options.length > 1) selMes.selectedIndex = 1;
+
+  openModal('modalCopiarRutina');
+}
+
+async function ejecutarCopiarRutina() {
+  const btn = document.querySelector('#modalCopiarRutina .btn-primary');
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
+
+  // Obtener datos de la rutina origen
+  const datosOrigen = rutinaCache[_copiarRutinaId];
+  if (!datosOrigen) {
+    // Cargar desde DB si no está en cache
+    const { data: rOrigen } = await sb.from('rutinas').select('datos').eq('id', _copiarRutinaId).single();
+    if (!rOrigen) { toast('Error al obtener rutina','error'); if(btn){btn.textContent='Copiar →';btn.disabled=false;} return; }
+    rutinaCache[_copiarRutinaId] = rOrigen.datos;
+  }
+
+  const clienteDestino = document.getElementById('copiarRutinaCliente').value;
+  const mesDestino = document.getElementById('copiarRutinaMes').value;
+  const faseDestino = document.getElementById('copiarRutinaFase').value;
+
+  // Copia profunda de los datos (sin pesos ni marcas del cliente)
+  const datosCopia = JSON.parse(JSON.stringify(rutinaCache[_copiarRutinaId]));
+
+  const { error } = await sb.from('rutinas').insert([{
+    cliente_id: clienteDestino,
+    mes: mesDestino,
+    fase: faseDestino,
+    datos: datosCopia,
+    semana: mesDestino
+  }]);
+
+  if (btn) { btn.textContent = 'Copiar →'; btn.disabled = false; }
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+
+  toast('✓ Rutina copiada correctamente', 'success');
+  closeModal('modalCopiarRutina');
+
+  // Si el cliente destino es el que tenemos abierto, recargar
+  if (clienteDestino === currentClienteId) renderRutinaEditor(clienteDestino);
+}
 
 async function guardarTodasRutinas(clienteId) { await guardarRutina(Object.keys(rutinaCache)[0]); }
 
@@ -2767,6 +2908,8 @@ async function cargarMiRutina(clienteId) {
     }).join('')}</div>`;
 
   initCheckinBar(clienteId);
+  // Cargar pesos y estados completados desde Supabase
+  setTimeout(() => cargarCargasCliente(clienteId, rutina.id), 150);
 }
 
 function mostrarMiRutina(idx) {
@@ -2791,7 +2934,7 @@ function mostrarMiRutina(idx) {
     ${dias.map((dia, i) => {
       if (dia.descanso) return `<div class="rutina-dia descanso"><div class="rutina-dia-header" style="cursor:default"><div class="rutina-dia-name">Día ${i+1} — ${dia.nombre}</div><span style="font-size:0.72rem;color:#6b3fa0">🛌 Descanso</span></div></div>`;
       const allEx = [...(dia.calentamiento||[]), ...(dia.ejercicios||[])];
-      const rutinaIdStr = rutina ? rutina.id : '';
+      const rutinaIdStr = r.id || '';
       return `<div class="rutina-dia open" id="rdía-${i}">
         <div class="rutina-dia-header" onclick="toggleRutinaDia(this.parentElement)">
           <div>
@@ -2801,8 +2944,8 @@ function mostrarMiRutina(idx) {
           <span style="font-size:0.72rem;color:var(--gray)" id="dia-count-${i}">${allEx.length} ejercicios</span>
         </div>
         <div class="rutina-dia-body">
-          ${dia.calentamiento&&dia.calentamiento.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:0.8rem 0 0.5rem">🔥 Calentamiento</div>${dia.calentamiento.map((e,ei) => buildClienteExRow(e, `c-${i}-${ei}`, rutina.id, i)).join('')}` : ''}
-          ${dia.ejercicios&&dia.ejercicios.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:0.8rem 0 0.5rem">💪 Sesión principal</div>${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`, rutina.id, i)).join('')}` : ''}
+          ${dia.calentamiento&&dia.calentamiento.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:0.8rem 0 0.5rem">🔥 Calentamiento</div>${dia.calentamiento.map((e,ei) => buildClienteExRow(e, `c-${i}-${ei}`, r.id, i)).join('')}` : ''}
+          ${dia.ejercicios&&dia.ejercicios.length ? `<div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:0.8rem 0 0.5rem">💪 Sesión principal</div>${dia.ejercicios.map((e,ei) => buildClienteExRow(e, `e-${i}-${ei}`, r.id, i)).join('')}` : ''}
         </div>
         <div class="dia-progress-bar">
           <div class="dia-progress-inner">
@@ -2815,6 +2958,10 @@ function mostrarMiRutina(idx) {
       </div>`;
     }).join('')}`;
   setTimeout(() => initCheckinBar(r.cliente_id), 100);
+  // Cargar pesos y estados completados desde Supabase para esta rutina
+  if (window._clienteIdActual && r.id) {
+    setTimeout(() => cargarCargasCliente(window._clienteIdActual, r.id), 150);
+  }
 }
 
 function buildClienteExRow(e, key, rutinaId, diaIdx) {
@@ -2876,7 +3023,9 @@ async function guardarCompletadoSupabase(nombre, completado, rutinaId, diaIdx) {
   if (!cliente) return;
   const existingId = window._cargasClienteIds[nombre];
   if (existingId) {
-    sb.from('cargas_ejercicios').update({ completado }).eq('id', existingId);
+    sb.from('cargas_ejercicios').update({ completado }).eq('id', existingId).then(({ error }) => {
+      if (error) console.error('Error guardando completado:', error);
+    });
   } else {
     sb.from('cargas_ejercicios').insert([{
       cliente_id: cliente.id,
