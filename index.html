@@ -2144,8 +2144,7 @@ async function ejecutarCopiarRutina() {
     cliente_id: clienteDestino,
     mes: mesDestino,
     fase: faseDestino,
-    datos: datosCopia,
-    semana: mesDestino
+    datos: datosCopia
   }]);
 
   if (btn) { btn.textContent = 'Copiar →'; btn.disabled = false; }
@@ -3717,19 +3716,23 @@ async function cargarCargasCliente(clienteId, rutinaId) {
   });
 
   // Restaurar ejercicios completados desde Supabase
-  (data || []).forEach(c => {
-    if (!c.completado) return;
-    // Buscar la fila por nombre del ejercicio
-    document.querySelectorAll('.ex-check-row').forEach(row => {
-      const nameEl = row.querySelector('.ex-check-name');
-      if (nameEl && nameEl.textContent === c.ejercicio_nombre) {
-        row.classList.add('done');
-        const tick = row.querySelector('.ex-check-tick');
-        const checkbox = row.querySelector('.ex-checkbox');
-        if (tick) tick.style.display = 'block';
-        if (checkbox) { checkbox.style.background = 'var(--blue)'; checkbox.style.borderColor = 'var(--blue)'; }
-      }
-    });
+  // Construir mapa nombre → completado para consulta rápida
+  const completadoMap = {};
+  (data || []).forEach(c => { completadoMap[c.ejercicio_nombre] = !!c.completado; });
+
+  document.querySelectorAll('.ex-check-row').forEach(row => {
+    const nameEl = row.querySelector('.ex-check-name');
+    if (!nameEl) return;
+    const nombre = nameEl.textContent;
+    const tick = row.querySelector('.ex-check-tick');
+    const checkbox = row.querySelector('.ex-checkbox');
+    const isDone = completadoMap[nombre] === true;
+    row.classList.toggle('done', isDone);
+    if (tick) tick.style.display = isDone ? 'block' : 'none';
+    if (checkbox) {
+      checkbox.style.background = isDone ? 'var(--blue)' : '';
+      checkbox.style.borderColor = isDone ? 'var(--blue)' : '';
+    }
   });
   [0,1,2,3,4,5,6].forEach(i => actualizarProgressDia(i));
   actualizarCheckinBar();
