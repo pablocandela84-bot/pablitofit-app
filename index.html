@@ -2140,11 +2140,16 @@ async function ejecutarCopiarRutina() {
   // Copia profunda de los datos (sin pesos ni marcas del cliente)
   const datosCopia = JSON.parse(JSON.stringify(rutinaCache[_copiarRutinaId]));
 
+  // Calcular número de orden para el campo semana (NOT NULL)
+  const { data: existentes } = await sb.from('rutinas').select('id').eq('cliente_id', clienteDestino);
+  const semanaNum = (existentes?.length || 0) + 1;
+
   const { error } = await sb.from('rutinas').insert([{
     cliente_id: clienteDestino,
     mes: mesDestino,
     fase: faseDestino,
-    datos: datosCopia
+    datos: datosCopia,
+    semana: semanaNum
   }]);
 
   if (btn) { btn.textContent = 'Copiar →'; btn.disabled = false; }
