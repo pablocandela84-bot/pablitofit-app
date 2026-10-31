@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>PABLITOFIT — Plataforma</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -51,7 +54,7 @@
     .nav-item .nav-icon{font-size:1rem;flex-shrink:0}
     .nav-item .nav-label{transition:opacity 0.2s}
     .sidebar.collapsed .nav-label{opacity:0;width:0}
-    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08);overflow:hidden}
+    .sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08);overflow:hidden;flex-shrink:0}
     .sidebar-footer-inner{transition:opacity 0.2s;white-space:nowrap}
     .sidebar.collapsed .sidebar-footer-inner{opacity:0;pointer-events:none}
     .sidebar-user{font-size:0.7rem;color:rgba(255,255,255,0.4)}
@@ -192,7 +195,7 @@
     .cliente-nav-item:hover{color:#fff;background:rgba(255,255,255,0.06)}
     .cliente-nav-item.active{color:#fff;border-left-color:var(--blue);background:rgba(59,130,246,0.12)}
     .cliente-nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
-    .cliente-sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08)}
+    .cliente-sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;padding-bottom:max(1rem,env(safe-area-inset-bottom))}
     .cliente-body{flex:1;padding:2rem;max-width:860px;min-width:0}
     /* hamburger cliente */
     .cliente-hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:5px}
@@ -3333,97 +3336,104 @@ function resetHabitos(fechaKey) {
 
 async function cargarMiProgreso(clienteId) {
   const cont = document.getElementById('cliente-mi-progreso');
-  const { data } = await sb.from('progreso').select('*').eq('cliente_id', clienteId).order('fecha');
+  if (!cont) return;
+  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+  const { data } = await sb.from('progreso').select('*').eq('cliente_id', clienteId).order('fecha', {ascending:false});
   const entradas = data || [];
 
-  const primer = entradas[0];
-  const ultimo = entradas[entradas.length-1];
-  const delta = (primer && ultimo && primer.id !== ultimo.id && primer.peso && ultimo.peso)
-    ? (ultimo.peso - primer.peso).toFixed(1) : null;
+  // Separar pesos de check-ins
+  const pesosArr = entradas.filter(function(e){ return e.peso; });
+  const checkins = entradas.filter(function(e){ return e.datos && e.datos.ejercicios && e.datos.ejercicios.length > 0; });
+
+  // Cache para modal detalle
+  window._checkinCache = window._checkinCache || {};
+  checkins.forEach(function(e){ window._checkinCache[e.id] = e; });
+
+  // ── Stats de peso ─────────────────────────────────────────────
+  const primerPeso = pesosArr.length ? pesosArr[pesosArr.length-1] : null;
+  const ultimoPeso = pesosArr.length ? pesosArr[0] : null;
+  const delta = (primerPeso && ultimoPeso && primerPeso.id !== ultimoPeso.id)
+    ? (parseFloat(ultimoPeso.peso) - parseFloat(primerPeso.peso)).toFixed(1) : null;
   const deltaPos = delta !== null && parseFloat(delta) > 0;
-  const deltaColor = delta !== null ? (parseFloat(delta) <= 0 ? '#22c55e' : '#ef4444') : '';
+  const deltaColor = delta !== null ? (parseFloat(delta) <= 0 ? 'var(--green)' : 'var(--red)') : '';
 
-  // ── Gráfica SVG profesional ──────────────────────────────────
-  let graficaHtml = '';
-  if (entradas.length > 1) {
-    const pesos = entradas.map(function(e){ return parseFloat(e.peso)||0; });
-    const etqs  = entradas.map(function(e){ return (e.etiqueta||'').replace(/\s\d{4}/,''); }); // "Oct"
-    const minP = Math.min.apply(null, pesos);
-    const maxP = Math.max.apply(null, pesos);
-    const rango = maxP - minP || 1;
-    const W = 400, H = 120, padX = 28, padTop = 14, padBot = 28;
-    const cx = function(i){ return padX + (i / (pesos.length-1)) * (W - padX*2); };
-    const cy = function(p){ return padTop + (1 - (p - minP) / rango) * (H - padTop - padBot); };
-
-    // Zona rellena bajo la línea
-    const areaPath = 'M' + pesos.map(function(p,i){ return cx(i)+','+cy(p); }).join(' L ')
-      + ' L'+cx(pesos.length-1)+','+(H-padBot)+' L'+cx(0)+','+(H-padBot)+' Z';
-
-    // Línea
-    const linePath = 'M' + pesos.map(function(p,i){ return cx(i)+','+cy(p); }).join(' L ');
-
-    // Puntos + tooltips nativos
-    const circles = pesos.map(function(p,i){
-      return '<circle cx="'+cx(i)+'" cy="'+cy(p)+'" r="5" fill="var(--blue)" stroke="#fff" stroke-width="2">'
-        + '<title>'+etqs[i]+': '+p+' kg</title></circle>';
-    }).join('');
-
-    // Etiquetas eje X (solo primero, mitad y último)
-    const xLabels = [0, Math.floor((pesos.length-1)/2), pesos.length-1]
-      .filter(function(v,i,a){ return a.indexOf(v)===i; })
-      .map(function(i){
-        return '<text x="'+cx(i)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--gray)">'+etqs[i]+'</text>';
-      }).join('');
-
-    // Líneas de referencia
-    const refLines = [minP, maxP].map(function(p){
-      return '<line x1="'+padX+'" y1="'+cy(p)+'" x2="'+(W-padX)+'" y2="'+cy(p)+'" stroke="var(--border)" stroke-dasharray="3,3" stroke-width="1"/>'
-        + '<text x="'+(padX-4)+'" y="'+(cy(p)+3)+'" text-anchor="end" font-size="8" fill="var(--gray)">'+p+'</text>';
-    }).join('');
-
-    graficaHtml = '<div style="background:var(--white);border:1px solid var(--border);padding:1.2rem 1.2rem 0.6rem;margin-bottom:1.5rem">'
-      + '<div style="font-size:0.58rem;color:var(--gray);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem">Evolución del peso</div>'
-      + '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block;overflow:visible">'
-      + '<defs><linearGradient id="pgradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--blue)" stop-opacity="0.15"/><stop offset="100%" stop-color="var(--blue)" stop-opacity="0"/></linearGradient></defs>'
-      + '<path d="'+areaPath+'" fill="url(#pgradient)"/>'
-      + refLines
-      + '<path d="'+linePath+'" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
-      + circles
-      + xLabels
-      + '</svg></div>';
-  }
-
-  // ── Stats ────────────────────────────────────────────────────
-  const statsHtml = '<div style="display:grid;grid-template-columns:1fr 1fr'+(delta!==null?' 1fr':'')+';gap:0.8rem;margin-bottom:1.2rem">'
-    + '<div style="background:var(--white);border:1px solid var(--border);padding:1.1rem;text-align:center">'
-    + '<div style="font-family:var(--display);font-size:1.8rem;font-weight:900;letter-spacing:-1px">'+(primer?.peso||'—')+' <span style="font-size:0.9rem;font-weight:400">kg</span></div>'
-    + '<div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px">Peso inicial</div></div>'
-    + '<div style="background:var(--white);border:1px solid var(--border);padding:1.1rem;text-align:center">'
-    + '<div style="font-family:var(--display);font-size:1.8rem;font-weight:900;letter-spacing:-1px">'+(ultimo?.peso||'—')+' <span style="font-size:0.9rem;font-weight:400">kg</span></div>'
-    + '<div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px">Peso actual</div></div>'
-    + (delta!==null ? '<div style="background:var(--white);border:1px solid var(--border);padding:1.1rem;text-align:center">'
-    + '<div style="font-family:var(--display);font-size:1.8rem;font-weight:900;letter-spacing:-1px;color:'+deltaColor+'">'+(deltaPos?'+':'')+delta+' <span style="font-size:0.9rem;font-weight:400">kg</span></div>'
-    + '<div style="font-size:0.55rem;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px">Cambio total</div></div>' : '')
+  const statsHtml = '<div style="display:grid;grid-template-columns:1fr 1fr'+(delta!==null?' 1fr':'')+';gap:0.6rem;margin-bottom:1.2rem">'
+    + '<div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center">'
+    + '<div style="font-size:1.6rem;font-weight:800;color:var(--navy)">'+(primerPeso?.peso||'—')+'<span style="font-size:0.8rem;font-weight:400"> kg</span></div>'
+    + '<div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:3px">Inicio</div></div>'
+    + '<div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center">'
+    + '<div style="font-size:1.6rem;font-weight:800;color:var(--navy)">'+(ultimoPeso?.peso||'—')+'<span style="font-size:0.8rem;font-weight:400"> kg</span></div>'
+    + '<div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:3px">Actual</div></div>'
+    + (delta!==null ? '<div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center">'
+    + '<div style="font-size:1.6rem;font-weight:800;color:'+deltaColor+'">'+(deltaPos?'+':'')+delta+'<span style="font-size:0.8rem;font-weight:400"> kg</span></div>'
+    + '<div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:3px">Cambio</div></div>' : '')
     + '</div>';
 
-  // ── Historial ─────────────────────────────────────────────────
-  const historialHtml = entradas.length
-    ? '<div class="card"><div class="card-header"><div class="card-title">Historial mensual</div></div>'
-      + '<table><thead><tr><th>Mes</th><th>Peso</th><th>Nota del coach</th></tr></thead><tbody>'
-      + entradas.slice().reverse().map(function(e){
-          const etiq = e.etiqueta || fmtFecha(e.fecha);
-          const notaHtml = e.notas ? '<span style="color:var(--gray);font-size:0.78rem">'+e.notas+'</span>' : '<span style="color:var(--border)">—</span>';
-          return '<tr><td>'+etiq+'</td><td><strong>'+(e.peso||'—')+' kg</strong></td><td>'+notaHtml+'</td></tr>';
+  // ── Gráfica SVG ───────────────────────────────────────────────
+  let graficaHtml = '';
+  const pesosGraf = pesosArr.slice().reverse().filter(function(e){ return parseFloat(e.peso)>0; });
+  if (pesosGraf.length > 1) {
+    const vals = pesosGraf.map(function(e){ return parseFloat(e.peso); });
+    const labs = pesosGraf.map(function(e){ return (e.etiqueta||fmtFecha(e.fecha)).replace(/\s\d{4}/,''); });
+    const minP = Math.min.apply(null,vals), maxP = Math.max.apply(null,vals);
+    const rango = maxP - minP || 1;
+    const W=340, H=100, padX=24, padTop=12, padBot=22;
+    const cx=function(i){ return padX+(i/(vals.length-1))*(W-padX*2); };
+    const cy=function(p){ return padTop+(1-(p-minP)/rango)*(H-padTop-padBot); };
+    const area='M'+vals.map(function(p,i){ return cx(i)+','+cy(p); }).join('L')+' L'+cx(vals.length-1)+','+(H-padBot)+' L'+cx(0)+','+(H-padBot)+' Z';
+    const line='M'+vals.map(function(p,i){ return cx(i)+','+cy(p); }).join('L');
+    const dots=vals.map(function(p,i){ return '<circle cx="'+cx(i)+'" cy="'+cy(p)+'" r="4" fill="var(--blue)" stroke="#fff" stroke-width="1.5"/>'; }).join('');
+    const xlabs=[0,Math.floor((vals.length-1)/2),vals.length-1].filter(function(v,i,a){ return a.indexOf(v)===i; })
+      .map(function(i){ return '<text x="'+cx(i)+'" y="'+(H-3)+'" text-anchor="middle" font-size="8" fill="var(--gray)">'+labs[i]+'</text>'; }).join('');
+    graficaHtml = '<div style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.2rem">'
+      + '<div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.7rem">Evolución del peso</div>'
+      + '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block;overflow:visible">'
+      + '<defs><linearGradient id="pgcli" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--blue)" stop-opacity="0.18"/><stop offset="100%" stop-color="var(--blue)" stop-opacity="0"/></linearGradient></defs>'
+      + '<path d="'+area+'" fill="url(#pgcli)"/>'
+      + '<path d="'+line+'" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'
+      + dots + xlabs + '</svg></div>';
+  }
+
+  // ── Historial de peso ─────────────────────────────────────────
+  const histPesoHtml = pesosArr.length
+    ? '<div style="margin-bottom:1.2rem"><div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.6rem;font-weight:600">Historial de peso</div>'
+      + '<div style="display:flex;flex-direction:column;gap:0.5rem">'
+      + pesosArr.map(function(e){
+          return '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem">'
+            + '<div style="font-size:0.82rem;color:var(--gray)">'+(e.etiqueta||fmtFecha(e.fecha))+'</div>'
+            + '<div style="font-size:1rem;font-weight:700;color:var(--navy)">'+e.peso+' <span style="font-size:0.75rem;font-weight:400">kg</span></div>'
+            + '</div>';
         }).join('')
-      + '</tbody></table></div>'
+      + '</div></div>'
     : '';
 
-  // ── Botón registrar ───────────────────────────────────────────
-  const btnHtml = '<div style="margin-bottom:1.2rem;display:flex;justify-content:flex-end">'
-    + '<button class="btn btn-primary" onclick="abrirProgresoCliente(\''+clienteId+'\')">+ Registrar mi peso</button></div>';
+  // ── Check-ins ─────────────────────────────────────────────────
+  const checkinsHtml = checkins.length
+    ? '<div><div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.6rem;font-weight:600">Mis check-ins</div>'
+      + '<div style="display:flex;flex-direction:column;gap:0.5rem">'
+      + checkins.map(function(e){
+          const d = e.datos;
+          const nEj = d.ejercicios ? d.ejercicios.length : 0;
+          return '<div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between">'
+            + '<div style="display:flex;align-items:center;gap:0.6rem">'
+            + '<span style="font-size:1.2rem">💪</span>'
+            + '<div><div style="font-size:0.85rem;font-weight:600;color:var(--navy)">'+(d.dia||'Entrenamiento')+'</div>'
+            + '<div style="font-size:0.72rem;color:var(--gray);margin-top:1px">'+fmtFecha(e.fecha)+' · '+nEj+' ejercicios</div></div></div>'
+            + '<button class="btn btn-sm btn-secondary" style="font-size:0.7rem;padding:0.3rem 0.7rem" onclick="verCheckinDetalle(\''+e.id+'\')">Ver</button>'
+            + '</div></div>';
+        }).join('')
+      + '</div></div>'
+    : '';
 
-  cont.innerHTML = btnHtml + statsHtml + graficaHtml + historialHtml
-    + (!entradas.length ? '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">Registra tu primer peso con el botón de arriba.<br>Podrás ver tu evolución mes a mes.</div></div>' : '');
+  // ── Botón ─────────────────────────────────────────────────────
+  const btnHtml = '<button class="btn btn-primary" style="width:100%;margin-bottom:1.2rem" onclick="abrirProgresoCliente(\''+clienteId+'\')">+ Registrar mi peso</button>';
+
+  if (!entradas.length) {
+    cont.innerHTML = btnHtml + '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">Registra tu primer peso con el botón de arriba.</div></div>';
+  } else {
+    cont.innerHTML = btnHtml + statsHtml + graficaHtml + histPesoHtml + checkinsHtml;
+  }
 }
 
 async function cargarMiPlan(cliente) {
