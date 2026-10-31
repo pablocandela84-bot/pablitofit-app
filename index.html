@@ -2577,14 +2577,14 @@ async function renderProgresoPanel(clienteId) {
               + '<div style="font-size:0.7rem;color:var(--gray);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(e.notas||'—')+'</div></div>'
               + '<div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">'
               + '<strong style="font-size:0.9rem">'+(e.peso||'—')+' kg</strong>'
-              + '<button class="btn btn-sm btn-danger" style="font-size:0.6rem;padding:3px 8px" onclick="eliminarProgreso(''+e.id+'',''+clienteId+'')">✕</button>'
+              + '<button class="btn btn-sm btn-danger" style="font-size:0.6rem;padding:3px 8px" onclick="eliminarProgreso(\"'+e.id+'\",\"'+clienteId+'\")">✕</button>'
               + '</div></div>';
           }).join('')
         : '<table><thead><tr><th>Mes</th><th>Peso</th><th>Nota</th><th></th></tr></thead><tbody>'
           + pesosEntradas.slice().reverse().map(function(e){
               return '<tr><td>'+(e.etiqueta||fmtFecha(e.fecha))+'</td><td><strong>'+(e.peso||'—')+' kg</strong></td>'
                 + '<td style="color:var(--gray);font-size:0.78rem">'+(e.notas||'—')+'</td>'
-                + '<td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso(''+e.id+'',''+clienteId+'')">×</button></td></tr>';
+                + '<td><button class="btn btn-sm btn-danger" onclick=\"eliminarProgreso(\\"+e.id+\"\\",\\"+clienteId+\"\\")">×</button></td></tr>';
             }).join('')
           + '</tbody></table>')
       : '<div class="empty-state"><div class="empty-state-icon">⚖️</div><div class="empty-state-text">Aún no hay registros de peso.</div></div>')
