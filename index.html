@@ -689,9 +689,10 @@
       .modal-overlay{padding:0; align-items:flex-end}
       .modal{border-radius:16px 16px 0 0; max-height:90vh}
 
-      /* ── TABLAS → CARDS en móvil ── */
-      table{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; font-size:0.75rem}
-      th,td{padding:0.6rem 0.8rem; white-space:nowrap}
+      /* ── TABLAS → scroll horizontal en móvil ── */
+      .card{overflow-x:auto; -webkit-overflow-scrolling:touch}
+      table{font-size:0.75rem; min-width:460px}
+      th,td{padding:0.55rem 0.7rem; white-space:nowrap}
 
       /* ── EDITOR RUTINA ── */
       .exercise-row{grid-template-columns:1fr 1fr; gap:0.4rem}
@@ -1845,8 +1846,18 @@ async function renderRutinaEditor(clienteId) {
   const cont = document.getElementById('clientePerfilContent');
   cont.innerHTML = `<div class="loading"><div class="spinner"></div>Cargando rutina...</div>`;
 
-  const { data } = await sb.from('rutinas').select('*').eq('cliente_id', clienteId).order('semana', {ascending:false});
-  const rutinas = data || [];
+  const { data } = await sb.from('rutinas').select('*').eq('cliente_id', clienteId);
+  const _mesesOrden = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const rutinas = (data || []).sort(function(a, b) {
+    const parseMes = function(r) {
+      if (!r.mes) return r.semana || 0;
+      const parts = r.mes.split(' ');
+      const m = _mesesOrden.indexOf(parts[0]);
+      const y = parseInt(parts[1]) || 2000;
+      return y * 100 + (m >= 0 ? m : 0);
+    };
+    return parseMes(a) - parseMes(b);
+  });
 
   // Selector de mes
   const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2556,15 +2567,26 @@ async function renderProgresoPanel(clienteId) {
   window._checkinCache = window._checkinCache || {};
   checkins.forEach(function(e){ window._checkinCache[e.id] = e; });
 
+  const isMobileProg = window.innerWidth < 768;
   const histPesoHtml = '<div class="card" style="margin-bottom:1.2rem"><div class="card-header"><div class="card-title">Historial de peso</div></div>'
     + (pesosEntradas.length
-      ? '<table><thead><tr><th>Mes</th><th>Peso</th><th>Nota</th><th></th></tr></thead><tbody>'
-        + pesosEntradas.slice().reverse().map(function(e){
-            return '<tr><td>'+(e.etiqueta||fmtFecha(e.fecha))+'</td><td><strong>'+(e.peso||'—')+' kg</strong></td>'
-              + '<td style="color:var(--gray);font-size:0.78rem">'+(e.notas||'—')+'</td>'
-              + '<td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso(\''+e.id+'\',\''+clienteId+'\')">×</button></td></tr>';
+      ? (isMobileProg
+        ? pesosEntradas.slice().reverse().map(function(e){
+            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border-bottom:1px solid var(--border);gap:0.5rem">'
+              + '<div style="min-width:0;flex:1"><div style="font-weight:700;font-size:0.82rem">'+(e.etiqueta||fmtFecha(e.fecha))+'</div>'
+              + '<div style="font-size:0.7rem;color:var(--gray);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(e.notas||'—')+'</div></div>'
+              + '<div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">'
+              + '<strong style="font-size:0.9rem">'+(e.peso||'—')+' kg</strong>'
+              + '<button class="btn btn-sm btn-danger" style="font-size:0.6rem;padding:3px 8px" onclick="eliminarProgreso(''+e.id+'',''+clienteId+'')">✕</button>'
+              + '</div></div>';
           }).join('')
-        + '</tbody></table>'
+        : '<table><thead><tr><th>Mes</th><th>Peso</th><th>Nota</th><th></th></tr></thead><tbody>'
+          + pesosEntradas.slice().reverse().map(function(e){
+              return '<tr><td>'+(e.etiqueta||fmtFecha(e.fecha))+'</td><td><strong>'+(e.peso||'—')+' kg</strong></td>'
+                + '<td style="color:var(--gray);font-size:0.78rem">'+(e.notas||'—')+'</td>'
+                + '<td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso(''+e.id+'',''+clienteId+'')">×</button></td></tr>';
+            }).join('')
+          + '</tbody></table>')
       : '<div class="empty-state"><div class="empty-state-icon">⚖️</div><div class="empty-state-text">Aún no hay registros de peso.</div></div>')
     + '</div>';
 
@@ -2795,8 +2817,9 @@ async function cargarPagos() {
   const cont = document.getElementById('pagosContent');
   if (!data || !data.length) { cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💳</div><div class="empty-state-text">No hay clientes aún.</div></div>`; return; }
   const hoy = new Date();
-  cont.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
-    <tbody>${data.map(c => {
+  const isMobile = window.innerWidth < 768;
+  if (isMobile) {
+    cont.innerHTML = data.map(c => {
       const v = fechaVencimiento(c.fecha_inicio, c.plan);
       const diasRestantes = v ? Math.ceil((v - hoy) / 86400000) : null;
       let situacion = '';
@@ -2804,15 +2827,40 @@ async function cargarPagos() {
       else if (diasRestantes < 0) situacion = '<span class="badge badge-red">Vencido</span>';
       else if (diasRestantes <= 30) situacion = `<span class="badge badge-amber">Vence en ${diasRestantes}d</span>`;
       else situacion = `<span class="badge badge-green">${diasRestantes}d restantes</span>`;
-      return `<tr>
-        <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
-        <td>${badgePlan(c.plan)}</td>
-        <td>${fmtFecha(c.fecha_inicio)}</td>
-        <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
-        <td>${badgeEstado(c.estado)}</td>
-        <td>${situacion}</td>
-      </tr>`;
-    }).join('')}</tbody></table>`;
+      return `<div style="padding:1rem;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:0.4rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.4rem">
+          <div>
+            <div style="font-weight:700;font-size:0.85rem">${c.nombre}</div>
+            <div style="font-size:0.7rem;color:var(--gray)">${c.email}</div>
+          </div>
+          <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">${badgePlan(c.plan)} ${badgeEstado(c.estado)} ${situacion}</div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--gray);display:flex;gap:1rem;flex-wrap:wrap">
+          <span>📅 Inicio: <strong style="color:var(--navy)">${fmtFecha(c.fecha_inicio)}</strong></span>
+          <span>⏰ Vence: <strong style="color:var(--navy)">${v ? fmtFecha(v.toISOString()) : '—'}</strong></span>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    cont.innerHTML = `<table><thead><tr><th>Cliente</th><th>Plan</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Situación</th></tr></thead>
+      <tbody>${data.map(c => {
+        const v = fechaVencimiento(c.fecha_inicio, c.plan);
+        const diasRestantes = v ? Math.ceil((v - hoy) / 86400000) : null;
+        let situacion = '';
+        if (diasRestantes === null) situacion = '<span class="badge badge-blue">Sin fecha</span>';
+        else if (diasRestantes < 0) situacion = '<span class="badge badge-red">Vencido</span>';
+        else if (diasRestantes <= 30) situacion = `<span class="badge badge-amber">Vence en ${diasRestantes}d</span>`;
+        else situacion = `<span class="badge badge-green">${diasRestantes}d restantes</span>`;
+        return `<tr>
+          <td><strong>${c.nombre}</strong><div style="font-size:0.72rem;color:var(--gray)">${c.email}</div></td>
+          <td>${badgePlan(c.plan)}</td>
+          <td>${fmtFecha(c.fecha_inicio)}</td>
+          <td>${v ? fmtFecha(v.toISOString()) : '—'}</td>
+          <td>${badgeEstado(c.estado)}</td>
+          <td>${situacion}</td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+  }
 }
 
 // ══════════════════════════════════════
@@ -2925,18 +2973,32 @@ async function cargarProgresoCliente() {
     <div style="padding:1rem;display:flex;gap:0.8rem">
       <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
     </div>
-    ${entradas.length ? `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
-      ${entradas.map(e => `<tr>
-        <td>${fmtFecha(e.fecha)}</td>
-        <td><strong>${e.peso||'—'} kg</strong></td>
-        <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
-        <td><button class="btn btn-sm btn-danger" onclick="eliminarProgresoTab('${e.id}')">Borrar</button></td>
-      </tr>`).join('')}
-    </tbody></table>` : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>'}`;
+    ${entradas.length
+      ? (window.innerWidth < 768
+        ? entradas.map(e => `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.85rem 1rem;border-bottom:1px solid var(--border);gap:0.6rem">
+            <div style="min-width:0;flex:1">
+              <div style="font-size:0.78rem;font-weight:700;color:var(--navy)">${fmtFecha(e.fecha)}</div>
+              <div style="font-size:0.72rem;color:var(--gray);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.notas||'—'}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">
+              <span style="font-weight:700;font-size:0.9rem">${e.peso||'—'} kg</span>
+              <button class="btn btn-sm btn-danger" style="font-size:0.6rem;padding:3px 8px" onclick="eliminarProgresoTab('${e.id}')">✕</button>
+            </div>
+          </div>`).join('')
+        : `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
+            ${entradas.map(e => `<tr>
+              <td>${fmtFecha(e.fecha)}</td>
+              <td><strong>${e.peso||'—'} kg</strong></td>
+              <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
+              <td><button class="btn btn-sm btn-danger" onclick="eliminarProgresoTab('${e.id}')">Borrar</button></td>
+            </tr>`).join('')}
+          </tbody></table>`)
+      : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>'}`;
 }
 
 async function eliminarProgresoTab(id) {
-  const row = document.querySelector(`[onclick*="eliminarProgresoTab('${id}'"]`)?.closest('tr');
+  const el = document.querySelector(`[onclick*="eliminarProgresoTab('${id}'"]`);
+  const row = el?.closest('tr') || el?.closest('div[style*="border-bottom"]');
   if (row) row.remove();
   sb.from('progreso').delete().eq('id', id).then(() => cargarProgresoCliente());
 }
@@ -3676,7 +3738,26 @@ function renderBancoTab() {
       + '<td>' + editBtn + '<button class="btn btn-sm btn-danger" data-id="' + e.id + '" onclick="eliminarDelBanco(this.dataset.id)">Borrar</button></td>'
       + '</tr>';
   }).join('');
-  lista.innerHTML = '<table><thead><tr><th>Ejercicio</th><th>Grupo</th><th>GIF</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  if (window.innerWidth < 768) {
+    lista.innerHTML = filtrados.map(function(e) {
+      const safeName = (e.nombre||'').replace(/'/g,"&#39;");
+      const gifCell = e.gif_url
+        ? '<img src="'+e.gif_url+'" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" loading="lazy">'
+        : '<div style="width:48px;height:48px;background:#f0f4ff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.2rem">💪</div>';
+      return '<div style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;border-bottom:1px solid var(--border)">'
+        + gifCell
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-weight:700;font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (e.nombre||'') + '</div>'
+        + '<div style="margin-top:2px"><span class="badge badge-blue" style="font-size:0.6rem">' + (e.grupo_muscular||'—') + '</span></div>'
+        + '</div>'
+        + '<div style="display:flex;gap:0.3rem;flex-shrink:0">'
+        + (e.gif_url ? '<button class="btn btn-sm" style="font-size:0.6rem;padding:4px 8px" data-id="'+e.id+'" data-n="'+safeName+'" onclick="editarGifBanco(this.dataset.id,this.dataset.n)">✏️</button>' : '')
+        + ' <button class="btn btn-sm btn-danger" style="font-size:0.6rem;padding:4px 8px" data-id="'+e.id+'" onclick="eliminarDelBanco(this.dataset.id)">✕</button>'
+        + '</div></div>';
+    }).join('');
+  } else {
+    lista.innerHTML = '<table><thead><tr><th>Ejercicio</th><th>Grupo</th><th>GIF</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
 }
 
 function filtrarBanco(grupo) {
@@ -4014,30 +4095,54 @@ async function cargarHabitosResumen() {
     return;
   }
 
-  let rows = clts.map(c => {
-    const habitos = habitosPorCliente[c.id] || null;
-    const hechos = habitos ? Object.values(habitos).filter(Boolean).length : null;
-    const habitosHtml = habitos
-      ? Object.entries(HABITOS_LABELS).map(([id, label]) =>
-          '<span style="display:inline-block;padding:0.15rem 0.5rem;margin:1px;font-size:0.62rem;border-radius:2px;background:' +
-          (habitos[id] ? '#d1fae5;color:#065f46' : '#fee2e2;color:#991b1b') + '">' +
-          label + (habitos[id] ? ' ✓' : ' ✗') + '</span>'
-        ).join('')
-      : '<span style="font-size:0.72rem;color:var(--gray)">Sin actividad hoy</span>';
+  const isMobileH = window.innerWidth < 768;
 
-    const progresoBadge = habitos
-      ? '<span class="badge ' + (hechos === 6 ? 'badge-green' : hechos >= 3 ? 'badge-amber' : 'badge-red') + '">' + hechos + '/6</span>'
-      : '<span class="badge" style="background:#f3f4f6;color:#6b7280">—</span>';
-
-    return '<tr>'
-      + '<td><strong>' + c.nombre + '</strong><div style="font-size:0.72rem;color:var(--gray)">' + c.email + '</div></td>'
-      + '<td>' + progresoBadge + '</td>'
-      + '<td style="max-width:300px">' + habitosHtml + '</td>'
-      + '<td><button class="btn btn-sm btn-primary" data-id="' + c.id + '" onclick="verCliente(this.dataset.id)">Perfil</button></td>'
-      + '</tr>';
-  }).join('');
-
-  cont.innerHTML = '<table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  if (isMobileH) {
+    cont.innerHTML = clts.map(c => {
+      const habitos = habitosPorCliente[c.id] || null;
+      const hechos = habitos ? Object.values(habitos).filter(Boolean).length : null;
+      const habitosHtml = habitos
+        ? Object.entries(HABITOS_LABELS).map(([id, label]) =>
+            '<span style="display:inline-flex;align-items:center;gap:3px;padding:0.15rem 0.5rem;margin:2px;font-size:0.65rem;border-radius:12px;background:' +
+            (habitos[id] ? '#d1fae5;color:#065f46' : '#f3f4f6;color:#9ca3af') + '">' +
+            label + (habitos[id] ? ' ✓' : '') + '</span>'
+          ).join('')
+        : '<span style="font-size:0.75rem;color:var(--gray)">Sin actividad hoy</span>';
+      const progresoBadge = habitos
+        ? '<span class="badge ' + (hechos === 6 ? 'badge-green' : hechos >= 3 ? 'badge-amber' : 'badge-red') + '">' + hechos + '/6</span>'
+        : '<span class="badge" style="background:#f3f4f6;color:#6b7280">—</span>';
+      return '<div style="padding:0.9rem 1rem;border-bottom:1px solid var(--border)">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">'
+        + '<div><div style="font-weight:700;font-size:0.85rem">' + c.nombre + '</div>'
+        + '<div style="font-size:0.7rem;color:var(--gray)">' + c.email + '</div></div>'
+        + '<div style="display:flex;gap:0.4rem;align-items:center">' + progresoBadge
+        + ' <button class="btn btn-sm btn-primary" data-id="' + c.id + '" onclick="verCliente(this.dataset.id)" style="font-size:0.6rem;padding:3px 8px">Ver →</button></div></div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:2px">' + habitosHtml + '</div>'
+        + '</div>';
+    }).join('');
+  } else {
+    let rows = clts.map(c => {
+      const habitos = habitosPorCliente[c.id] || null;
+      const hechos = habitos ? Object.values(habitos).filter(Boolean).length : null;
+      const habitosHtml = habitos
+        ? Object.entries(HABITOS_LABELS).map(([id, label]) =>
+            '<span style="display:inline-block;padding:0.15rem 0.5rem;margin:1px;font-size:0.62rem;border-radius:2px;background:' +
+            (habitos[id] ? '#d1fae5;color:#065f46' : '#fee2e2;color:#991b1b') + '">' +
+            label + (habitos[id] ? ' ✓' : ' ✗') + '</span>'
+          ).join('')
+        : '<span style="font-size:0.72rem;color:var(--gray)">Sin actividad hoy</span>';
+      const progresoBadge = habitos
+        ? '<span class="badge ' + (hechos === 6 ? 'badge-green' : hechos >= 3 ? 'badge-amber' : 'badge-red') + '">' + hechos + '/6</span>'
+        : '<span class="badge" style="background:#f3f4f6;color:#6b7280">—</span>';
+      return '<tr>'
+        + '<td><strong>' + c.nombre + '</strong><div style="font-size:0.72rem;color:var(--gray)">' + c.email + '</div></td>'
+        + '<td>' + progresoBadge + '</td>'
+        + '<td style="max-width:300px">' + habitosHtml + '</td>'
+        + '<td><button class="btn btn-sm btn-primary" data-id="' + c.id + '" onclick="verCliente(this.dataset.id)">Perfil</button></td>'
+        + '</tr>';
+    }).join('');
+    cont.innerHTML = '<table><thead><tr><th>Cliente</th><th>Hoy</th><th>Hábitos completados</th><th>Acciones</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
 }
 
 function seleccionarNutriCliente(id, nombre) {
