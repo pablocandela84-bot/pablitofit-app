@@ -641,8 +641,9 @@
         overflow:hidden;
         display:flex;
       }
+      .sidebar-brand{ padding-top:max(1.5rem, env(safe-area-inset-top)); }
       .sidebar-nav{ flex:1; overflow-y:auto; }
-      .sidebar-footer{ flex-shrink:0; padding-bottom:env(safe-area-inset-bottom,0.5rem); }
+      .sidebar-footer{ flex-shrink:0; padding-bottom:max(1rem, env(safe-area-inset-bottom)); }
       .sidebar.open{ transform:translateX(0); }
       .sidebar-brand{display:flex}
       .sidebar-footer{display:flex}
@@ -670,7 +671,7 @@
 
       /* ── MAIN: sin margen lateral ── */
       .main-content{margin-left:0; padding-bottom:0; min-height:100vh}
-      .topbar{padding:0.8rem 1rem; position:sticky; top:0; z-index:100}
+      .topbar{padding:0.8rem 1rem; padding-top:max(0.8rem, env(safe-area-inset-top)); position:sticky; top:0; z-index:100}
       .topbar-title{font-size:0.85rem}
       .page-body{padding:1rem}
       
@@ -718,12 +719,12 @@
 
       /* ── PORTAL CLIENTE ── */
       #clienteScreen{padding-bottom:0}
-      .cliente-topbar{padding:0.8rem 1rem}
+      .cliente-topbar{padding:0.8rem 1rem; padding-top:max(0.8rem, env(safe-area-inset-top))}
       .cliente-hamburger{display:flex}
       .cliente-sidebar{position:fixed;top:0;left:0;height:100vh;z-index:300;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.76,0,0.24,1);display:flex;flex-direction:column;overflow:hidden}
       .cliente-sidebar.open{transform:translateX(0)}
-      .cliente-sidebar-nav{flex:1;overflow-y:auto}
-      .cliente-sidebar-footer{flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0.5rem)}
+      .cliente-sidebar-nav{flex:1;overflow-y:auto;padding-top:max(0.8rem, env(safe-area-inset-top))}
+      .cliente-sidebar-footer{flex-shrink:0;padding-bottom:max(1rem, env(safe-area-inset-bottom))}
       .cliente-body{padding:1rem}
       .cliente-brand{font-size:0.8rem}
       .cliente-nav{padding:0 0.5rem; gap:0}
