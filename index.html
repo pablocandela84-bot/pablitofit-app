@@ -636,7 +636,10 @@
         transition:transform 0.3s cubic-bezier(0.76,0,0.24,1);
         z-index:300; flex-direction:column;
         overflow:hidden;
+        display:flex;
       }
+      .sidebar-nav{ flex:1; overflow-y:auto; }
+      .sidebar-footer{ flex-shrink:0; padding-bottom:env(safe-area-inset-bottom,0.5rem); }
       .sidebar.open{ transform:translateX(0); }
       .sidebar-brand{display:flex}
       .sidebar-footer{display:flex}
@@ -714,8 +717,10 @@
       #clienteScreen{padding-bottom:0}
       .cliente-topbar{padding:0.8rem 1rem}
       .cliente-hamburger{display:flex}
-      .cliente-sidebar{position:fixed;top:0;left:0;height:100vh;z-index:300;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.76,0,0.24,1)}
+      .cliente-sidebar{position:fixed;top:0;left:0;height:100vh;z-index:300;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.76,0,0.24,1);display:flex;flex-direction:column;overflow:hidden}
       .cliente-sidebar.open{transform:translateX(0)}
+      .cliente-sidebar-nav{flex:1;overflow-y:auto}
+      .cliente-sidebar-footer{flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0.5rem)}
       .cliente-body{padding:1rem}
       .cliente-brand{font-size:0.8rem}
       .cliente-nav{padding:0 0.5rem; gap:0}
@@ -989,7 +994,6 @@
         <div class="cliente-nav-item" id="cnav-mi-progreso" onclick="showClienteTab('mi-progreso')"><span class="cliente-nav-icon">📈</span> Mi Progreso</div>
         <div class="cliente-nav-item" id="cnav-mi-plan" onclick="showClienteTab('mi-plan')"><span class="cliente-nav-icon">📋</span> Mi Plan</div>
         <div class="cliente-nav-item" id="cnav-mensajes" onclick="showClienteTab('mensajes')"><span class="cliente-nav-icon">💬</span> Mensajes</div>
-        <div class="cliente-nav-item" id="cnav-mi-peso" onclick="showClienteTab('mi-peso')"><span class="cliente-nav-icon">⚖️</span> Mi Peso</div>
       </div>
       <div class="cliente-sidebar-footer">
         <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);margin-bottom:0.5rem" id="clienteSidebarEmail">—</div>
@@ -1012,9 +1016,6 @@
     </div>
     <div id="cliente-mensajes" class="cliente-tab-content">
       <div class="loading"><div class="spinner"></div>Cargando mensajes...</div>
-    </div>
-    <div id="cliente-mi-peso" class="cliente-tab-content">
-      <div class="loading"><div class="spinner"></div>Cargando tu progreso de peso...</div>
     </div>
   </div>
   </div><!-- /cliente-layout -->
@@ -2990,7 +2991,6 @@ function showClienteTab(tab) {
   if (bar) bar.style.display = tab === 'mi-rutina' ? '' : 'none';
   // Recargar según tab
   if (tab === 'mi-progreso' && window._clienteIdActual) cargarMiProgreso(window._clienteIdActual);
-  if (tab === 'mi-peso' && window._clienteIdActual) cargarMiProgreso(window._clienteIdActual);
 }
 
 async function cargarMiRutina(clienteId) {
