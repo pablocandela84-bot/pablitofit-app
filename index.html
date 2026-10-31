@@ -2863,8 +2863,10 @@ async function cargarMiRutina(clienteId) {
   const cont = document.getElementById('cliente-mi-rutina');
   const { data } = await sb.from('rutinas').select('*').eq('cliente_id', clienteId).order('semana', {ascending:true});
   const rutinas = data || [];
-  const rutina = rutinas[rutinas.length - 1]; // más reciente por defecto
   window._misRutinas = rutinas;
+  // Mostrar la más reciente por defecto
+  window._misRutinaIdx = rutinas.length - 1;
+  const rutina = rutinas[window._misRutinaIdx];
 
   if (!rutina || !rutina.datos) {
     cont.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Tu coach aún no ha publicado tu rutina. ¡Pronto estará aquí!</div></div>`;
@@ -2872,8 +2874,16 @@ async function cargarMiRutina(clienteId) {
   }
 
   await cargarBancoGlobal();
+
+  // Selector de meses si hay más de una rutina
+  const selectorMeses = rutinas.length > 1 ? `
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;padding:1rem 1.5rem 0">
+      ${rutinas.map((r, i) => `<button id="btn-rutina-cli-${i}" class="btn btn-sm ${i === window._misRutinaIdx ? 'btn-primary' : 'btn-secondary'}" onclick="mostrarMiRutina(${i})">${(r.mes||'Rutina').replace(/\b\w/g, c => c.toUpperCase())}</button>`).join('')}
+    </div>` : '';
+
   const dias = rutina.datos.dias || [];
-  cont.innerHTML = `
+  cont.innerHTML = selectorMeses + `
+    <div id="rutina-cliente-container">
     <div style="background:var(--navy);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-family:var(--display);font-size:0.6rem;font-weight:700;letter-spacing:3px;color:var(--blue2);margin-bottom:4px">RUTINA MENSUAL</div>
@@ -2909,7 +2919,7 @@ async function cargarMiRutina(clienteId) {
           <span class="dia-checkin-done">&#x2705; Completado</span>
         </div>
       </div>`;
-    }).join('')}</div>`;
+    }).join('')}</div></div>`;
 
   initCheckinBar(clienteId);
   // Cargar pesos y estados completados desde Supabase
@@ -2920,6 +2930,7 @@ function mostrarMiRutina(idx) {
   const rutinas = window._misRutinas || [];
   const r = rutinas[idx];
   if (!r || !r.datos) return;
+  window._misRutinaIdx = idx;
   rutinas.forEach((_,i) => {
     const btn = document.getElementById('btn-rutina-cli-'+i);
     if (btn) btn.className = 'btn btn-sm '+(i===idx?'btn-primary':'btn-secondary');
