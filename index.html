@@ -180,14 +180,25 @@
 
     /* ── PORTAL CLIENTE ── */
     #clienteScreen{flex-direction:column;background:var(--bg)}
+    /* ── CLIENTE LAYOUT ── */
     .cliente-topbar{background:var(--navy);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
     .cliente-brand{font-family:var(--display);font-size:0.9rem;font-weight:900;color:#fff;letter-spacing:-0.5px}
     .cliente-brand span{color:var(--blue2)}
     .cliente-welcome{font-size:0.68rem;color:rgba(255,255,255,0.4)}
-    .cliente-nav{display:flex;gap:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;overflow-x:auto}
-    .cliente-nav-item{padding:1rem 1.2rem;font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s}
-    .cliente-nav-item.active{color:var(--blue);border-bottom-color:var(--blue)}
-    .cliente-body{padding:2rem;max-width:900px;margin:0 auto;width:100%}
+    .cliente-layout{display:flex;min-height:calc(100vh - 58px)}
+    .cliente-sidebar{width:220px;flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;min-height:100%;position:sticky;top:0;height:calc(100vh - 58px);overflow-y:auto}
+    .cliente-sidebar-nav{flex:1;padding:0.8rem 0}
+    .cliente-nav-item{display:flex;align-items:center;gap:0.8rem;padding:0.85rem 1.5rem;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.55);cursor:pointer;border-left:3px solid transparent;transition:all 0.18s;white-space:nowrap}
+    .cliente-nav-item:hover{color:#fff;background:rgba(255,255,255,0.06)}
+    .cliente-nav-item.active{color:#fff;border-left-color:var(--blue);background:rgba(59,130,246,0.12)}
+    .cliente-nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+    .cliente-sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08)}
+    .cliente-body{flex:1;padding:2rem;max-width:860px;min-width:0}
+    /* hamburger cliente */
+    .cliente-hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:5px}
+    .cliente-hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px}
+    .cliente-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:299}
+    .cliente-sidebar-overlay.open{display:block}
     .cliente-tab-content{display:none}
     .cliente-tab-content.active{display:block}
 
@@ -702,6 +713,10 @@
       /* ── PORTAL CLIENTE ── */
       #clienteScreen{padding-bottom:0}
       .cliente-topbar{padding:0.8rem 1rem}
+      .cliente-hamburger{display:flex}
+      .cliente-sidebar{position:fixed;top:0;left:0;height:100vh;z-index:300;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.76,0,0.24,1)}
+      .cliente-sidebar.open{transform:translateX(0)}
+      .cliente-body{padding:1rem}
       .cliente-brand{font-size:0.8rem}
       .cliente-nav{padding:0 0.5rem; gap:0}
       .cliente-nav-item{padding:0.8rem 0.8rem; font-size:0.62rem}
@@ -951,20 +966,37 @@
 <!-- ══════════════════════════════════════
      PORTAL CLIENTE
 ══════════════════════════════════════ -->
-<div id="clienteScreen" class="screen">
+<div id="clienteScreen" class="screen" style="flex-direction:column">
+  <!-- Topbar cliente -->
   <div class="cliente-topbar">
-    <div>
-      <div style="display:flex;align-items:center;gap:10px"><img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit"><div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="cliente-hamburger" id="clienteHamburger" onclick="toggleClienteSidebar()" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+      <img src="https://raw.githubusercontent.com/pablocandela84-bot/pablitofit-app/main/logo.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="PablitoFit">
+      <div><div class="cliente-brand">PABLITO<span>FIT</span></div><div class="cliente-welcome">Bienvenido, <span id="clienteNombreTop">—</span></div></div>
     </div>
-    <button class="btn" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)" onclick="logout()">Salir</button>
   </div>
-  <div class="cliente-nav">
-    <div class="cliente-nav-item active" onclick="showClienteTab('mi-rutina')">💪 Mi Rutina</div>
-    <div class="cliente-nav-item" onclick="showClienteTab('mi-dieta')">✅ Mis Hábitos</div>
-    <div class="cliente-nav-item" onclick="showClienteTab('mi-progreso')">📈 Mi Progreso</div>
-    <div class="cliente-nav-item" onclick="showClienteTab('mi-plan')">📋 Mi Plan</div>
-    <div class="cliente-nav-item" onclick="showClienteTab('mensajes')">💬 Mensajes</div>
-  </div>
+  <!-- Overlay móvil -->
+  <div class="cliente-sidebar-overlay" id="clienteSidebarOverlay" onclick="toggleClienteSidebar()"></div>
+  <!-- Layout principal -->
+  <div class="cliente-layout">
+    <!-- Sidebar -->
+    <div class="cliente-sidebar" id="clienteSidebar">
+      <div class="cliente-sidebar-nav">
+        <div class="cliente-nav-item active" id="cnav-mi-rutina" onclick="showClienteTab('mi-rutina')"><span class="cliente-nav-icon">💪</span> Mi Rutina</div>
+        <div class="cliente-nav-item" id="cnav-mi-dieta" onclick="showClienteTab('mi-dieta')"><span class="cliente-nav-icon">✅</span> Mis Hábitos</div>
+        <div class="cliente-nav-item" id="cnav-mi-progreso" onclick="showClienteTab('mi-progreso')"><span class="cliente-nav-icon">📈</span> Mi Progreso</div>
+        <div class="cliente-nav-item" id="cnav-mi-plan" onclick="showClienteTab('mi-plan')"><span class="cliente-nav-icon">📋</span> Mi Plan</div>
+        <div class="cliente-nav-item" id="cnav-mensajes" onclick="showClienteTab('mensajes')"><span class="cliente-nav-icon">💬</span> Mensajes</div>
+        <div class="cliente-nav-item" id="cnav-mi-peso" onclick="showClienteTab('mi-peso')"><span class="cliente-nav-icon">⚖️</span> Mi Peso</div>
+      </div>
+      <div class="cliente-sidebar-footer">
+        <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);margin-bottom:0.5rem" id="clienteSidebarEmail">—</div>
+        <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+    <!-- Contenido -->
   <div class="cliente-body">
     <div id="cliente-mi-rutina" class="cliente-tab-content active">
       <div class="loading"><div class="spinner"></div>Cargando tu rutina...</div>
@@ -981,7 +1013,11 @@
     <div id="cliente-mensajes" class="cliente-tab-content">
       <div class="loading"><div class="spinner"></div>Cargando mensajes...</div>
     </div>
+    <div id="cliente-mi-peso" class="cliente-tab-content">
+      <div class="loading"><div class="spinner"></div>Cargando tu progreso de peso...</div>
+    </div>
   </div>
+  </div><!-- /cliente-layout -->
 </div>
 
 
@@ -2507,17 +2543,46 @@ async function renderProgresoPanel(clienteId) {
     + '<div class="progreso-card"><div class="progreso-val" style="color:'+(delta!==null?deltaColor:'inherit')+'">'+(delta!==null?(deltaPos?'+':'')+delta:'—')+'<span style="font-size:1rem"> kg</span></div><div class="progreso-label">Cambio total</div></div>'
     + '</div>';
 
-  const histHtml = '<div class="card"><div class="card-header"><div class="card-title">Historial mensual</div></div>'
-    + (entradas.length
+  // Separar check-ins de entradas de peso
+  const checkins = entradas.filter(function(e){ return e.datos && e.datos.ejercicios && e.datos.ejercicios.length > 0; });
+  const pesosEntradas = entradas.filter(function(e){ return e.peso; });
+
+  // Guardar cache para detalle modal
+  window._checkinCache = window._checkinCache || {};
+  checkins.forEach(function(e){ window._checkinCache[e.id] = e; });
+
+  const histPesoHtml = '<div class="card" style="margin-bottom:1.2rem"><div class="card-header"><div class="card-title">Historial de peso</div></div>'
+    + (pesosEntradas.length
       ? '<table><thead><tr><th>Mes</th><th>Peso</th><th>Nota</th><th></th></tr></thead><tbody>'
-        + entradas.slice().reverse().map(function(e){
+        + pesosEntradas.slice().reverse().map(function(e){
             return '<tr><td>'+(e.etiqueta||fmtFecha(e.fecha))+'</td><td><strong>'+(e.peso||'—')+' kg</strong></td>'
               + '<td style="color:var(--gray);font-size:0.78rem">'+(e.notas||'—')+'</td>'
               + '<td><button class="btn btn-sm btn-danger" onclick="eliminarProgreso(\''+e.id+'\',\''+clienteId+'\')">×</button></td></tr>';
           }).join('')
         + '</tbody></table>'
-      : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Aún no hay registros.</div></div>')
+      : '<div class="empty-state"><div class="empty-state-icon">⚖️</div><div class="empty-state-text">Aún no hay registros de peso.</div></div>')
     + '</div>';
+
+  const histCheckinHtml = '<div class="card"><div class="card-header"><div class="card-title">Check-ins de entrenamiento</div></div>'
+    + (checkins.length
+      ? '<div style="display:flex;flex-direction:column;gap:0.6rem;padding:0.8rem 1.2rem">'
+        + checkins.slice().reverse().map(function(e){
+            const d = e.datos;
+            const nEj = d.ejercicios ? d.ejercicios.length : 0;
+            const conPeso = d.ejercicios ? d.ejercicios.filter(function(x){ return x.peso; }).length : 0;
+            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0.9rem;background:var(--surface);border-radius:8px;gap:0.8rem;flex-wrap:wrap">'
+              + '<div style="display:flex;align-items:center;gap:0.7rem;min-width:0">'
+              + '<span style="font-size:1.3rem">💪</span>'
+              + '<div style="min-width:0"><div style="font-weight:600;font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(d.dia||fmtFecha(e.fecha))+'</div>'
+              + '<div style="font-size:0.72rem;color:var(--gray);margin-top:1px">'+fmtFecha(e.fecha)+' · '+nEj+' ejercicios'+(conPeso>0?' · '+conPeso+' con peso':'')+'</div></div></div>'
+              + '<button class="btn btn-sm btn-secondary" onclick="verCheckinDetalle(\''+e.id+'\')">Ver detalle</button>'
+              + '</div>';
+          }).join('')
+        + '</div>'
+      : '<div class="empty-state"><div class="empty-state-icon">💪</div><div class="empty-state-text">Aún no hay check-ins registrados.</div></div>')
+    + '</div>';
+
+  const histHtml = histPesoHtml + histCheckinHtml;
 
   cont.innerHTML = '<div style="margin-bottom:1.2rem"><button class="btn btn-primary" onclick="abrirProgreso(\''+clienteId+'\')">+ Añadir peso</button></div>'
     + statsHtml + graficaHtml + histHtml;
@@ -2530,6 +2595,57 @@ async function eliminarProgreso(id, clienteId) {
   if (row) row.remove();
   // Borrar en DB en background
   sb.from('progreso').delete().eq('id', id).then(() => renderProgresoPanel(clienteId));
+}
+
+function verCheckinDetalle(checkinId) {
+  const e = window._checkinCache && window._checkinCache[checkinId];
+  if (!e) { toast('No se encontró el detalle del check-in', 'error'); return; }
+  const d = e.datos || {};
+  const ejercicios = d.ejercicios || [];
+
+  const ejHtml = ejercicios.length
+    ? ejercicios.map(function(ex) {
+        const pesoTag = ex.peso
+          ? '<span style="background:rgba(59,130,246,0.15);color:var(--blue);padding:2px 8px;border-radius:20px;font-size:0.78rem;font-weight:600">'+ex.peso+' kg</span>'
+          : '<span style="color:var(--gray);font-size:0.78rem">Sin peso registrado</span>';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.65rem 0;border-bottom:1px solid var(--border)">'
+          + '<div style="display:flex;align-items:center;gap:0.6rem"><span style="color:var(--green);font-size:1rem">✓</span><span style="font-size:0.88rem">'+ex.nombre+'</span></div>'
+          + pesoTag + '</div>';
+      }).join('')
+    : '<div style="color:var(--gray);text-align:center;padding:1rem">No hay ejercicios registrados</div>';
+
+  const conPeso = ejercicios.filter(function(x){ return x.peso; }).length;
+  const sinPeso = ejercicios.length - conPeso;
+
+  const html = '<div style="padding:1.5rem">'
+    + '<div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem">'
+    + '<span style="font-size:2rem">💪</span>'
+    + '<div><div style="font-weight:700;font-size:1.1rem">'+(d.dia||'Check-in')+'</div>'
+    + '<div style="font-size:0.78rem;color:var(--gray);margin-top:2px">'+fmtFecha(e.fecha)+'</div></div></div>'
+    + '<div style="display:flex;gap:1rem;margin-bottom:1.2rem">'
+    + '<div style="flex:1;background:var(--surface);border-radius:8px;padding:0.8rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--blue)">'+ejercicios.length+'</div><div style="font-size:0.7rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Ejercicios</div></div>'
+    + '<div style="flex:1;background:var(--surface);border-radius:8px;padding:0.8rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--green)">'+conPeso+'</div><div style="font-size:0.7rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Con peso</div></div>'
+    + (sinPeso > 0 ? '<div style="flex:1;background:var(--surface);border-radius:8px;padding:0.8rem;text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--gray)">'+sinPeso+'</div><div style="font-size:0.7rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Sin peso</div></div>' : '')
+    + '</div>'
+    + '<div style="font-size:0.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.6rem">Ejercicios realizados</div>'
+    + '<div>' + ejHtml + '</div>'
+    + (e.notas ? '<div style="margin-top:1rem;padding:0.8rem;background:var(--surface);border-radius:8px;font-size:0.82rem;color:var(--gray)">'+e.notas+'</div>' : '')
+    + '</div>';
+
+  // Abrir modal
+  let modal = document.getElementById('checkinDetalleModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'checkinDetalleModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);padding:1rem';
+    modal.onclick = function(ev) { if (ev.target === modal) modal.remove(); };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '<div style="background:var(--white);border-radius:12px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border)">'
+    + '<div style="font-weight:700;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px">Detalle del Check-in</div>'
+    + '<button onclick="document.getElementById(\'checkinDetalleModal\').remove()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--gray);line-height:1">×</button></div>'
+    + html + '</div>';
 }
 
 // ══════════════════════════════════════
@@ -2836,6 +2952,8 @@ async function cargarPortalCliente() {
   const cliente = clienteData;
   window._clienteIdActual = cliente.id;
   document.getElementById('clienteNombreTop').textContent = cliente.nombre.split(' ')[0];
+  const emailEl = document.getElementById('clienteSidebarEmail');
+  if (emailEl) emailEl.textContent = currentUser.email;
 
   // Cargar rutina
   await cargarMiRutina(cliente.id);
@@ -2845,18 +2963,34 @@ async function cargarPortalCliente() {
   await cargarMisMensajes(cliente.id);
 }
 
+function toggleClienteSidebar() {
+  const sidebar = document.getElementById('clienteSidebar');
+  const overlay = document.getElementById('clienteSidebarOverlay');
+  if (!sidebar) return;
+  const open = sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('open', open);
+}
+
 function showClienteTab(tab) {
   document.querySelectorAll('.cliente-nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.cliente-tab-content').forEach(t => t.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  document.getElementById('cliente-'+tab).classList.add('active');
+  const navEl = document.getElementById('cnav-' + tab);
+  if (navEl) navEl.classList.add('active');
+  const tabEl = document.getElementById('cliente-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  // Cerrar sidebar en móvil al navegar
+  const sidebar = document.getElementById('clienteSidebar');
+  const overlay = document.getElementById('clienteSidebarOverlay');
+  if (sidebar && sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+  }
   // Mostrar/ocultar checkin bar según tab
   const bar = document.getElementById('checkinBar');
   if (bar) bar.style.display = tab === 'mi-rutina' ? '' : 'none';
-  // Recargar progreso al abrir el tab
-  if (tab === 'mi-progreso' && window._clienteIdActual) {
-    cargarMiProgreso(window._clienteIdActual);
-  }
+  // Recargar según tab
+  if (tab === 'mi-progreso' && window._clienteIdActual) cargarMiProgreso(window._clienteIdActual);
+  if (tab === 'mi-peso' && window._clienteIdActual) cargarMiProgreso(window._clienteIdActual);
 }
 
 async function cargarMiRutina(clienteId) {
@@ -4015,10 +4149,28 @@ async function hacerCheckinDia(diaIdx, rutinaId, diaNombre, tituloEjercicio) {
   const hoy = new Date().toISOString().split('T')[0];
   const nota = '💪 Check-in completado: ' + label + ' · ' + new Date().toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
 
+  // Capturar ejercicios completados con sus pesos
+  const ejerciciosHechos = [];
+  diaEl.querySelectorAll('.ex-check-row.done').forEach(function(row) {
+    const nombre = row.querySelector('.ex-check-name')?.textContent?.trim() || '';
+    const pesoInput = row.querySelector('.peso-input');
+    const peso = pesoInput ? (pesoInput.value || null) : null;
+    if (nombre) ejerciciosHechos.push({ nombre: nombre, peso: peso });
+  });
+
+  const datosCheckin = {
+    dia: label,
+    dia_idx: diaIdx,
+    rutina_id: rutinaId,
+    ejercicios: ejerciciosHechos,
+    total: ejerciciosHechos.length
+  };
+
   const { error } = await sb.from('progreso').insert([{
     cliente_id: cliente.id,
     fecha: hoy,
-    notas: nota
+    notas: nota,
+    datos: datosCheckin
   }]);
 
   if (error) { toast('Error: ' + error.message, 'error'); return; }
