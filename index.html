@@ -1633,6 +1633,18 @@ async function cargarDashboard() {
 //  COACH: CLIENTES
 // ══════════════════════════════════════
 async function cargarClientes() {
+  // Restaurar el HTML base del tab-clientes (por si verCliente() lo había reemplazado)
+  const tabClientes = document.getElementById('tab-clientes');
+  if (!document.getElementById('clientesTable')) {
+    tabClientes.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Todos los clientes</div>
+          <input class="search-box" id="searchClientes" placeholder="Buscar cliente..." oninput="filtrarClientes()">
+        </div>
+        <div id="clientesTable"><div class="loading-inline"><div class="spinner"></div>Cargando...</div></div>
+      </div>`;
+  }
   // Mostrar lista cacheada inmediatamente si existe
   if (clientes.length) renderTablaClientes(clientes);
   else document.getElementById('clientesTable').innerHTML = '<div class="loading-inline"><div class="spinner"></div>Cargando...</div>';
@@ -1815,20 +1827,20 @@ async function verCliente(id) {
     </div>
     ${c.notas ? `<div style="background:var(--white);border:1px solid var(--border);padding:1rem 1.5rem;margin-bottom:1.5rem;border-left:3px solid var(--blue)"><div style="font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:0.4rem">Notas internas</div><div style="font-size:0.82rem;color:var(--navy);line-height:1.7">${c.notas}</div></div>` : ''}
     <div class="client-tabs">
-      <div class="client-tab active" onclick="showClientePerfilTab('rutina','${c.id}')">💪 Rutina</div>
-      <div class="client-tab" onclick="showClientePerfilTab('nutricion','${c.id}')">🥗 Nutrición</div>
-      <div class="client-tab" onclick="showClientePerfilTab('progreso-c','${c.id}')">📈 Progreso</div>
-      <div class="client-tab" onclick="showClientePerfilTab('mensajes-c','${c.id}')">💬 Mensajes</div>
+      <div class="client-tab active" onclick="showClientePerfilTab('rutina','${c.id}',this)">💪 Rutina</div>
+      <div class="client-tab" onclick="showClientePerfilTab('nutricion','${c.id}',this)">🥗 Nutrición</div>
+      <div class="client-tab" onclick="showClientePerfilTab('progreso-c','${c.id}',this)">📈 Progreso</div>
+      <div class="client-tab" onclick="showClientePerfilTab('mensajes-c','${c.id}',this)">💬 Mensajes</div>
     </div>
     <div id="clientePerfilContent"></div>
   `;
   showClientePerfilTab('rutina', c.id);
 }
 
-function showClientePerfilTab(tab, clienteId) {
+function showClientePerfilTab(tab, clienteId, el) {
   document.querySelectorAll('.client-tab').forEach(t => t.classList.remove('active'));
-  event.currentTarget && event.currentTarget.classList.add('active');
-  document.querySelectorAll('.client-tab').forEach(t => {
+  if (el) el.classList.add('active');
+  else document.querySelectorAll('.client-tab').forEach(t => {
     if (t.textContent.toLowerCase().includes(tab.substring(0,4))) t.classList.add('active');
   });
   if (tab === 'rutina') renderRutinaEditor(clienteId);
@@ -3958,9 +3970,16 @@ async function cargarCargasCliente(clienteId, rutinaId) {
   });
 
   // Restaurar ejercicios completados desde Supabase
-  // Construir mapa nombre → completado para consulta rápida
+  // Solo se restauran ticks si el check-in de ese día fue HOY
+  const hoy = new Date().toISOString().split('T')[0];
   const completadoMap = {};
-  (data || []).forEach(c => { completadoMap[c.ejercicio_nombre] = !!c.completado; });
+  (data || []).forEach(c => {
+    // Comprobar si el registro fue completado hoy
+    const fechaCompletado = c.updated_at ? c.updated_at.split('T')[0] : null;
+    if (c.completado && fechaCompletado === hoy) {
+      completadoMap[c.ejercicio_nombre] = true;
+    }
+  });
 
   document.querySelectorAll('.ex-check-row').forEach(row => {
     const nameEl = row.querySelector('.ex-check-name');
@@ -4299,6 +4318,34 @@ async function hacerCheckinDia(diaIdx, rutinaId, diaNombre, tituloEjercicio) {
   if (btn) btn.classList.remove('visible');
   if (doneLabel) doneLabel.classList.add('visible');
   if (fill) fill.style.background = 'var(--green)';
+
+  // Resetear los ticks del día tras check-in (el peso se mantiene)
+  diaEl.querySelectorAll('.ex-check-row.done').forEach(function(row) {
+    row.classList.remove('done');
+    const tick = row.querySelector('.ex-check-tick');
+    const checkbox = row.querySelector('.ex-checkbox');
+    if (tick) tick.style.display = 'none';
+    if (checkbox) { checkbox.style.background = ''; checkbox.style.borderColor = ''; }
+    // Limpiar en localStorage también
+    const exId = row.id;
+    const rutinaId = row.dataset.rutina || '';
+    const storageKey = 'checklist_' + rutinaId + '_' + new Date().toISOString().split('T')[0];
+    const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    delete saved[exId];
+    localStorage.setItem(storageKey, JSON.stringify(saved));
+  });
+  // Resetear completado en Supabase para estos ejercicios del día
+  if (ejerciciosHechos.length > 0) {
+    const nombres = ejerciciosHechos.map(function(e){ return e.nombre; });
+    sb.from('cargas_ejercicios')
+      .update({ completado: false })
+      .eq('cliente_id', cliente.id)
+      .eq('rutina_id', rutinaId)
+      .in('ejercicio_nombre', nombres)
+      .then(function(){});
+  }
+  actualizarProgressDia(diaIdx);
+  actualizarCheckinBar();
 
   toast('✅ ' + label + ' completado y registrado', 'success');
 
