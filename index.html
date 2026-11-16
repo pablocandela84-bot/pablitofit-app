@@ -2700,12 +2700,14 @@ async function renderMensajesPanel(clienteId) {
     <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem">
       <button class="btn btn-primary" onclick="abrirMensaje('${clienteId}')">+ Nueva nota</button>
     </div>
-    ${msgs.length ? msgs.map(m => `
-      <div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem">
-        <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.4rem">${fmtFecha(m.created_at)}</div>
+    ${msgs.length ? msgs.map(m => {
+      const esCliente = m.autor === 'cliente';
+      return `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid ${esCliente ? 'var(--green)' : 'var(--blue)'};padding:1rem 1.5rem;margin-bottom:0.8rem">
+        <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.4rem">${fmtFecha(m.created_at)} · ${esCliente ? '👤 Cliente' : '🏋️ Tú (coach)'}</div>
         <div style="font-size:0.85rem;line-height:1.7;color:var(--navy)">${m.texto}</div>
         <button class="btn btn-sm btn-danger" style="margin-top:0.6rem" onclick="eliminarMensaje('${m.id}','${clienteId}')">Borrar</button>
-      </div>`).join('') : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No hay notas aún.</div></div>`}`;
+      </div>`;
+    }).join('') : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No hay notas aún.</div></div>`}`;
 }
 
 async function eliminarMensaje(id, clienteId) {
@@ -2813,7 +2815,7 @@ async function guardarMensaje() {
   if (!texto) { toast('Escribe un mensaje','error'); return; }
   const btnM = document.querySelector('#modalMensaje .btn-primary');
   if (btnM) { btnM.textContent = '...'; btnM.disabled = true; }
-  const { error } = await sb.from('mensajes').insert([{ cliente_id: mensajeClienteId, texto }]);
+  const { error } = await sb.from('mensajes').insert([{ cliente_id: mensajeClienteId, texto, autor: 'coach' }]);
   if (btnM) { btnM.textContent = 'Enviar →'; btnM.disabled = false; }
   if (error) { toast('Error: '+error.message,'error'); return; }
   toast('✓ Nota enviada','success');
@@ -3208,6 +3210,7 @@ function buildClienteExRow(e, key, rutinaId, diaIdx) {
     + '<div style="flex:1;min-width:0">'
     + '<span class="ex-check-name">' + e.nombre + '</span>'
     + '<div style="font-size:0.68rem;color:var(--gray);margin-top:1px">' + (e.series||'') + (e.series&&e.reps?' &times; ':'') + (e.reps||'') + (e.descanso?' &middot; '+e.descanso:'') + '</div>'
+    + (e.notas ? '<div style="font-size:0.65rem;color:var(--blue);margin-top:2px;font-style:italic">📋 ' + e.notas + '</div>' : '')
     + '</div>'
     + gifBtn
     + '<div class="peso-input-wrap">'
@@ -3557,14 +3560,61 @@ async function cargarMiPlan(cliente) {
 
 async function cargarMisMensajes(clienteId) {
   const cont = document.getElementById('cliente-mensajes');
-  const { data } = await sb.from('mensajes').select('*').eq('cliente_id', clienteId).order('created_at', {ascending:false});
+  const { data: clienteData } = await sb.from('clientes').select('id').eq('email', currentUser.email).single();
+  const clienteIdReal = clienteData?.id || clienteId;
+  const { data } = await sb.from('mensajes').select('*').eq('cliente_id', clienteIdReal).order('created_at', {ascending:true});
   const msgs = data || [];
-  cont.innerHTML = msgs.length
-    ? msgs.map(m => `<div style="background:var(--white);border:1px solid var(--border);border-left:3px solid var(--blue);padding:1rem 1.5rem;margin-bottom:0.8rem">
-        <div style="font-size:0.62rem;color:var(--gray);margin-bottom:0.5rem">📌 ${fmtFecha(m.created_at)} · De tu coach</div>
-        <div style="font-size:0.88rem;line-height:1.8;color:var(--navy)">${m.texto}</div>
-      </div>`).join('')
-    : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">No hay mensajes de tu coach aún.</div></div>`;
+
+  const msgsHtml = msgs.length
+    ? msgs.map(m => {
+        const esCliente = m.autor === 'cliente';
+        return `<div style="display:flex;justify-content:${esCliente ? 'flex-end' : 'flex-start'};margin-bottom:0.8rem">
+          <div style="max-width:80%;background:${esCliente ? 'var(--blue)' : 'var(--white)'};color:${esCliente ? '#fff' : 'var(--navy)'};border:1px solid ${esCliente ? 'var(--blue)' : 'var(--border)'};border-radius:${esCliente ? '12px 12px 2px 12px' : '12px 12px 12px 2px'};padding:0.75rem 1rem">
+            <div style="font-size:0.6rem;opacity:0.7;margin-bottom:0.3rem">${esCliente ? 'Tú' : '🏋️ Pablo (coach)'} · ${fmtFecha(m.created_at)}</div>
+            <div style="font-size:0.85rem;line-height:1.6">${m.texto}</div>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-text">Aún no hay mensajes. ¡Escríbele a tu coach!</div></div>`;
+
+  cont.innerHTML = `
+    <div style="padding:1rem">
+      <div id="msgs-lista" style="margin-bottom:1.2rem">${msgsHtml}</div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:1rem">
+        <textarea id="msgClienteTexto" placeholder="Escribe tu mensaje, duda o comentario..." style="width:100%;border:none;outline:none;font-family:inherit;font-size:0.85rem;resize:none;height:80px;color:var(--navy);background:transparent"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:0.5rem">
+          <button class="btn btn-primary" onclick="enviarMensajeCliente('${clienteIdReal}')">Enviar →</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function enviarMensajeCliente(clienteId) {
+  const textarea = document.getElementById('msgClienteTexto');
+  const texto = textarea?.value?.trim();
+  if (!texto) { toast('Escribe un mensaje primero','error'); return; }
+  const btn = document.querySelector('#cliente-mensajes .btn-primary');
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
+  const { error } = await sb.from('mensajes').insert([{ cliente_id: clienteId, texto, autor: 'cliente' }]);
+  if (btn) { btn.textContent = 'Enviar →'; btn.disabled = false; }
+  if (error) { toast('Error al enviar: '+error.message,'error'); return; }
+  textarea.value = '';
+  toast('✓ Mensaje enviado','success');
+  // Recargar mensajes
+  const { data } = await sb.from('mensajes').select('*').eq('cliente_id', clienteId).order('created_at', {ascending:true});
+  const msgs = data || [];
+  const lista = document.getElementById('msgs-lista');
+  if (lista) {
+    lista.innerHTML = msgs.map(m => {
+      const esCliente = m.autor === 'cliente';
+      return `<div style="display:flex;justify-content:${esCliente ? 'flex-end' : 'flex-start'};margin-bottom:0.8rem">
+        <div style="max-width:80%;background:${esCliente ? 'var(--blue)' : 'var(--white)'};color:${esCliente ? '#fff' : 'var(--navy)'};border:1px solid ${esCliente ? 'var(--blue)' : 'var(--border)'};border-radius:${esCliente ? '12px 12px 2px 12px' : '12px 12px 12px 2px'};padding:0.75rem 1rem">
+          <div style="font-size:0.6rem;opacity:0.7;margin-bottom:0.3rem">${esCliente ? 'Tú' : '🏋️ Pablo (coach)'} · ${fmtFecha(m.created_at)}</div>
+          <div style="font-size:0.85rem;line-height:1.6">${m.texto}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
 // Bloquear scroll lateral en móvil
