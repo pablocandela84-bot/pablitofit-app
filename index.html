@@ -3047,35 +3047,104 @@ async function cargarProgresoCliente() {
   const id = document.getElementById('progresoClienteSelect').value;
   if (!id) return;
   progresoClienteId = id;
-  // Usar mock para tab separado
-  const { data } = await sb.from('progreso').select('*').eq('cliente_id', id).order('fecha', {ascending:false});
+  const { data } = await sb.from('progreso').select('*').eq('cliente_id', id).order('fecha', {ascending:true});
   const entradas = data || [];
   const cont = document.getElementById('progresoContent');
-  cont.innerHTML = `
-    <div style="padding:1rem;display:flex;gap:0.8rem">
-      <button class="btn btn-primary" onclick="abrirProgreso('${id}')">+ Registrar check-in</button>
-    </div>
-    ${entradas.length
-      ? (window.innerWidth < 768
-        ? entradas.map(e => `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.85rem 1rem;border-bottom:1px solid var(--border);gap:0.6rem">
-            <div style="min-width:0;flex:1">
-              <div style="font-size:0.78rem;font-weight:700;color:var(--navy)">${fmtFecha(e.fecha)}</div>
-              <div style="font-size:0.72rem;color:var(--gray);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.notas||'—'}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">
-              <span style="font-weight:700;font-size:0.9rem">${e.peso||'—'} kg</span>
-              <button class="btn btn-sm btn-danger" style="font-size:0.6rem;padding:3px 8px" onclick="eliminarProgresoTab('${e.id}')">✕</button>
-            </div>
-          </div>`).join('')
-        : `<table><thead><tr><th>Fecha</th><th>Peso</th><th>Notas</th><th>Acciones</th></tr></thead><tbody>
-            ${entradas.map(e => `<tr>
-              <td>${fmtFecha(e.fecha)}</td>
-              <td><strong>${e.peso||'—'} kg</strong></td>
-              <td style="color:var(--gray);font-size:0.78rem">${e.notas||'—'}</td>
-              <td><button class="btn btn-sm btn-danger" onclick="eliminarProgresoTab('${e.id}')">Borrar</button></td>
-            </tr>`).join('')}
-          </tbody></table>`)
-      : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>'}`;
+
+  const checkinsProg = entradas.filter(function(e){ return e.datos && e.datos.ejercicios && e.datos.ejercicios.length > 0; });
+  const pesosEntradas = entradas.filter(function(e){ return e.peso; });
+
+  // Historial de peso
+  let pesoHtml = '';
+  if (pesosEntradas.length) {
+    pesoHtml = '<div class="card" style="margin-bottom:1rem"><div class="card-header"><div class="card-title">Historial de peso</div></div>'
+      + '<div style="display:flex;flex-direction:column;gap:0">'
+      + pesosEntradas.slice().reverse().map(function(e){
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border-bottom:1px solid var(--border);gap:0.5rem">'
+            + '<div><div style="font-weight:700;font-size:0.82rem">'+(e.etiqueta||fmtFecha(e.fecha))+'</div>'
+            + '<div style="font-size:0.7rem;color:var(--gray);margin-top:1px">'+(e.notas||'—')+'</div></div>'
+            + '<div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">'
+            + '<strong style="font-size:0.9rem">'+(e.peso||'—')+' kg</strong>'
+            + '<button class="btn btn-sm btn-danger" style="font-size:0.6rem;padding:3px 8px" onclick="eliminarProgresoTab(\''+e.id+'\')">✕</button>'
+            + '</div></div>';
+        }).join('')
+      + '</div></div>';
+  }
+
+  // Agrupar check-ins por día
+  let checkinHtml = '';
+  if (checkinsProg.length) {
+    var gruposProg = {};
+    checkinsProg.forEach(function(e) {
+      var clave = (e.datos.dia || 'Sin nombre').trim();
+      if (!gruposProg[clave]) gruposProg[clave] = [];
+      gruposProg[clave].push(e);
+    });
+    Object.keys(gruposProg).forEach(function(k) {
+      gruposProg[k].sort(function(a,b){ return a.fecha > b.fecha ? 1 : -1; });
+    });
+
+    checkinHtml = '<div class="card"><div class="card-header"><div class="card-title">Progresión de cargas por día</div></div>'
+      + '<div>'
+      + Object.keys(gruposProg).map(function(nombreDia) {
+          var sesiones = gruposProg[nombreDia];
+          var ejUnicos = [];
+          sesiones.forEach(function(s) {
+            (s.datos.ejercicios||[]).forEach(function(ex){
+              if (!ejUnicos.includes(ex.nombre)) ejUnicos.push(ex.nombre);
+            });
+          });
+
+          var tablaHtml = ejUnicos.length
+            ? '<div style="padding:0.8rem 1rem 1rem;background:var(--surface);overflow-x:auto">'
+              + '<div style="display:grid;grid-template-columns:1fr '+sesiones.map(function(){ return 'auto'; }).join(' ')+';gap:0.4rem 0.8rem;align-items:center;margin-bottom:0.5rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem">'
+              + '<span style="font-size:0.65rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Ejercicio</span>'
+              + sesiones.map(function(s){ return '<span style="font-size:0.65rem;color:var(--gray);text-align:center;white-space:nowrap">'+fmtFecha(s.fecha).replace(/\s\d{4}/,'')+'</span>'; }).join('')
+              + '</div>'
+              + ejUnicos.map(function(nombreEx) {
+                  var pesos = sesiones.map(function(s){
+                    var ex = (s.datos.ejercicios||[]).find(function(x){ return x.nombre===nombreEx; });
+                    return ex ? (ex.peso||null) : null;
+                  });
+                  var conP = pesos.filter(function(p){ return p; });
+                  var tend = '';
+                  if (conP.length >= 2) {
+                    var p0 = parseFloat(conP[0]), pN = parseFloat(conP[conP.length-1]);
+                    if (!isNaN(p0)&&!isNaN(pN)) {
+                      if (pN>p0) tend=' <span style="color:var(--green);font-size:0.7rem">▲</span>';
+                      else if (pN<p0) tend=' <span style="color:var(--red);font-size:0.7rem">▼</span>';
+                      else tend=' <span style="color:var(--gray);font-size:0.7rem">—</span>';
+                    }
+                  }
+                  return '<div style="display:grid;grid-template-columns:1fr '+sesiones.map(function(){ return 'auto'; }).join(' ')+';gap:0.4rem 0.8rem;align-items:center;padding:0.4rem 0;border-bottom:1px dashed var(--border)">'
+                    + '<span style="font-size:0.8rem;font-weight:500;color:var(--navy)">'+nombreEx+tend+'</span>'
+                    + pesos.map(function(p){ return p ? '<span style="font-size:0.8rem;font-weight:700;color:var(--blue);text-align:center;white-space:nowrap">'+p+'<span style="font-size:0.65rem;font-weight:400"> kg</span></span>' : '<span style="font-size:0.75rem;color:var(--gray);text-align:center">—</span>'; }).join('')
+                    + '</div>';
+                }).join('')
+              + '</div>'
+            : '<div style="padding:0.8rem 1rem;font-size:0.8rem;color:var(--gray);background:var(--surface)">Sin datos de ejercicios</div>';
+
+          return '<div style="border-bottom:1px solid var(--border)">'
+            + '<div onclick="(function(el){el.nextElementSibling.style.display=el.nextElementSibling.style.display===\'none\'?\'block\':\'none\';var arr=el.querySelector(\'.ci-arr2\');if(arr)arr.style.transform=el.nextElementSibling.style.display===\'block\'?\'rotate(90deg)\':\'\';})(this)" style="display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1rem;cursor:pointer;user-select:none">'
+            + '<div style="display:flex;align-items:center;gap:0.7rem">'
+            + '<span style="font-size:1.2rem">📅</span>'
+            + '<div><div style="font-weight:700;font-size:0.88rem;color:var(--navy)">'+nombreDia+'</div>'
+            + '<div style="font-size:0.7rem;color:var(--gray);margin-top:1px">'+sesiones.length+' sesión'+(sesiones.length!==1?'es':'')+' · '+ejUnicos.length+' ejercicios</div>'
+            + '</div></div>'
+            + '<span class="ci-arr2" style="color:var(--gray);font-size:0.9rem;transition:transform 0.2s;display:inline-block">›</span>'
+            + '</div>'
+            + '<div style="display:none">'+tablaHtml+'</div>'
+            + '</div>';
+        }).join('')
+      + '</div></div>';
+  }
+
+  cont.innerHTML = '<div style="padding:1rem 0 0.5rem;display:flex;gap:0.8rem">'
+    + '<button class="btn btn-primary" onclick="abrirProgreso(\''+id+'\')">+ Añadir peso</button>'
+    + '</div>'
+    + (entradas.length
+      ? pesoHtml + checkinHtml
+      : '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Sin registros aún.</div></div>');
 }
 
 async function eliminarProgresoTab(id) {
