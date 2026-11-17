@@ -2602,19 +2602,87 @@ async function renderProgresoPanel(clienteId) {
       : '<div class="empty-state"><div class="empty-state-icon">⚖️</div><div class="empty-state-text">Aún no hay registros de peso.</div></div>')
     + '</div>';
 
-  const histCheckinHtml = '<div class="card"><div class="card-header"><div class="card-title">Check-ins de entrenamiento</div></div>'
+  // Agrupar check-ins por nombre de día (d.dia) para ver progresión de cargas
+  const gruposDia = {};
+  checkins.forEach(function(e) {
+    const clave = (e.datos.dia || 'Sin nombre').trim();
+    if (!gruposDia[clave]) gruposDia[clave] = [];
+    gruposDia[clave].push(e);
+  });
+  // Ordenar cada grupo cronológicamente (más antiguo primero)
+  Object.keys(gruposDia).forEach(function(k) {
+    gruposDia[k].sort(function(a,b){ return a.fecha > b.fecha ? 1 : -1; });
+  });
+
+  const histCheckinHtml = '<div class="card"><div class="card-header"><div class="card-title">Progresión de cargas por día</div></div>'
     + (checkins.length
-      ? '<div style="display:flex;flex-direction:column;gap:0.6rem;padding:0.8rem 1.2rem">'
-        + checkins.slice().reverse().map(function(e){
-            const d = e.datos;
-            const nEj = d.ejercicios ? d.ejercicios.length : 0;
-            const conPeso = d.ejercicios ? d.ejercicios.filter(function(x){ return x.peso; }).length : 0;
-            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0.9rem;background:var(--surface);border-radius:8px;gap:0.8rem;flex-wrap:wrap">'
-              + '<div style="display:flex;align-items:center;gap:0.7rem;min-width:0">'
-              + '<span style="font-size:1.3rem">💪</span>'
-              + '<div style="min-width:0"><div style="font-weight:600;font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(d.dia||fmtFecha(e.fecha))+'</div>'
-              + '<div style="font-size:0.72rem;color:var(--gray);margin-top:1px">'+fmtFecha(e.fecha)+' · '+nEj+' ejercicios'+(conPeso>0?' · '+conPeso+' con peso':'')+'</div></div></div>'
-              + '<button class="btn btn-sm btn-secondary" onclick="verCheckinDetalle(\''+e.id+'\')">Ver detalle</button>'
+      ? '<div>'
+        + Object.keys(gruposDia).map(function(nombreDia) {
+            const sesiones = gruposDia[nombreDia];
+            const totalSesiones = sesiones.length;
+
+            // Recopilar todos los ejercicios únicos de este día
+            const ejerciciosUnicos = [];
+            sesiones.forEach(function(s) {
+              (s.datos.ejercicios || []).forEach(function(ex) {
+                if (!ejerciciosUnicos.includes(ex.nombre)) ejerciciosUnicos.push(ex.nombre);
+              });
+            });
+
+            // Para cada ejercicio, construir la línea de progresión
+            const tablaHtml = ejerciciosUnicos.length
+              ? '<div style="padding:0.8rem 1rem 1rem;background:var(--surface)">'
+                // Cabecera con fechas
+                + '<div style="display:grid;grid-template-columns:1fr '+sesiones.map(function(){ return 'auto'; }).join(' ')+';gap:0.4rem 0.8rem;align-items:center;margin-bottom:0.5rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem">'
+                + '<span style="font-size:0.65rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Ejercicio</span>'
+                + sesiones.map(function(s, si) {
+                    return '<span style="font-size:0.65rem;color:var(--gray);text-align:center;white-space:nowrap">'
+                      + fmtFecha(s.fecha).replace(/\s\d{4}/,'')
+                      + '</span>';
+                  }).join('')
+                + '</div>'
+                // Filas de ejercicios
+                + ejerciciosUnicos.map(function(nombreEx) {
+                    // Obtener peso por sesión
+                    const pesos = sesiones.map(function(s) {
+                      const ex = (s.datos.ejercicios || []).find(function(x){ return x.nombre === nombreEx; });
+                      return ex ? (ex.peso || null) : null;
+                    });
+                    // Detectar tendencia (último vs primero con peso)
+                    const conPeso = pesos.filter(function(p){ return p; });
+                    let tendencia = '';
+                    if (conPeso.length >= 2) {
+                      const primero = parseFloat(conPeso[0]);
+                      const ultimo = parseFloat(conPeso[conPeso.length-1]);
+                      if (!isNaN(primero) && !isNaN(ultimo)) {
+                        if (ultimo > primero) tendencia = ' <span style="color:var(--green);font-size:0.7rem">▲</span>';
+                        else if (ultimo < primero) tendencia = ' <span style="color:var(--red);font-size:0.7rem">▼</span>';
+                        else tendencia = ' <span style="color:var(--gray);font-size:0.7rem">—</span>';
+                      }
+                    }
+                    return '<div style="display:grid;grid-template-columns:1fr '+sesiones.map(function(){ return 'auto'; }).join(' ')+';gap:0.4rem 0.8rem;align-items:center;padding:0.4rem 0;border-bottom:1px dashed var(--border)">'
+                      + '<span style="font-size:0.8rem;font-weight:500;color:var(--navy)">' + nombreEx + tendencia + '</span>'
+                      + pesos.map(function(p) {
+                          return p
+                            ? '<span style="font-size:0.8rem;font-weight:700;color:var(--blue);text-align:center;white-space:nowrap">'+p+'<span style="font-size:0.65rem;font-weight:400"> kg</span></span>'
+                            : '<span style="font-size:0.75rem;color:var(--gray);text-align:center">—</span>';
+                        }).join('')
+                      + '</div>';
+                  }).join('')
+                + '</div>'
+              : '<div style="padding:0.8rem 1rem;font-size:0.8rem;color:var(--gray);background:var(--surface)">Sin datos de ejercicios</div>';
+
+            return '<div style="border-bottom:1px solid var(--border)">'
+              + '<div onclick="(function(el){el.nextElementSibling.style.display=el.nextElementSibling.style.display===\'none\'?\'block\':\'none\';var arr=el.querySelector(\'.ci-arrow\');if(arr)arr.style.transform=el.nextElementSibling.style.display===\'block\'?\'rotate(90deg)\':\'\';})(this)" style="display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1rem;cursor:pointer;user-select:none">'
+              + '<div style="display:flex;align-items:center;gap:0.7rem">'
+              + '<span style="font-size:1.2rem">📅</span>'
+              + '<div>'
+              + '<div style="font-weight:700;font-size:0.88rem;color:var(--navy)">' + nombreDia + '</div>'
+              + '<div style="font-size:0.7rem;color:var(--gray);margin-top:1px">' + totalSesiones + ' sesión' + (totalSesiones!==1?'es':'') + ' · ' + ejerciciosUnicos.length + ' ejercicios</div>'
+              + '</div></div>'
+              + '<span class="ci-arrow" style="color:var(--gray);font-size:0.9rem;transition:transform 0.2s;display:inline-block">›</span>'
+              + '</div>'
+              + '<div style="display:none">' + tablaHtml + '</div>'
               + '</div>';
           }).join('')
         + '</div>'
@@ -3485,21 +3553,80 @@ async function cargarMiProgreso(clienteId) {
       + '</div></div>'
     : '';
 
-  // ── Check-ins ─────────────────────────────────────────────────
+  // ── Check-ins agrupados por día para ver progresión de cargas ──
+  var gruposDiaCliente = {};
+  checkins.forEach(function(e) {
+    var clave = (e.datos.dia || 'Sin nombre').trim();
+    if (!gruposDiaCliente[clave]) gruposDiaCliente[clave] = [];
+    gruposDiaCliente[clave].push(e);
+  });
+  Object.keys(gruposDiaCliente).forEach(function(k) {
+    gruposDiaCliente[k].sort(function(a,b){ return a.fecha > b.fecha ? 1 : -1; });
+  });
+
   const checkinsHtml = checkins.length
-    ? '<div><div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.6rem;font-weight:600">Mis check-ins</div>'
-      + '<div style="display:flex;flex-direction:column;gap:0.5rem">'
-      + checkins.map(function(e){
-          const d = e.datos;
-          const nEj = d.ejercicios ? d.ejercicios.length : 0;
-          return '<div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem">'
-            + '<div style="display:flex;align-items:center;justify-content:space-between">'
-            + '<div style="display:flex;align-items:center;gap:0.6rem">'
-            + '<span style="font-size:1.2rem">💪</span>'
-            + '<div><div style="font-size:0.85rem;font-weight:600;color:var(--navy)">'+(d.dia||'Entrenamiento')+'</div>'
-            + '<div style="font-size:0.72rem;color:var(--gray);margin-top:1px">'+fmtFecha(e.fecha)+' · '+nEj+' ejercicios</div></div></div>'
-            + '<button class="btn btn-sm btn-secondary" style="font-size:0.7rem;padding:0.3rem 0.7rem" onclick="verCheckinDetalle(\''+e.id+'\')">Ver</button>'
-            + '</div></div>';
+    ? '<div><div style="font-size:0.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.6rem;font-weight:600">Progresión de cargas</div>'
+      + '<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">'
+      + Object.keys(gruposDiaCliente).map(function(nombreDia) {
+          var sesiones = gruposDiaCliente[nombreDia];
+          var totalSesiones = sesiones.length;
+
+          var ejerciciosUnicosC = [];
+          sesiones.forEach(function(s) {
+            (s.datos.ejercicios || []).forEach(function(ex) {
+              if (!ejerciciosUnicosC.includes(ex.nombre)) ejerciciosUnicosC.push(ex.nombre);
+            });
+          });
+
+          var tablaClienteHtml = ejerciciosUnicosC.length
+            ? '<div style="padding:0.8rem 1rem 1rem;background:var(--surface);overflow-x:auto">'
+              + '<div style="display:grid;grid-template-columns:1fr '+sesiones.map(function(){ return 'auto'; }).join(' ')+';gap:0.4rem 0.8rem;align-items:center;margin-bottom:0.5rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem">'
+              + '<span style="font-size:0.65rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Ejercicio</span>'
+              + sesiones.map(function(s) {
+                  return '<span style="font-size:0.65rem;color:var(--gray);text-align:center;white-space:nowrap">'
+                    + fmtFecha(s.fecha).replace(/\s\d{4}/,'')
+                    + '</span>';
+                }).join('')
+              + '</div>'
+              + ejerciciosUnicosC.map(function(nombreEx) {
+                  var pesosC = sesiones.map(function(s) {
+                    var ex = (s.datos.ejercicios || []).find(function(x){ return x.nombre === nombreEx; });
+                    return ex ? (ex.peso || null) : null;
+                  });
+                  var conPesoC = pesosC.filter(function(p){ return p; });
+                  var tendenciaC = '';
+                  if (conPesoC.length >= 2) {
+                    var primeroC = parseFloat(conPesoC[0]);
+                    var ultimoC = parseFloat(conPesoC[conPesoC.length-1]);
+                    if (!isNaN(primeroC) && !isNaN(ultimoC)) {
+                      if (ultimoC > primeroC) tendenciaC = ' <span style="color:var(--green);font-size:0.7rem">▲</span>';
+                      else if (ultimoC < primeroC) tendenciaC = ' <span style="color:var(--red);font-size:0.7rem">▼</span>';
+                      else tendenciaC = ' <span style="color:var(--gray);font-size:0.7rem">—</span>';
+                    }
+                  }
+                  return '<div style="display:grid;grid-template-columns:1fr '+sesiones.map(function(){ return 'auto'; }).join(' ')+';gap:0.4rem 0.8rem;align-items:center;padding:0.4rem 0;border-bottom:1px dashed var(--border)">'
+                    + '<span style="font-size:0.8rem;font-weight:500;color:var(--navy)">' + nombreEx + tendenciaC + '</span>'
+                    + pesosC.map(function(p) {
+                        return p
+                          ? '<span style="font-size:0.8rem;font-weight:700;color:var(--blue);text-align:center;white-space:nowrap">'+p+'<span style="font-size:0.65rem;font-weight:400"> kg</span></span>'
+                          : '<span style="font-size:0.75rem;color:var(--gray);text-align:center">—</span>';
+                      }).join('')
+                    + '</div>';
+                }).join('')
+              + '</div>'
+            : '<div style="padding:0.8rem 1rem;font-size:0.8rem;color:var(--gray);background:var(--surface)">Sin datos de ejercicios</div>';
+
+          return '<div style="border-bottom:1px solid var(--border)">'
+            + '<div onclick="(function(el){el.nextElementSibling.style.display=el.nextElementSibling.style.display===\'none\'?\'block\':\'none\';var arr=el.querySelector(\'.ci-arr\');if(arr)arr.style.transform=el.nextElementSibling.style.display===\'block\'?\'rotate(90deg)\':\'\';})(this)" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;cursor:pointer;user-select:none;background:var(--white)">'
+            + '<div style="display:flex;align-items:center;gap:0.6rem;min-width:0">'
+            + '<span style="font-size:1.2rem">📅</span>'
+            + '<div><div style="font-size:0.85rem;font-weight:700;color:var(--navy)">' + nombreDia + '</div>'
+            + '<div style="font-size:0.7rem;color:var(--gray);margin-top:2px">' + totalSesiones + ' sesión' + (totalSesiones!==1?'es':'') + ' · ' + ejerciciosUnicosC.length + ' ejercicios</div>'
+            + '</div></div>'
+            + '<span class="ci-arr" style="color:var(--gray);font-size:1rem;transition:transform 0.2s;display:inline-block">›</span>'
+            + '</div>'
+            + '<div style="display:none">' + tablaClienteHtml + '</div>'
+            + '</div>';
         }).join('')
       + '</div></div>'
     : '';
